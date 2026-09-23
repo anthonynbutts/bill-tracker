@@ -1,20 +1,19 @@
-// School Bill Tracker - Complete Redesign Engine
+// School Bill Tracker - Separate Actual & Estimated Earnings Engine
 
-const STORAGE_KEY = 'school_bill_tracker_state_v1';
+const STORAGE_KEY = 'school_bill_tracker_state_v2';
 const FRAME_KEY = 'school_bill_tracker_frame';
 
 const DEFAULT_DAYS = [
-  { id: 'mon', name: 'Monday', short: 'Mon', dayIndex: 1, goal: 26.88, actual: 0 },
-  { id: 'tue', name: 'Tuesday', short: 'Tue', dayIndex: 2, goal: 26.88, actual: 0 },
-  { id: 'wed', name: 'Wednesday', short: 'Wed', dayIndex: 3, goal: 26.88, actual: 0 },
-  { id: 'thu', name: 'Thursday', short: 'Thu', dayIndex: 4, goal: 26.87, actual: 0 },
-  { id: 'fri', name: 'Friday', short: 'Fri', dayIndex: 5, goal: 26.87, actual: 0 },
-  { id: 'sat', name: 'Saturday', short: 'Sat', dayIndex: 6, goal: 26.87, actual: 0 }
+  { id: 'mon', name: 'Monday', short: 'Mon', dayIndex: 1, planned: 26.88, actual: 0 },
+  { id: 'tue', name: 'Tuesday', short: 'Tue', dayIndex: 2, planned: 26.88, actual: 0 },
+  { id: 'wed', name: 'Wednesday', short: 'Wed', dayIndex: 3, planned: 26.88, actual: 0 },
+  { id: 'thu', name: 'Thursday', short: 'Thu', dayIndex: 4, planned: 26.87, actual: 0 },
+  { id: 'fri', name: 'Friday', short: 'Fri', dayIndex: 5, planned: 26.87, actual: 0 },
+  { id: 'sat', name: 'Saturday', short: 'Sat', dayIndex: 6, planned: 26.87, actual: 0 }
 ];
 
 const DEFAULT_STATE = {
   totalBillGoal: 215.00,
-  dashGoal: 161.25,
   days: DEFAULT_DAYS
 };
 
@@ -30,7 +29,29 @@ function triggerHaptic() {
 function loadState() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
-    if (!saved) return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    if (!saved) {
+      // Also check if v1 state exists to migrate planned/goal
+      const v1 = localStorage.getItem('school_bill_tracker_state_v1');
+      if (v1) {
+        const p1 = JSON.parse(v1);
+        const days = DEFAULT_DAYS.map(defDay => {
+          const match = (p1.days || []).find(d => d.id === defDay.id);
+          return {
+            id: defDay.id,
+            name: defDay.name,
+            short: defDay.short,
+            dayIndex: defDay.dayIndex,
+            planned: match && typeof match.goal === 'number' ? match.goal : defDay.planned,
+            actual: match && typeof match.actual === 'number' ? match.actual : 0
+          };
+        });
+        return {
+          totalBillGoal: typeof p1.totalBillGoal === 'number' ? p1.totalBillGoal : 215.00,
+          days
+        };
+      }
+      return JSON.parse(JSON.stringify(DEFAULT_STATE));
+    }
     const parsed = JSON.parse(saved);
     const days = DEFAULT_DAYS.map(defDay => {
       const match = (parsed.days || []).find(d => d.id === defDay.id);
@@ -39,13 +60,12 @@ function loadState() {
         name: defDay.name,
         short: defDay.short,
         dayIndex: defDay.dayIndex,
-        goal: match && typeof match.goal === 'number' ? match.goal : defDay.goal,
+        planned: match && typeof match.planned === 'number' ? match.planned : (match && typeof match.goal === 'number' ? match.goal : defDay.planned),
         actual: match && typeof match.actual === 'number' ? match.actual : 0
       };
     });
     return {
       totalBillGoal: typeof parsed.totalBillGoal === 'number' ? parsed.totalBillGoal : 215.00,
-      dashGoal: typeof parsed.dashGoal === 'number' ? parsed.dashGoal : 161.25,
       days
     };
   } catch (e) {
@@ -79,7 +99,7 @@ function getTodayId() {
   return match ? match.id : 'mon';
 }
 
-// Render 6 Clean, Spacious Daily Cards
+// Render Daily Cards
 function renderDays() {
   const container = document.getElementById('daysList');
   if (!container) return;
@@ -95,7 +115,7 @@ function renderDays() {
     card.id = `card-${day.id}`;
     card.className = `glass-card rounded-2xl p-3.5 transition-all ${isActive ? 'is-active ring-1 ring-emerald-500/40' : ''}`;
     card.onclick = (e) => {
-      if (!e.target.closest('input') && !e.target.closest('button')) {
+      if (!e.target.closest('input')) {
         selectDay(day.id);
       }
     };
@@ -109,19 +129,19 @@ function renderDays() {
           ${isToday ? '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded-full">TODAY</span>' : ''}
         </div>
         <span id="diff-${day.id}" class="text-xs font-mono font-medium text-zinc-400">
-          -$${day.goal.toFixed(2)}
+          -$${day.planned.toFixed(2)}
         </span>
       </div>
 
-      <!-- Card Middle: Dual Inputs (Actual & Goal) -->
+      <!-- Card Middle: Dual Inputs (Actual vs Planned) -->
       <div class="grid grid-cols-2 gap-2 mb-2.5">
         <!-- Actual Earned Input -->
-        <div class="bg-black/60 rounded-xl px-3 py-2 border border-zinc-800 focus-within:border-orange-500 transition-colors">
-          <label class="block text-[9px] font-bold uppercase tracking-wider text-orange-400 mb-0.5" for="actual-${day.id}">
-            Earned
+        <div class="bg-black/60 rounded-xl px-3 py-2 border border-zinc-800 focus-within:border-emerald-500 transition-colors">
+          <label class="block text-[9px] font-bold uppercase tracking-wider text-emerald-400 mb-0.5" for="actual-${day.id}">
+            Actual
           </label>
           <div class="flex items-center font-mono">
-            <span class="text-sm font-bold text-orange-400 mr-0.5">$</span>
+            <span class="text-sm font-bold text-emerald-400 mr-0.5">$</span>
             <input 
               type="number" 
               inputmode="decimal"
@@ -136,22 +156,22 @@ function renderDays() {
           </div>
         </div>
 
-        <!-- Goal Input -->
-        <div class="bg-black/60 rounded-xl px-3 py-2 border border-zinc-800 focus-within:border-zinc-500 transition-colors">
-          <label class="block text-[9px] font-bold uppercase tracking-wider text-zinc-400 mb-0.5" for="goal-${day.id}">
-            Daily Goal
+        <!-- Planned Input (Feeds Estimated Earnings) -->
+        <div class="bg-black/60 rounded-xl px-3 py-2 border border-zinc-800 focus-within:border-orange-500 transition-colors">
+          <label class="block text-[9px] font-bold uppercase tracking-wider text-orange-400 mb-0.5" for="planned-${day.id}">
+            Planned
           </label>
           <div class="flex items-center font-mono">
-            <span class="text-sm font-bold text-zinc-500 mr-0.5">$</span>
+            <span class="text-sm font-bold text-orange-400 mr-0.5">$</span>
             <input 
               type="number" 
               inputmode="decimal"
-              id="goal-${day.id}" 
+              id="planned-${day.id}" 
               step="0.01" 
               min="0"
-              value="${day.goal.toFixed(2)}"
+              value="${day.planned.toFixed(2)}"
               onfocus="selectDay('${day.id}')"
-              class="w-full bg-transparent text-base font-bold text-zinc-300 focus:outline-none"
+              class="w-full bg-transparent text-base font-bold text-zinc-200 focus:outline-none"
             />
           </div>
         </div>
@@ -159,7 +179,7 @@ function renderDays() {
 
       <!-- Day Progress Bar -->
       <div class="w-full bg-zinc-800/80 rounded-full h-1.5 overflow-hidden">
-        <div id="bar-${day.id}" class="bg-orange-500 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+        <div id="bar-${day.id}" class="bg-emerald-500 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
       </div>
     `;
 
@@ -184,52 +204,14 @@ window.selectDay = function(dayId) {
   });
 };
 
-window.quickAdd = function(dayId, amount) {
-  triggerHaptic();
-  const day = state.days.find(d => d.id === dayId);
-  if (!day) return;
-  day.actual = Math.round((day.actual + amount) * 100) / 100;
-  const input = document.getElementById(`actual-${dayId}`);
-  if (input) input.value = day.actual.toFixed(2);
-  saveState();
-  updateCalculations();
-  selectDay(dayId);
-  showToast(`+$${amount} to ${day.short}`);
-};
-
-window.fillGoal = function(dayId) {
-  triggerHaptic();
-  const day = state.days.find(d => d.id === dayId);
-  if (!day) return;
-  day.actual = day.goal;
-  const input = document.getElementById(`actual-${dayId}`);
-  if (input) input.value = day.actual.toFixed(2);
-  saveState();
-  updateCalculations();
-  selectDay(dayId);
-  showToast(`${day.short} set to goal`);
-};
-
-window.clearDay = function(dayId) {
-  triggerHaptic();
-  const day = state.days.find(d => d.id === dayId);
-  if (!day) return;
-  day.actual = 0;
-  const input = document.getElementById(`actual-${dayId}`);
-  if (input) input.value = '';
-  saveState();
-  updateCalculations();
-  selectDay(dayId);
-};
-
 function attachInputListeners() {
   state.days.forEach(day => {
-    const goalInput = document.getElementById(`goal-${day.id}`);
+    const plannedInput = document.getElementById(`planned-${day.id}`);
     const actualInput = document.getElementById(`actual-${day.id}`);
 
-    if (goalInput) {
-      goalInput.addEventListener('input', (e) => {
-        day.goal = parseVal(e.target.value);
+    if (plannedInput) {
+      plannedInput.addEventListener('input', (e) => {
+        day.planned = parseVal(e.target.value);
         saveState();
         updateCalculations();
       });
@@ -253,57 +235,53 @@ function attachInputListeners() {
       updateCalculations();
     });
   }
-
-  const dashGoalInput = document.getElementById('dashGoalInput');
-  if (dashGoalInput) {
-    dashGoalInput.value = state.dashGoal.toFixed(2);
-    dashGoalInput.addEventListener('input', (e) => {
-      state.dashGoal = parseVal(e.target.value);
-      saveState();
-      updateCalculations();
-    });
-  }
 }
 
 // Master calculation update
 function updateCalculations() {
   const totalBill = state.totalBillGoal;
-  const dashGoal = state.dashGoal;
 
-  const dashActual = state.days.reduce((sum, d) => sum + d.actual, 0);
-  const plannedPaycheck = Math.max(0, totalBill - dashGoal);
-  const paycheckNeeded = Math.max(0, totalBill - dashActual);
+  // 1. Actual Earnings: sum of actuals
+  const actualEarnings = state.days.reduce((sum, d) => sum + d.actual, 0);
+
+  // 2. Estimated Earnings: dynamically based off planned earnings for each day!
+  const estimatedEarnings = state.days.reduce((sum, d) => sum + d.planned, 0);
+
+  // 3. Paycheck Needed right now: Total bill - Actual Earnings
+  const paycheckNeeded = Math.max(0, totalBill - actualEarnings);
 
   // Dynamic Island
   const islandPaycheck = document.getElementById('islandPaycheck');
   if (islandPaycheck) islandPaycheck.textContent = formatCurrency(paycheckNeeded);
 
-  // Main Display
+  // Main Paycheck Needed Display
   const paycheckNeededDisplay = document.getElementById('paycheckNeededDisplay');
   if (paycheckNeededDisplay) paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
 
+  // Separate Top Tiles: Actual Earnings vs Estimated Earnings
+  const actualEarningsDisplay = document.getElementById('actualEarningsDisplay');
+  if (actualEarningsDisplay) actualEarningsDisplay.textContent = formatCurrency(actualEarnings);
+
+  const estimatedEarningsDisplay = document.getElementById('estimatedEarningsDisplay');
+  if (estimatedEarningsDisplay) estimatedEarningsDisplay.textContent = formatCurrency(estimatedEarnings);
 
   // Overall Bill Progress Bar
   const billProgressBar = document.getElementById('billProgressBar');
   if (billProgressBar) {
-    const pct = totalBill > 0 ? Math.min(100, (dashActual / totalBill) * 100) : 0;
+    const pct = totalBill > 0 ? Math.min(100, (actualEarnings / totalBill) * 100) : 0;
     billProgressBar.style.width = `${pct}%`;
   }
-
-  // Top Dash Actual Metric
-  const dashActualDisplay = document.getElementById('dashActualDisplay');
-  if (dashActualDisplay) dashActualDisplay.textContent = formatCurrency(dashActual);
 
   // Per-Day Progress & Variances
   state.days.forEach(day => {
     const diffEl = document.getElementById(`diff-${day.id}`);
     const barEl = document.getElementById(`bar-${day.id}`);
-    const dayDiff = day.actual - day.goal;
-    const dayPct = day.goal > 0 ? (day.actual / day.goal) * 100 : 100;
+    const dayDiff = day.actual - day.planned;
+    const dayPct = day.planned > 0 ? (day.actual / day.planned) * 100 : 100;
 
     if (diffEl) {
       if (day.actual === 0) {
-        diffEl.textContent = `-$${day.goal.toFixed(2)}`;
+        diffEl.textContent = `-$${day.planned.toFixed(2)}`;
         diffEl.className = 'text-xs font-mono font-medium text-zinc-500';
       } else if (dayDiff >= 0) {
         diffEl.textContent = dayDiff === 0 ? '✓ Hit Goal' : `+$${dayDiff.toFixed(2)} ahead`;
@@ -316,7 +294,7 @@ function updateCalculations() {
 
     if (barEl) {
       barEl.style.width = `${Math.min(100, dayPct)}%`;
-      if (day.actual >= day.goal && day.goal > 0) {
+      if (day.actual >= day.planned && day.planned > 0) {
         barEl.className = 'bg-emerald-400 h-1.5 rounded-full transition-all duration-200';
       } else {
         barEl.className = 'bg-orange-500 h-1.5 rounded-full transition-all duration-200';
@@ -326,33 +304,34 @@ function updateCalculations() {
 }
 
 function setupToolbarActions() {
-  // Split Dash Goal Evenly
+  // Split Goal Evenly across 6 days (~$26.88/day to equal $161.25 base target)
   const distributeEvenlyBtn = document.getElementById('distributeEvenlyBtn');
   if (distributeEvenlyBtn) {
     distributeEvenlyBtn.addEventListener('click', () => {
       triggerHaptic();
-      const perDay = Math.floor((state.dashGoal / 6) * 100) / 100;
-      const remainder = Math.round((state.dashGoal - perDay * 6) * 100) / 100;
+      const targetBase = 161.25;
+      const perDay = Math.floor((targetBase / 6) * 100) / 100;
+      const remainder = Math.round((targetBase - perDay * 6) * 100) / 100;
       
       state.days.forEach((day, i) => {
         const extraCent = i < Math.round(remainder * 100) ? 0.01 : 0;
-        day.goal = Math.round((perDay + extraCent) * 100) / 100;
-        const input = document.getElementById(`goal-${day.id}`);
-        if (input) input.value = day.goal.toFixed(2);
+        day.planned = Math.round((perDay + extraCent) * 100) / 100;
+        const input = document.getElementById(`planned-${day.id}`);
+        if (input) input.value = day.planned.toFixed(2);
       });
 
       saveState();
       updateCalculations();
-      showToast(`Split into ~$${perDay.toFixed(2)}/day`);
+      showToast(`Split $161.25 into ~$${perDay.toFixed(2)}/day`);
     });
   }
 
-  // Reset Week
+  // Reset Week Actuals
   const resetWeekBtn = document.getElementById('resetWeekBtn');
   if (resetWeekBtn) {
     resetWeekBtn.addEventListener('click', () => {
       triggerHaptic();
-      if (confirm('Clear actual earnings for the week?')) {
+      if (confirm('Clear actual earnings for the week? Planned goals will stay.')) {
         state.days.forEach(day => {
           day.actual = 0;
           const input = document.getElementById(`actual-${day.id}`);
@@ -360,7 +339,7 @@ function setupToolbarActions() {
         });
         saveState();
         updateCalculations();
-        showToast('Week cleared');
+        showToast('Actuals cleared');
       }
     });
   }
@@ -370,12 +349,16 @@ function setupToolbarActions() {
   if (copySummaryBtn) {
     copySummaryBtn.addEventListener('click', () => {
       triggerHaptic();
-      const dashActual = state.days.reduce((sum, d) => sum + d.actual, 0);
-      const paycheckNeeded = Math.max(0, state.totalBillGoal - dashActual);
+      const actualEarnings = state.days.reduce((sum, d) => sum + d.actual, 0);
+      const estimatedEarnings = state.days.reduce((sum, d) => sum + d.planned, 0);
+      const paycheckNeeded = Math.max(0, state.totalBillGoal - actualEarnings);
 
-      let text = `Needed: ${formatCurrency(state.totalBillGoal)} | Dash: ${formatCurrency(dashActual)} | Paycheck: ${formatCurrency(paycheckNeeded)}\n`;
+      let text = `Needed: ${formatCurrency(state.totalBillGoal)}\n`;
+      text += `Actual Earnings: ${formatCurrency(actualEarnings)}\n`;
+      text += `Estimated Earnings: ${formatCurrency(estimatedEarnings)}\n`;
+      text += `Paycheck Needed: ${formatCurrency(paycheckNeeded)}\n\n`;
       state.days.forEach(d => {
-        text += `${d.short}: ${formatCurrency(d.actual)} / ${formatCurrency(d.goal)}\n`;
+        text += `${d.short}: Actual ${formatCurrency(d.actual)} / Planned ${formatCurrency(d.planned)}\n`;
       });
 
       if (navigator.clipboard) {
