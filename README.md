@@ -35,7 +35,7 @@ Install **Bill Tracker** as a standalone app on your iPhone with zero address ba
 
 - 🖤 **True OLED Pitch-Black Canvas**: Pure `#000000` base background for deep contrast, battery preservation on OLED screens, and elevated dark-zinc frosted glass cards (`rgba(24, 24, 27, 0.75)`).
 - 🎬 **Cinematic Launch Splash**: Pitch-black launch screen with cross-blur fade into the app interface.
-- 🧮 **YNAB-Style Protected Calculator**: Tactile bottom-sheet calculator modal with quick increment presets (`+5`, `+10`, `+15`, `+20`, `+25`), locked base earnings protection, and live total calculation.
+- 💵 **Direct Smart Earnings Inputs**: Seamless inline smart inputs on the Today card and weekly rows with ghost-placeholder UX—tap to clear and enter earnings directly without modal clutter.
 - 🎯 **Ghost Goal Inputs**: Tapping any goal clears the field to a muted placeholder so you can type a new amount cleanly; unfocusing without changes safely reverts to the original goal.
 - 🔔 **Smart Change Detection**: "Goals updated" toast notifications only trigger when an actual value change is committed.
 - 🍎 **Native Apple Typography**: Crafted with Apple's native San Francisco Pro & SF Mono font stacks with tabular numerals (`tnum`).

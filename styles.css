@@ -233,17 +233,7 @@ input, textarea {
   background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
 }
 
-/* Tactile Calculator Key */
-.calc-key {
-  touch-action: manipulation;
-  transition: transform 0.08s ease, background-color 0.12s ease, filter 0.12s ease;
-  user-select: none;
-}
 
-.calc-key:active {
-  transform: scale(0.93);
-  filter: brightness(1.25);
-}
 
 /* Smart Goal Input: Ghost placeholder */
 .smart-goal-input::placeholder {

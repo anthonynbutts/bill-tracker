@@ -1,4 +1,4 @@
-// School Bill Tracker - YNAB-style Protected Calculator Engine
+// School Bill Tracker - Core Application Logic
 
 const STORAGE_KEY = 'school_bill_tracker_state_v2';
 const FRAME_KEY = 'school_bill_tracker_frame';
@@ -18,12 +18,6 @@ const DEFAULT_STATE = {
 };
 
 let state = loadState();
-let activeDayId = getTodayId();
-
-// YNAB Calculator State
-let calcDayId = getTodayId();
-let calcBase = 0;
-let calcExpr = '0';
 
 function triggerHaptic() {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -219,32 +213,26 @@ function renderDays() {
         </div>
 
         <!-- Middle: Action Banner with Smart Current Dash Input -->
-        <div class="flex items-center justify-between bg-black/60 rounded-xl p-2 border border-emerald-500/30 mb-2">
+        <div class="flex items-center justify-between bg-black/60 rounded-xl px-3 py-2 border border-emerald-500/30 mb-2">
           <div>
             <span class="text-[8.5px] uppercase font-bold text-zinc-400 block mb-0.5">${actionLabel}</span>
-            <div class="flex items-center gap-1.5 font-mono">
-              <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-0.5 border border-emerald-500/40 focus-within:border-emerald-400 focus-within:ring-1 focus-within:ring-emerald-400/30" onclick="event.stopPropagation()">
-                <span class="text-sm font-bold text-emerald-400 mr-0.5">$</span>
-                <input 
-                  type="number" 
-                  inputmode="decimal" 
-                  id="actual-input-${day.id}" 
-                  step="0.01" 
-                  min="0" 
-                  value="${day.actual.toFixed(2)}" 
-                  placeholder="${day.actual.toFixed(2)}" 
-                  class="smart-goal-input w-20 bg-transparent text-left text-sm font-bold text-emerald-400 focus:outline-none placeholder-zinc-500 font-mono" 
-                  title="Click to edit current dash"
-                />
-              </div>
-              <span class="text-[11px] text-zinc-500">/ $${day.planned.toFixed(2)} goal</span>
-            </div>
+            <span class="text-[11px] text-zinc-500 font-mono">Target: $${day.planned.toFixed(2)}</span>
           </div>
           
-          <button type="button" class="tap-btn px-2.5 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/60 font-mono font-bold text-xs flex items-center gap-1 shadow-sm" onclick="event.stopPropagation(); openCalcModal('${day.id}')" title="Open Calculator">
-            <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/><line x1="12" x2="12" y1="8" y2="16"/></svg>
-            <span>Calc</span>
-          </button>
+          <div class="flex items-center bg-zinc-900 rounded-lg px-2.5 py-1 border border-emerald-500/40 focus-within:border-emerald-400 focus-within:ring-1 focus-within:ring-emerald-400/30">
+            <span class="text-base font-bold text-emerald-400 mr-1 font-mono">$</span>
+            <input 
+              type="number" 
+              inputmode="decimal" 
+              id="actual-input-${day.id}" 
+              step="0.01" 
+              min="0" 
+              value="${day.actual.toFixed(2)}" 
+              placeholder="${day.actual.toFixed(2)}" 
+              class="smart-goal-input w-24 bg-transparent text-right text-base font-bold text-emerald-400 focus:outline-none placeholder-zinc-500 font-mono" 
+              title="Click to edit earnings"
+            />
+          </div>
         </div>
 
         <!-- Mini Progress Bar -->
@@ -261,15 +249,12 @@ function renderDays() {
             day.actual = newVal;
             saveState();
             updateCalculations();
-            showToast(`${day.name}: $${newVal.toFixed(2)} saved`);
           }
         });
       }
     } else {
       // OTHER DAYS: Sleek Minimal Row (Hidden until user clicks toggle button)
-      card.className = 'glass-card rounded-xl px-3 py-2 flex items-center justify-between cursor-pointer hover:border-zinc-700 transition-colors select-none';
-      card.setAttribute('onclick', `openCalcModal('${day.id}')`);
-      card.setAttribute('title', 'Tap to enter earnings');
+      card.className = 'glass-card rounded-xl px-3 py-2 flex items-center justify-between select-none';
 
       card.innerHTML = `
         <!-- Left: Day badge, title, and goal -->
@@ -295,10 +280,10 @@ function renderDays() {
           </div>
         </div>
 
-        <!-- Right: Smart Current Dash Input + Calc Icon -->
-        <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
-          <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-0.5 border border-zinc-700/60 focus-within:border-emerald-500">
-            <span class="text-xs font-bold text-emerald-400 mr-0.5 font-mono">$</span>
+        <!-- Right: Smart Current Dash Input -->
+        <div class="flex items-center">
+          <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-1 border border-zinc-700/60 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/30">
+            <span class="text-xs font-bold text-emerald-400 mr-1 font-mono">$</span>
             <input 
               type="number" 
               inputmode="decimal" 
@@ -308,12 +293,9 @@ function renderDays() {
               value="${day.actual.toFixed(2)}" 
               placeholder="${day.actual.toFixed(2)}" 
               class="smart-goal-input w-16 bg-transparent text-right font-mono text-xs font-bold text-white focus:outline-none placeholder-zinc-500" 
-              title="Click to edit current dash"
+              title="Click to edit earnings"
             />
           </div>
-          <button type="button" onclick="openCalcModal('${day.id}')" class="w-6 h-6 rounded-md bg-black/60 border border-zinc-800 hover:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white" title="Open Calculator">
-            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          </button>
         </div>
       `;
       otherDaysList.appendChild(card);
@@ -325,7 +307,6 @@ function renderDays() {
             day.actual = newVal;
             saveState();
             updateCalculations();
-            showToast(`${day.name}: $${newVal.toFixed(2)} saved`);
           }
         });
       }
@@ -362,11 +343,6 @@ function updateOtherDaysVisibility() {
     text.textContent = showOtherDays ? 'Hide Other Days' : 'View Full Week (5 Other Days)';
   }
 }
-
-window.selectDay = function(dayId) {
-  triggerHaptic();
-  activeDayId = dayId;
-};
 
 // Master calculation update
 function updateCalculations() {
@@ -726,262 +702,6 @@ window.handleBackupFileSelect = function(event) {
 };
 
 // -------------------------------------------------------------
-// YNAB-STYLE PROTECTED CALCULATOR MODAL ENGINE
-// -------------------------------------------------------------
-
-function evalCalcExpression(expr) {
-  if (!expr) return 0;
-  const tokens = expr.trim().split(/\s+/);
-  if (tokens.length === 0 || tokens[0] === '') return 0;
-  
-  let total = parseFloat(tokens[0]) || 0;
-  for (let i = 1; i < tokens.length; i += 2) {
-    const op = tokens[i];
-    const val = parseFloat(tokens[i + 1]);
-    if (isNaN(val)) continue; // ignore trailing operator
-    if (op === '+' || op === '+') {
-      total += val;
-    } else if (op === '−' || op === '-') {
-      total -= val;
-    }
-  }
-  return Math.max(0, Math.round(total * 100) / 100);
-}
-
-window.openCalcModal = function(dayId) {
-  triggerHaptic();
-  calcDayId = dayId;
-  selectDay(dayId);
-
-  const day = state.days.find(d => d.id === dayId);
-  if (!day) return;
-
-  calcBase = day.actual;
-  calcExpr = calcBase > 0 ? calcBase.toFixed(2) : '0';
-
-  const modal = document.getElementById('calcModal');
-  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
-  const dayTitle = document.getElementById('calcDayTitle');
-  const currentAmount = document.getElementById('calcCurrentAmount');
-
-  if (dayTitle) dayTitle.textContent = day.name;
-  if (currentAmount) currentAmount.textContent = formatCurrency(calcBase);
-
-  updateCalcDisplay();
-
-  if (modal && sheet) {
-    modal.classList.remove('hidden');
-    requestAnimationFrame(() => {
-      modal.classList.remove('opacity-0', 'pointer-events-none');
-      modal.classList.add('opacity-100');
-      sheet.classList.remove('translate-y-full');
-      sheet.classList.add('translate-y-0');
-    });
-  }
-};
-
-window.closeCalcModal = function() {
-  triggerHaptic();
-  const modal = document.getElementById('calcModal');
-  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
-
-  if (modal && sheet) {
-    sheet.classList.remove('translate-y-0');
-    sheet.classList.add('translate-y-full');
-    modal.classList.remove('opacity-100');
-    modal.classList.add('opacity-0', 'pointer-events-none');
-    setTimeout(() => {
-      modal.classList.add('hidden');
-    }, 220);
-  }
-};
-
-window.switchCalcDay = function(direction) {
-  triggerHaptic();
-  if (!calcDayId) return;
-  const currentIndex = state.days.findIndex(d => d.id === calcDayId);
-  if (currentIndex === -1) return;
-
-  let newIndex = currentIndex + direction;
-  if (newIndex < 0) newIndex = state.days.length - 1;
-  else if (newIndex >= state.days.length) newIndex = 0;
-
-  const newDay = state.days[newIndex];
-  calcDayId = newDay.id;
-  selectDay(newDay.id);
-
-  calcBase = newDay.actual;
-  calcExpr = calcBase > 0 ? calcBase.toFixed(2) : '0';
-
-  const dayTitle = document.getElementById('calcDayTitle');
-  const currentAmount = document.getElementById('calcCurrentAmount');
-
-  if (dayTitle) dayTitle.textContent = newDay.name;
-  if (currentAmount) currentAmount.textContent = formatCurrency(calcBase);
-
-  updateCalcDisplay();
-};
-
-window.calcInputKey = function(key) {
-  triggerHaptic();
-
-  if (key === 'C') {
-    calcExpr = calcBase > 0 ? calcBase.toFixed(2) : '0';
-    updateCalcDisplay();
-    return;
-  }
-
-  if (key === 'BACKSPACE') {
-    // Cannot backspace into the locked base
-    if (calcBase > 0 && calcExpr === calcBase.toFixed(2)) {
-      updateCalcDisplay();
-      return;
-    }
-    if (calcExpr.endsWith(' ')) {
-      calcExpr = calcExpr.slice(0, -3).trim();
-    } else {
-      calcExpr = calcExpr.slice(0, -1);
-      if (!calcExpr || calcExpr === '') {
-        calcExpr = calcBase > 0 ? calcBase.toFixed(2) : '0';
-      }
-    }
-    updateCalcDisplay();
-    return;
-  }
-
-  if (key === '+' || key === '−' || key === '-') {
-    const op = key === '-' ? '−' : key;
-    if (calcExpr.endsWith(' + ') || calcExpr.endsWith(' − ')) {
-      calcExpr = calcExpr.slice(0, -3) + ' ' + op + ' ';
-    } else {
-      calcExpr += ' ' + op + ' ';
-    }
-    updateCalcDisplay();
-    return;
-  }
-
-  if (key === '.') {
-    const parts = calcExpr.trim().split(/\s+/);
-    const last = parts[parts.length - 1];
-    if (last === '+' || last === '−' || last === '-') {
-      calcExpr += '0.';
-    } else if (!last.includes('.')) {
-      calcExpr += '.';
-    }
-    updateCalcDisplay();
-    return;
-  }
-
-  if (key === '00') {
-    if (calcExpr === '0') return;
-    if (calcBase > 0 && calcExpr === calcBase.toFixed(2)) {
-      calcExpr += ' + 0';
-    } else {
-      const parts = calcExpr.trim().split(/\s+/);
-      const last = parts[parts.length - 1];
-      if (last === '+' || last === '−' || last === '-') {
-        calcExpr += '0';
-      } else {
-        calcExpr += '00';
-      }
-    }
-    updateCalcDisplay();
-    return;
-  }
-
-  // Digits 0-9
-  if (calcExpr === '0') {
-    calcExpr = key;
-  } else if (calcBase > 0 && calcExpr === calcBase.toFixed(2)) {
-    calcExpr += ' + ' + key;
-  } else {
-    calcExpr += key;
-  }
-
-  updateCalcDisplay();
-};
-
-window.calcAppendPreset = function(amount) {
-  triggerHaptic();
-  if (calcExpr.endsWith(' + ') || calcExpr.endsWith(' − ')) {
-    calcExpr += amount.toString();
-  } else if (calcExpr === '0') {
-    calcExpr = amount.toString();
-  } else {
-    calcExpr += ' + ' + amount.toString();
-  }
-  updateCalcDisplay();
-};
-
-function updateCalcDisplay() {
-  const formulaDisplay = document.getElementById('calcFormulaDisplay');
-  const resultPreview = document.getElementById('calcResultPreview');
-  const applyBtnText = document.getElementById('calcApplyBtnText');
-
-  const evaluated = evalCalcExpression(calcExpr);
-
-  if (formulaDisplay) {
-    formulaDisplay.textContent = calcExpr;
-    formulaDisplay.scrollLeft = formulaDisplay.scrollWidth;
-  }
-
-  if (resultPreview) {
-    resultPreview.textContent = formatCurrency(evaluated);
-    if (evaluated > calcBase) {
-      resultPreview.className = 'text-2xl font-black font-mono text-emerald-400 tracking-tight';
-    } else if (evaluated < calcBase) {
-      resultPreview.className = 'text-2xl font-black font-mono text-amber-400 tracking-tight';
-    } else {
-      resultPreview.className = 'text-2xl font-black font-mono text-zinc-100 tracking-tight';
-    }
-  }
-
-  if (applyBtnText) {
-    const diff = Math.round((evaluated - calcBase) * 100) / 100;
-    if (diff === 0) {
-      applyBtnText.textContent = `Keep ${formatCurrency(calcBase)}`;
-    } else if (diff > 0) {
-      applyBtnText.textContent = `Save ${formatCurrency(evaluated)} (+${formatCurrency(diff)})`;
-    } else {
-      applyBtnText.textContent = `Save ${formatCurrency(evaluated)} (-${formatCurrency(Math.abs(diff))})`;
-    }
-  }
-}
-
-window.applyCalcResult = function() {
-  triggerHaptic();
-  const day = state.days.find(d => d.id === calcDayId);
-  if (!day) return;
-
-  const newTotal = evalCalcExpression(calcExpr);
-  const diff = Math.round((newTotal - calcBase) * 100) / 100;
-
-  day.actual = newTotal;
-  saveState();
-  updateCalculations();
-  closeCalcModal();
-
-  if (diff !== 0) {
-    const sign = diff > 0 ? '+' : '−';
-    showToast(`${day.short}: ${sign}${formatCurrency(Math.abs(diff))} (Total ${formatCurrency(newTotal)})`);
-  }
-};
-
-window.resetCurrentDayEarnings = function() {
-  triggerHaptic();
-  const day = state.days.find(d => d.id === calcDayId);
-  if (!day) return;
-
-  if (confirm(`Reset ${day.name}'s actual earnings to $0.00?`)) {
-    day.actual = 0;
-    saveState();
-    updateCalculations();
-    closeCalcModal();
-    showToast(`${day.short} reset to $0.00`);
-  }
-};
-
-// -------------------------------------------------------------
 // TOOLBAR ACTIONS & SETUP
 // -------------------------------------------------------------
 
@@ -1089,44 +809,9 @@ document.addEventListener('DOMContentLoaded', () => {
   const scrollContent = document.getElementById('scrollContent');
   if (deviceFrame && scrollContent) {
     deviceFrame.addEventListener('wheel', (e) => {
-      const modal = document.getElementById('calcModal');
-      if (modal && modal.classList.contains('hidden')) {
-        scrollContent.scrollTop += e.deltaY;
-      }
+      scrollContent.scrollTop += e.deltaY;
     }, { passive: true });
   }
-
-  // PC / Hardware Keyboard Listener for Calculator
-  window.addEventListener('keydown', (e) => {
-    const modal = document.getElementById('calcModal');
-    if (!modal || modal.classList.contains('hidden')) return;
-
-    if (e.key >= '0' && e.key <= '9') {
-      e.preventDefault();
-      calcInputKey(e.key);
-    } else if (e.key === '.') {
-      e.preventDefault();
-      calcInputKey('.');
-    } else if (e.key === '+') {
-      e.preventDefault();
-      calcInputKey('+');
-    } else if (e.key === '-') {
-      e.preventDefault();
-      calcInputKey('−');
-    } else if (e.key === 'Backspace') {
-      e.preventDefault();
-      calcInputKey('BACKSPACE');
-    } else if (e.key === 'c' || e.key === 'C') {
-      e.preventDefault();
-      calcInputKey('C');
-    } else if (e.key === 'Enter' || e.key === '=') {
-      e.preventDefault();
-      applyCalcResult();
-    } else if (e.key === 'Escape') {
-      e.preventDefault();
-      closeCalcModal();
-    }
-  });
 
   // iOS Standalone Web App: Stay within standalone frame on link navigation
   if ('standalone' in window.navigator && window.navigator.standalone) {
