@@ -180,7 +180,7 @@ function renderDays() {
     if (day.actual === 0) {
       diffText = '';
       diffClass = '';
-      barColor = 'bg-zinc-800';
+      barColor = 'bg-zinc-700';
     } else if (dayDiff >= 0) {
       diffText = dayDiff === 0 ? '✓ Hit Goal' : `+$${dayDiff.toFixed(2)} ahead`;
       diffClass = 'text-emerald-400 font-bold';
@@ -210,7 +210,7 @@ function renderDays() {
         </div>
 
         <!-- Middle: Action Banner -->
-        <div class="flex items-center justify-between bg-black rounded-xl p-2.5 border border-emerald-500/30 mb-2.5 cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="openCalcModal('${day.id}')" title="Tap to enter earnings">
+        <div class="flex items-center justify-between bg-black/60 rounded-xl p-2.5 border border-emerald-500/30 mb-2.5 cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="openCalcModal('${day.id}')" title="Tap to enter earnings">
           <div>
             <span class="text-[9px] uppercase font-bold text-zinc-400 block mb-0.5">Today's Earnings</span>
             <div class="flex items-baseline gap-1 font-mono">
@@ -226,21 +226,21 @@ function renderDays() {
         </div>
 
         <!-- Mini Progress Bar -->
-        <div class="w-full bg-black border border-zinc-800/80 rounded-full h-1.5 overflow-hidden">
+        <div class="w-full bg-zinc-800/90 rounded-full h-1.5 overflow-hidden">
           <div class="${barColor} h-1.5 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
         </div>
       `;
       todayContainer.appendChild(card);
     } else {
       // OTHER DAYS: Sleek Minimal Row (Hidden until user clicks toggle button)
-      card.className = 'glass-card rounded-2xl p-3 flex items-center justify-between cursor-pointer border border-zinc-800 hover:border-zinc-700 bg-black transition-colors select-none';
+      card.className = 'glass-card rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:border-zinc-700 transition-colors select-none';
       card.setAttribute('onclick', `openCalcModal('${day.id}')`);
       card.setAttribute('title', 'Tap to enter earnings');
 
       card.innerHTML = `
         <!-- Left: Day badge, title, and goal -->
         <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-black border border-zinc-800 flex flex-col items-center justify-center font-mono">
+          <div class="w-9 h-9 rounded-xl bg-black/60 border border-zinc-800 flex flex-col items-center justify-center font-mono">
             <span class="text-[9px] text-zinc-500 uppercase font-bold">${day.short}</span>
             <span class="text-xs font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-emerald-400' : (day.actual > 0 ? 'text-amber-400' : 'text-zinc-600')}">
               ${day.actual >= day.planned && day.planned > 0 ? '✓' : (day.actual > 0 ? '•' : '—')}
@@ -254,7 +254,7 @@ function renderDays() {
             </div>
             <div class="text-[11px] font-mono text-zinc-400 mt-0.5 flex items-center gap-1.5">
               <span>Goal: $${day.planned.toFixed(2)}</span>
-              <div class="w-14 bg-black border border-zinc-800/80 rounded-full h-1 overflow-hidden inline-block align-middle">
+              <div class="w-14 bg-zinc-800 rounded-full h-1 overflow-hidden inline-block align-middle">
                 <div class="${barColor} h-1 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
               </div>
             </div>
@@ -269,7 +269,7 @@ function renderDays() {
             </div>
             <span class="text-[9px] text-zinc-500 block">Tap +/−</span>
           </div>
-          <div class="w-7 h-7 rounded-lg bg-black border border-zinc-800 flex items-center justify-center text-zinc-400">
+          <div class="w-7 h-7 rounded-lg bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center text-zinc-400">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           </div>
         </div>
@@ -408,13 +408,13 @@ window.openGoalsModal = function(focusDayId) {
     list.innerHTML = '';
     state.days.forEach(day => {
       const row = document.createElement('div');
-      row.className = 'flex items-center justify-between bg-black rounded-xl px-3.5 py-2.5 border border-zinc-800 font-mono';
+      row.className = 'flex items-center justify-between bg-black/60 rounded-xl px-3.5 py-2.5 border border-zinc-800 font-mono';
       row.innerHTML = `
         <div class="flex items-center gap-2">
           <span class="w-8 text-[10px] uppercase font-bold text-zinc-400">${day.short}</span>
           <span class="text-xs font-semibold text-white">${day.name}</span>
         </div>
-        <div class="flex items-center bg-black rounded-lg px-2.5 py-1 border border-zinc-800 focus-within:border-emerald-500">
+        <div class="flex items-center bg-zinc-900 rounded-lg px-2.5 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
           <span class="text-xs font-bold text-emerald-400 mr-1">$</span>
           <input 
             type="number" 
