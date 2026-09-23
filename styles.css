@@ -154,23 +154,22 @@ input, textarea {
   padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem)) !important;
 }
 
-/* Frosted glass card with dark gray background */
+/* Unified dark gray card */
 .glass-card {
-  background: rgba(24, 24, 27, 0.75);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #18181b;
+  border: 1px solid #27272a;
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.7);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: #3f3f46;
 }
 
 .glass-card.is-active {
-  background: rgba(28, 28, 32, 0.95);
-  border-color: rgba(52, 211, 153, 0.35);
-  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.5), 0 0 15px -3px rgba(52, 211, 153, 0.1);
+  background: #18181b;
+  border-color: rgba(52, 211, 153, 0.45);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.7), 0 0 15px -3px rgba(52, 211, 153, 0.15);
 }
 
 /* Smooth button tap states */
@@ -208,11 +207,11 @@ input, textarea {
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Today Smart Highlight */
+/* Today Smart Highlight - Same unified #18181b dark gray with emerald rim */
 .today-card {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(24, 24, 27, 0.95) 60%);
-  border: 1px solid rgba(52, 211, 153, 0.4);
-  box-shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.6), 0 0 16px -2px rgba(16, 185, 129, 0.15);
+  background: #18181b;
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  box-shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.7), 0 0 16px -2px rgba(16, 185, 129, 0.15);
 }
 
 /* Segmented Bar Segments */

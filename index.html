@@ -46,7 +46,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="styles.css?v=3">
 </head>
 <body class="bg-black text-zinc-100 min-h-screen flex items-center justify-center p-0 sm:p-4 selection:bg-emerald-500 selection:text-black">
 
@@ -101,7 +101,7 @@
       <section class="glass-card rounded-3xl p-4 mb-4 relative overflow-hidden">
         
         <!-- Primary Hero Focal Stat: Current Paycheck Needed -->
-        <div class="bg-black/70 rounded-2xl p-3 text-center mb-3 border border-zinc-800/90 shadow-inner">
+        <div class="bg-black/60 rounded-2xl p-3 text-center mb-3 border border-zinc-800 shadow-inner">
           <span class="text-[9px] uppercase font-bold tracking-widest text-zinc-400 block mb-0.5">
             Current Paycheck Needed
           </span>
@@ -118,14 +118,14 @@
 
         <!-- 2-Tone Segmented Progress Bar -->
         <div class="mb-3">
-          <div class="w-full h-2.5 rounded-full bg-zinc-900 border border-zinc-800/80 overflow-hidden flex p-0.5">
+          <div class="w-full h-2.5 rounded-full bg-black/60 border border-zinc-800 overflow-hidden flex p-0.5">
             <div id="segDashBar" class="h-full rounded-full seg-dash transition-all duration-300" style="width: 0%"></div>
             <div id="segPaycheckBar" class="h-full rounded-full seg-paycheck transition-all duration-300 ml-0.5" style="width: 100%"></div>
           </div>
         </div>
 
         <!-- DoorDash Earnings Summary -->
-        <div class="bg-black/50 rounded-2xl p-3 border border-zinc-800/70 pt-2.5 border-t border-zinc-800/80 flex items-center justify-between">
+        <div class="bg-black/60 rounded-2xl p-3 border border-zinc-800 flex items-center justify-between">
           <div>
             <div class="flex items-center gap-1.5 text-[10px] uppercase font-bold text-emerald-400 mb-0.5">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
@@ -359,6 +359,6 @@
 
   </main>
 
-  <script src="app.js"></script>
+  <script src="app.js?v=3"></script>
 </body>
 </html>

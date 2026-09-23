@@ -269,7 +269,7 @@ function renderDays() {
             </div>
             <span class="text-[9px] text-zinc-500 block">Tap +/−</span>
           </div>
-          <div class="w-7 h-7 rounded-lg bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center text-zinc-400">
+          <div class="w-7 h-7 rounded-lg bg-black/60 border border-zinc-800 flex items-center justify-center text-zinc-400">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           </div>
         </div>

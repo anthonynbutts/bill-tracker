@@ -1,10 +1,12 @@
 // Service Worker for School Bill Tracker PWA
-const CACHE_NAME = 'school-bill-tracker-v2';
+const CACHE_NAME = 'school-bill-tracker-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './styles.css',
+  './styles.css?v=3',
   './app.js',
+  './app.js?v=3',
   './manifest.json',
   './apple-touch-icon.png',
   './icon-192.png',
@@ -40,7 +42,7 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   event.respondWith(
-    caches.match(event.request).then((cachedResponse) => {
+    caches.match(event.request, { ignoreSearch: true }).then((cachedResponse) => {
       if (cachedResponse) {
         // Fetch fresh copy in background for next time
         fetch(event.request)
