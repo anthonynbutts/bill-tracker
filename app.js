@@ -103,11 +103,16 @@ function getTodayId() {
   return match ? match.id : 'mon';
 }
 
-// // Render Daily Cards (Smart "Today" Card + Streamlined Minimal Rows)
+let showOtherDays = false;
+
+// Render Daily Cards: Shows only the current day by default, other days revealed on toggle
 function renderDays() {
-  const container = document.getElementById('daysList');
-  if (!container) return;
-  container.innerHTML = '';
+  const todayContainer = document.getElementById('todayContainer');
+  const otherDaysList = document.getElementById('otherDaysList');
+  if (!todayContainer || !otherDaysList) return;
+
+  todayContainer.innerHTML = '';
+  otherDaysList.innerHTML = '';
 
   const todayIndex = getTodayIndex();
 
@@ -138,7 +143,7 @@ function renderDays() {
     card.id = `card-${day.id}`;
 
     if (isToday) {
-      // TODAY: Smart Prominent Card
+      // TODAY: Smart Prominent Card (Always Visible on Launch)
       card.className = 'today-card rounded-2xl p-3.5 transition-all select-none';
       card.innerHTML = `
         <!-- Top: Live Pulse + Today Badge -->
@@ -166,7 +171,7 @@ function renderDays() {
             </div>
           </div>
           
-          <button type="button" class="tap-btn px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-950/40" onclick="event.stopPropagation(); openCalcModal('${day.id}')">
+          <button type="button" class="tap-btn px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-950/40" onclick="event.stopPropagation(); openCalcModal('${day.id}')">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
             <span>Log Dash</span>
           </button>
@@ -177,8 +182,9 @@ function renderDays() {
           <div class="${barColor} h-1.5 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
         </div>
       `;
+      todayContainer.appendChild(card);
     } else {
-      // OTHER DAYS: Sleek Minimal Row
+      // OTHER DAYS: Sleek Minimal Row (Hidden until user clicks toggle button)
       card.className = 'glass-card rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:border-zinc-700 transition-colors select-none';
       card.setAttribute('onclick', `openCalcModal('${day.id}')`);
       card.setAttribute('title', 'Tap to enter earnings');
@@ -220,10 +226,39 @@ function renderDays() {
           </div>
         </div>
       `;
+      otherDaysList.appendChild(card);
     }
-
-    container.appendChild(card);
   });
+
+  updateOtherDaysVisibility();
+}
+
+window.toggleOtherDays = function() {
+  triggerHaptic();
+  showOtherDays = !showOtherDays;
+  updateOtherDaysVisibility();
+};
+
+function updateOtherDaysVisibility() {
+  const container = document.getElementById('otherDaysContainer');
+  const icon = document.getElementById('toggleOtherDaysIcon');
+  const text = document.getElementById('toggleOtherDaysText');
+
+  if (container) {
+    if (showOtherDays) {
+      container.classList.remove('hidden');
+    } else {
+      container.classList.add('hidden');
+    }
+  }
+
+  if (icon) {
+    icon.textContent = showOtherDays ? '▴' : '▾';
+  }
+
+  if (text) {
+    text.textContent = showOtherDays ? 'Hide Other Days' : 'View Full Week (5 Other Days)';
+  }
 }
 
 window.selectDay = function(dayId) {
