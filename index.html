@@ -145,87 +145,93 @@
       <div id="calcModalBackdrop" class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" onclick="closeCalcModal()"></div>
       
       <!-- Sheet Content -->
-      <div class="ynab-modal-sheet relative z-10 bg-zinc-900 border-t border-zinc-700/80 rounded-t-[32px] p-5 pb-8 max-h-[88%] overflow-y-auto flex flex-col transform translate-y-full">
+      <div class="ynab-modal-sheet relative z-10 bg-zinc-900 border-t border-zinc-700/80 rounded-t-[32px] p-4 pb-6 max-h-[92%] overflow-y-auto no-scrollbar flex flex-col transform translate-y-full transition-transform duration-200">
         
         <!-- Sheet Handle -->
-        <div class="w-12 h-1 bg-zinc-700 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeCalcModal()"></div>
+        <div class="w-12 h-1 bg-zinc-700 rounded-full mx-auto mb-3 cursor-pointer" onclick="closeCalcModal()"></div>
 
         <!-- Header Row -->
-        <div class="flex items-center justify-between mb-3.5">
+        <div class="flex items-center justify-between mb-2.5">
           <div>
             <h3 class="font-bold text-base text-white flex items-center gap-2">
               <span id="calcDayTitle">Wednesday</span> Earnings
             </h3>
-            <p class="text-[10px] text-zinc-400 font-mono">Add or subtract to adjust your saved total</p>
+            <p class="text-[10px] text-zinc-400 font-mono">Use calculator to adjust your saved earnings</p>
           </div>
           <button onclick="closeCalcModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white" title="Close">
             ✕
           </button>
         </div>
 
-        <!-- Locked Current Amount Card -->
-        <div class="bg-black/60 rounded-2xl p-3 border border-zinc-800 mb-3 flex items-center justify-between">
-          <div>
-            <span class="text-[9px] uppercase font-bold tracking-wider text-zinc-500 block">Current Recorded</span>
-            <div class="text-2xl font-extrabold font-mono text-zinc-200 mt-0.5" id="calcCurrentAmount">
+        <!-- Calculator Display Screen -->
+        <div class="bg-black/80 rounded-2xl p-3 border border-zinc-800 mb-2.5 shadow-inner font-mono">
+          <div class="flex items-center justify-between text-[10px] text-zinc-400 mb-1">
+            <span class="flex items-center gap-1.5">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
+              <span>BASE RECORDED: <strong id="calcCurrentAmount" class="text-zinc-200 font-bold">$0.00</strong></span>
+            </span>
+            <span class="px-1.5 py-0.5 rounded bg-zinc-800/80 text-[9px] text-zinc-400 border border-zinc-700/50 uppercase tracking-wider font-semibold">Locked</span>
+          </div>
+
+          <!-- Active Expression Display -->
+          <div class="overflow-x-auto whitespace-nowrap text-right text-sm text-zinc-300 py-1 min-h-[26px] flex items-center justify-end font-mono" id="calcFormulaDisplay">
+            0.00
+          </div>
+
+          <!-- Real-Time Total Result Display -->
+          <div class="flex items-baseline justify-between mt-1 pt-1.5 border-t border-zinc-800/80 font-mono">
+            <span class="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">New Total</span>
+            <div class="text-2xl font-black text-emerald-400 tracking-tight" id="calcResultPreview">
               $0.00
             </div>
           </div>
-          <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700/60">
-            Locked
-          </span>
         </div>
 
-        <!-- Mode Toggle: Add (+) vs Subtract (-) -->
-        <div class="grid grid-cols-2 gap-2 mb-3 bg-black/50 p-1 rounded-2xl border border-zinc-800/80">
-          <button type="button" id="calcModeAdd" class="tap-btn py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 bg-emerald-600 text-white shadow-md shadow-emerald-950/40" onclick="setCalcMode('add')">
-            <span class="text-sm font-black">+</span>
-            <span>Add Earnings</span>
+        <!-- Quick Presets Row -->
+        <div class="grid grid-cols-5 gap-1.5 mb-2.5 font-mono text-xs">
+          <button type="button" class="tap-btn py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="calcAppendPreset(5)">+5</button>
+          <button type="button" class="tap-btn py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="calcAppendPreset(10)">+10</button>
+          <button type="button" class="tap-btn py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="calcAppendPreset(15)">+15</button>
+          <button type="button" class="tap-btn py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="calcAppendPreset(20)">+20</button>
+          <button type="button" class="tap-btn py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="calcAppendPreset(25)">+25</button>
+        </div>
+
+        <!-- Calculator Keypad (4 columns x 4 rows) -->
+        <div class="grid grid-cols-4 gap-1.5 mb-2.5">
+          <!-- Row 1 -->
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('7')">7</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('8')">8</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('9')">9</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-black text-xl flex items-center justify-center border border-emerald-500/40 shadow-sm shadow-emerald-950/40" onclick="calcInputKey('+')">+</button>
+
+          <!-- Row 2 -->
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('4')">4</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('5')">5</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('6')">6</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-rose-600 hover:bg-rose-500 text-white font-mono font-black text-xl flex items-center justify-center border border-rose-500/40 shadow-sm shadow-rose-950/40" onclick="calcInputKey('−')">−</button>
+
+          <!-- Row 3 -->
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('1')">1</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('2')">2</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('3')">3</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 font-mono font-bold flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('BACKSPACE')" title="Backspace">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414-6.414a2 2 0 011.414-.586H19a2 2 0 012 2v10a2 2 0 01-2 2h-8.172a2 2 0 01-1.414-.586L3 12z"></path></svg>
           </button>
-          
-          <button type="button" id="calcModeSubtract" class="tap-btn py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white" onclick="setCalcMode('subtract')">
-            <span class="text-sm font-black">−</span>
-            <span>Subtract</span>
-          </button>
-        </div>
 
-        <!-- Adjustment Input -->
-        <div class="mb-3">
-          <div class="flex items-center bg-black rounded-2xl px-4 py-2.5 border border-zinc-800 focus-within:border-emerald-500 font-mono transition-colors">
-            <span id="calcOperatorSymbol" class="text-xl font-bold text-emerald-400 mr-2">+ $</span>
-            <input type="number" id="calcInputAmount" inputmode="decimal" step="0.01" min="0" placeholder="0.00"
-              class="w-full bg-transparent text-2xl font-extrabold text-white focus:outline-none placeholder-zinc-700">
-          </div>
-
-          <!-- Quick Increment Buttons -->
-          <div class="flex items-center gap-1.5 mt-2 flex-wrap font-mono text-xs" id="calcQuickChips">
-            <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="calcQuickAdjust(5)">5</button>
-            <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="calcQuickAdjust(10)">10</button>
-            <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="calcQuickAdjust(15)">15</button>
-            <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="calcQuickAdjust(20)">20</button>
-            <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="calcQuickAdjust(25)">25</button>
-          </div>
-        </div>
-
-        <!-- Live Math Equation Preview -->
-        <div class="bg-black/40 rounded-2xl p-2.5 border border-zinc-800/80 mb-4 text-center font-mono">
-          <div class="text-[9px] uppercase font-bold text-zinc-500 mb-0.5">Calculation Preview</div>
-          <div class="text-xs text-zinc-300 flex items-center justify-center gap-1.5">
-            <span id="previewCurrent">$0.00</span>
-            <span id="previewOperator" class="text-emerald-400 font-bold">+</span>
-            <span id="previewAdjustment" class="text-white font-bold">$0.00</span>
-            <span class="text-zinc-600">=</span>
-            <span id="previewResult" class="text-sm font-extrabold text-emerald-400">$0.00</span>
-          </div>
+          <!-- Row 4 -->
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-amber-400 font-mono font-bold text-sm flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('C')">C</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('0')">0</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-black text-lg flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('.')">.</button>
+          <button type="button" class="tap-btn h-11 rounded-xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-mono font-bold text-xs flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('00')">00</button>
         </div>
 
         <!-- Actions -->
-        <div class="flex flex-col gap-2">
+        <div class="flex flex-col gap-1.5">
           <button id="calcApplyBtn" class="tap-btn w-full py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/40" onclick="applyCalcResult()">
-            <span id="calcApplyBtnText">Apply Changes</span>
+            <span id="calcApplyBtnText">Save $0.00</span>
           </button>
           
-          <button id="calcResetDayBtn" class="tap-btn py-1.5 text-xs font-mono text-zinc-500 hover:text-red-400 text-center" onclick="resetCurrentDayEarnings()">
+          <button type="button" id="calcResetDayBtn" class="tap-btn py-1 text-xs font-mono text-zinc-500 hover:text-red-400 text-center transition-colors" onclick="resetCurrentDayEarnings()">
             Reset Day to $0.00
           </button>
         </div>

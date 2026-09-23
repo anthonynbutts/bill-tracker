@@ -22,7 +22,8 @@ let activeDayId = getTodayId();
 
 // YNAB Calculator State
 let calcDayId = getTodayId();
-let calcMode = 'add'; // 'add' or 'subtract'
+let calcBase = 0;
+let calcExpr = '0';
 
 function triggerHaptic() {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -298,27 +299,45 @@ function updateCalculations() {
 // YNAB-STYLE PROTECTED CALCULATOR MODAL ENGINE
 // -------------------------------------------------------------
 
+function evalCalcExpression(expr) {
+  if (!expr) return 0;
+  const tokens = expr.trim().split(/\s+/);
+  if (tokens.length === 0 || tokens[0] === '') return 0;
+  
+  let total = parseFloat(tokens[0]) || 0;
+  for (let i = 1; i < tokens.length; i += 2) {
+    const op = tokens[i];
+    const val = parseFloat(tokens[i + 1]);
+    if (isNaN(val)) continue; // ignore trailing operator
+    if (op === '+' || op === '+') {
+      total += val;
+    } else if (op === '−' || op === '-') {
+      total -= val;
+    }
+  }
+  return Math.max(0, Math.round(total * 100) / 100);
+}
+
 window.openCalcModal = function(dayId) {
   triggerHaptic();
   calcDayId = dayId;
-  calcMode = 'add';
   selectDay(dayId);
 
   const day = state.days.find(d => d.id === dayId);
   if (!day) return;
 
+  calcBase = day.actual;
+  calcExpr = calcBase > 0 ? calcBase.toFixed(2) : '0';
+
   const modal = document.getElementById('calcModal');
   const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
   const dayTitle = document.getElementById('calcDayTitle');
   const currentAmount = document.getElementById('calcCurrentAmount');
-  const input = document.getElementById('calcInputAmount');
 
   if (dayTitle) dayTitle.textContent = day.name;
-  if (currentAmount) currentAmount.textContent = formatCurrency(day.actual);
-  if (input) input.value = '';
+  if (currentAmount) currentAmount.textContent = formatCurrency(calcBase);
 
-  setCalcMode('add');
-  updateCalcPreview();
+  updateCalcDisplay();
 
   if (modal && sheet) {
     modal.classList.remove('hidden');
@@ -329,8 +348,6 @@ window.openCalcModal = function(dayId) {
       sheet.classList.add('translate-y-0');
     });
   }
-
-  if (input) setTimeout(() => input.focus(), 250);
 };
 
 window.closeCalcModal = function() {
@@ -349,100 +366,128 @@ window.closeCalcModal = function() {
   }
 };
 
-window.setCalcMode = function(mode) {
+window.calcInputKey = function(key) {
   triggerHaptic();
-  calcMode = mode;
 
-  const addBtn = document.getElementById('calcModeAdd');
-  const subBtn = document.getElementById('calcModeSubtract');
-  const operatorSymbol = document.getElementById('calcOperatorSymbol');
-
-  if (calcMode === 'add') {
-    if (addBtn) {
-      addBtn.className = 'tap-btn py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 bg-emerald-600 text-white shadow-md shadow-emerald-950/40';
-    }
-    if (subBtn) {
-      subBtn.className = 'tap-btn py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white';
-    }
-    if (operatorSymbol) {
-      operatorSymbol.textContent = '+ $';
-      operatorSymbol.className = 'text-xl font-bold text-emerald-400 mr-2';
-    }
-  } else {
-    if (subBtn) {
-      subBtn.className = 'tap-btn py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 bg-rose-600 text-white shadow-md shadow-rose-950/40';
-    }
-    if (addBtn) {
-      addBtn.className = 'tap-btn py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white';
-    }
-    if (operatorSymbol) {
-      operatorSymbol.textContent = '− $';
-      operatorSymbol.className = 'text-xl font-bold text-rose-400 mr-2';
-    }
+  if (key === 'C') {
+    calcExpr = calcBase > 0 ? calcBase.toFixed(2) : '0';
+    updateCalcDisplay();
+    return;
   }
 
-  updateCalcPreview();
+  if (key === 'BACKSPACE') {
+    // Cannot backspace into the locked base
+    if (calcBase > 0 && calcExpr === calcBase.toFixed(2)) {
+      updateCalcDisplay();
+      return;
+    }
+    if (calcExpr.endsWith(' ')) {
+      calcExpr = calcExpr.slice(0, -3).trim();
+    } else {
+      calcExpr = calcExpr.slice(0, -1);
+      if (!calcExpr || calcExpr === '') {
+        calcExpr = calcBase > 0 ? calcBase.toFixed(2) : '0';
+      }
+    }
+    updateCalcDisplay();
+    return;
+  }
+
+  if (key === '+' || key === '−' || key === '-') {
+    const op = key === '-' ? '−' : key;
+    if (calcExpr.endsWith(' + ') || calcExpr.endsWith(' − ')) {
+      calcExpr = calcExpr.slice(0, -3) + ' ' + op + ' ';
+    } else {
+      calcExpr += ' ' + op + ' ';
+    }
+    updateCalcDisplay();
+    return;
+  }
+
+  if (key === '.') {
+    const parts = calcExpr.trim().split(/\s+/);
+    const last = parts[parts.length - 1];
+    if (last === '+' || last === '−' || last === '-') {
+      calcExpr += '0.';
+    } else if (!last.includes('.')) {
+      calcExpr += '.';
+    }
+    updateCalcDisplay();
+    return;
+  }
+
+  if (key === '00') {
+    if (calcExpr === '0') return;
+    if (calcBase > 0 && calcExpr === calcBase.toFixed(2)) {
+      calcExpr += ' + 0';
+    } else {
+      const parts = calcExpr.trim().split(/\s+/);
+      const last = parts[parts.length - 1];
+      if (last === '+' || last === '−' || last === '-') {
+        calcExpr += '0';
+      } else {
+        calcExpr += '00';
+      }
+    }
+    updateCalcDisplay();
+    return;
+  }
+
+  // Digits 0-9
+  if (calcExpr === '0') {
+    calcExpr = key;
+  } else if (calcBase > 0 && calcExpr === calcBase.toFixed(2)) {
+    calcExpr += ' + ' + key;
+  } else {
+    calcExpr += key;
+  }
+
+  updateCalcDisplay();
 };
 
-window.calcQuickAdjust = function(amount) {
+window.calcAppendPreset = function(amount) {
   triggerHaptic();
-  const input = document.getElementById('calcInputAmount');
-  if (input) {
-    const currentVal = parseVal(input.value);
-    input.value = (currentVal + amount).toFixed(2);
-    updateCalcPreview();
+  if (calcExpr.endsWith(' + ') || calcExpr.endsWith(' − ')) {
+    calcExpr += amount.toString();
+  } else if (calcExpr === '0') {
+    calcExpr = amount.toString();
+  } else {
+    calcExpr += ' + ' + amount.toString();
   }
+  updateCalcDisplay();
 };
 
-function updateCalcPreview() {
-  const day = state.days.find(d => d.id === calcDayId);
-  if (!day) return;
-
-  const input = document.getElementById('calcInputAmount');
-  const adj = input ? parseVal(input.value) : 0;
-  const current = day.actual;
-
-  let newTotal = 0;
-  if (calcMode === 'add') {
-    newTotal = current + adj;
-  } else {
-    newTotal = Math.max(0, current - adj);
-  }
-  newTotal = Math.round(newTotal * 100) / 100;
-
-  const previewCurrent = document.getElementById('previewCurrent');
-  const previewOperator = document.getElementById('previewOperator');
-  const previewAdjustment = document.getElementById('previewAdjustment');
-  const previewResult = document.getElementById('previewResult');
+function updateCalcDisplay() {
+  const formulaDisplay = document.getElementById('calcFormulaDisplay');
+  const resultPreview = document.getElementById('calcResultPreview');
   const applyBtnText = document.getElementById('calcApplyBtnText');
-  const applyBtn = document.getElementById('calcApplyBtn');
 
-  if (previewCurrent) previewCurrent.textContent = formatCurrency(current);
-  if (previewOperator) {
-    previewOperator.textContent = calcMode === 'add' ? '+' : '−';
-    previewOperator.className = calcMode === 'add' ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
+  const evaluated = evalCalcExpression(calcExpr);
+
+  if (formulaDisplay) {
+    formulaDisplay.textContent = calcExpr;
+    formulaDisplay.scrollLeft = formulaDisplay.scrollWidth;
   }
-  if (previewAdjustment) previewAdjustment.textContent = formatCurrency(adj);
-  if (previewResult) {
-    previewResult.textContent = formatCurrency(newTotal);
-    previewResult.className = `text-base font-extrabold ${newTotal >= current ? 'text-emerald-400' : 'text-amber-400'}`;
+
+  if (resultPreview) {
+    resultPreview.textContent = formatCurrency(evaluated);
+    if (evaluated > calcBase) {
+      resultPreview.className = 'text-2xl font-black font-mono text-emerald-400 tracking-tight';
+    } else if (evaluated < calcBase) {
+      resultPreview.className = 'text-2xl font-black font-mono text-amber-400 tracking-tight';
+    } else {
+      resultPreview.className = 'text-2xl font-black font-mono text-zinc-100 tracking-tight';
+    }
   }
 
   if (applyBtnText) {
-    if (adj === 0) {
-      applyBtnText.textContent = `Keep ${formatCurrency(current)}`;
-    } else if (calcMode === 'add') {
-      applyBtnText.textContent = `Add +${formatCurrency(adj)} (${formatCurrency(newTotal)})`;
+    const diff = Math.round((evaluated - calcBase) * 100) / 100;
+    if (diff === 0) {
+      applyBtnText.textContent = `Keep ${formatCurrency(calcBase)}`;
+    } else if (diff > 0) {
+      applyBtnText.textContent = `Save ${formatCurrency(evaluated)} (+${formatCurrency(diff)})`;
     } else {
-      applyBtnText.textContent = `Subtract −${formatCurrency(adj)} (${formatCurrency(newTotal)})`;
-    }
-  }
-
-  if (applyBtn) {
-    if (calcMode === 'add') {
-      applyBtn.className = 'tap-btn w-full py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/40';
-    } else {
-      applyBtn.className = 'tap-btn w-full py-3.5 px-4 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-rose-950/40';
+      applyBtnText.textContent = `Save ${formatCurrency(evaluated)} (-${formatCurrency(Math.abs(diff))})`;
     }
   }
 }
@@ -452,25 +497,17 @@ window.applyCalcResult = function() {
   const day = state.days.find(d => d.id === calcDayId);
   if (!day) return;
 
-  const input = document.getElementById('calcInputAmount');
-  const adj = input ? parseVal(input.value) : 0;
-  const current = day.actual;
-
-  let newTotal = current;
-  if (calcMode === 'add') {
-    newTotal = current + adj;
-  } else {
-    newTotal = Math.max(0, current - adj);
-  }
-  newTotal = Math.round(newTotal * 100) / 100;
+  const newTotal = evalCalcExpression(calcExpr);
+  const diff = Math.round((newTotal - calcBase) * 100) / 100;
 
   day.actual = newTotal;
   saveState();
   updateCalculations();
   closeCalcModal();
 
-  if (adj > 0) {
-    showToast(`${day.short}: ${calcMode === 'add' ? '+' : '−'}${formatCurrency(adj)} (Now ${formatCurrency(newTotal)})`);
+  if (diff !== 0) {
+    const sign = diff > 0 ? '+' : '−';
+    showToast(`${day.short}: ${sign}${formatCurrency(Math.abs(diff))} (Total ${formatCurrency(newTotal)})`);
   }
 };
 
@@ -493,17 +530,6 @@ window.resetCurrentDayEarnings = function() {
 // -------------------------------------------------------------
 
 function setupToolbarActions() {
-  // Input live listener for calculator amount input
-  const calcInput = document.getElementById('calcInputAmount');
-  if (calcInput) {
-    calcInput.addEventListener('input', updateCalcPreview);
-    calcInput.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        e.preventDefault();
-        applyCalcResult();
-      }
-    });
-  }
 
   // Split Goal Evenly
   const distributeEvenlyBtn = document.getElementById('distributeEvenlyBtn');
@@ -608,4 +634,36 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, { passive: true });
   }
+
+  // PC / Hardware Keyboard Listener for Calculator
+  window.addEventListener('keydown', (e) => {
+    const modal = document.getElementById('calcModal');
+    if (!modal || modal.classList.contains('hidden')) return;
+
+    if (e.key >= '0' && e.key <= '9') {
+      e.preventDefault();
+      calcInputKey(e.key);
+    } else if (e.key === '.') {
+      e.preventDefault();
+      calcInputKey('.');
+    } else if (e.key === '+') {
+      e.preventDefault();
+      calcInputKey('+');
+    } else if (e.key === '-') {
+      e.preventDefault();
+      calcInputKey('−');
+    } else if (e.key === 'Backspace') {
+      e.preventDefault();
+      calcInputKey('BACKSPACE');
+    } else if (e.key === 'c' || e.key === 'C') {
+      e.preventDefault();
+      calcInputKey('C');
+    } else if (e.key === 'Enter' || e.key === '=') {
+      e.preventDefault();
+      applyCalcResult();
+    } else if (e.key === 'Escape') {
+      e.preventDefault();
+      closeCalcModal();
+    }
+  });
 });
