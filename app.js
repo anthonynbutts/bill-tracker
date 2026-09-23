@@ -716,28 +716,6 @@ function setupToolbarActions() {
     });
   }
 
-  // Copy Summary
-  const copySummaryBtn = document.getElementById('copySummaryBtn');
-  if (copySummaryBtn) {
-    copySummaryBtn.addEventListener('click', () => {
-      triggerHaptic();
-      const actualEarnings = state.days.reduce((sum, d) => sum + d.actual, 0);
-      const estimatedEarnings = state.days.reduce((sum, d) => sum + d.planned, 0);
-      const paycheckNeeded = Math.max(0, state.totalBillGoal - actualEarnings);
-      const paycheckGoal = Math.max(0, state.totalBillGoal - estimatedEarnings);
-
-      let text = `Total Bill: ${formatCurrency(state.totalBillGoal)}\n`;
-      text += `Paycheck Current: ${formatCurrency(paycheckNeeded)} | Goal: ${formatCurrency(paycheckGoal)}\n`;
-      text += `Actual Earnings: ${formatCurrency(actualEarnings)} | Estimated: ${formatCurrency(estimatedEarnings)}\n\n`;
-      state.days.forEach(d => {
-        text += `${d.short}: Actual ${formatCurrency(d.actual)} / Planned ${formatCurrency(d.planned)}\n`;
-      });
-
-      if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => showToast('Copied summary'));
-      }
-    });
-  }
 
 
   // Header Date
