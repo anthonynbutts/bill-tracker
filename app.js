@@ -1,7 +1,6 @@
-// School Bill Tracker - Complete Engine with Live Dash Session & Auto-Transfer
+// School Bill Tracker - YNAB-style Protected Calculator Engine
 
 const STORAGE_KEY = 'school_bill_tracker_state_v2';
-const SESSION_KEY = 'school_bill_tracker_dash_session_v1';
 const FRAME_KEY = 'school_bill_tracker_frame';
 
 const DEFAULT_DAYS = [
@@ -20,8 +19,10 @@ const DEFAULT_STATE = {
 
 let state = loadState();
 let activeDayId = getTodayId();
-let dashSession = loadDashSession();
-let timerInterval = null;
+
+// YNAB Calculator State
+let calcDayId = getTodayId();
+let calcMode = 'add'; // 'add' or 'subtract'
 
 function triggerHaptic() {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -29,7 +30,6 @@ function triggerHaptic() {
   }
 }
 
-// Load Tracker State
 function loadState() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -63,7 +63,7 @@ function loadState() {
         name: defDay.name,
         short: defDay.short,
         dayIndex: defDay.dayIndex,
-        planned: match && typeof match.planned === 'number' ? match.planned : defDay.planned,
+        planned: match && typeof match.planned === 'number' ? match.planned : (match && typeof match.goal === 'number' ? match.goal : defDay.planned),
         actual: match && typeof match.actual === 'number' ? match.actual : 0
       };
     });
@@ -79,29 +79,6 @@ function loadState() {
 function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {}
-}
-
-// Load Active Dash Session (Persists across tab reloads)
-function loadDashSession() {
-  try {
-    const saved = localStorage.getItem(SESSION_KEY);
-    if (!saved) return { active: false, startTime: null, targetDayId: getTodayId(), orders: [] };
-    const parsed = JSON.parse(saved);
-    return {
-      active: !!parsed.active,
-      startTime: parsed.startTime || null,
-      targetDayId: parsed.targetDayId || getTodayId(),
-      orders: Array.isArray(parsed.orders) ? parsed.orders : []
-    };
-  } catch (e) {
-    return { active: false, startTime: null, targetDayId: getTodayId(), orders: [] };
-  }
-}
-
-function saveDashSession() {
-  try {
-    localStorage.setItem(SESSION_KEY, JSON.stringify(dashSession));
   } catch (e) {}
 }
 
@@ -125,13 +102,6 @@ function getTodayId() {
   return match ? match.id : 'mon';
 }
 
-function formatDuration(seconds) {
-  const hrs = Math.floor(seconds / 3600);
-  const mins = Math.floor((seconds % 3600) / 60);
-  const secs = seconds % 60;
-  return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-}
-
 // Render Daily Cards
 function renderDays() {
   const container = document.getElementById('daysList');
@@ -147,53 +117,41 @@ function renderDays() {
     const card = document.createElement('div');
     card.id = `card-${day.id}`;
     card.className = `glass-card rounded-2xl p-3.5 transition-all ${isActive ? 'is-active ring-1 ring-emerald-500/40' : ''}`;
-    card.onclick = (e) => {
-      if (!e.target.closest('input')) {
-        selectDay(day.id);
-      }
-    };
 
     card.innerHTML = `
       <!-- Card Top: Day & Status -->
       <div class="flex items-center justify-between mb-2.5">
-        <div class="flex items-center gap-1.5">
+        <div class="flex items-center gap-1.5 cursor-pointer" onclick="selectDay('${day.id}')">
           <span class="w-2 h-2 rounded-full ${isToday ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}"></span>
           <span class="font-bold text-white text-sm">${day.name}</span>
           ${isToday ? '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded-full">TODAY</span>' : ''}
         </div>
-        <span id="diff-${day.id}" class="text-xs font-mono font-medium text-zinc-400">
+        <span id="diff-${day.id}" class="text-xs font-mono font-medium text-zinc-400 cursor-pointer" onclick="selectDay('${day.id}')">
           -$${day.planned.toFixed(2)}
         </span>
       </div>
 
-      <!-- Card Middle: Dual Inputs (Actual vs Planned) -->
+      <!-- Card Middle: Actual (Protected YNAB Tap) vs Planned (Editable Goal) -->
       <div class="grid grid-cols-2 gap-2 mb-2.5">
-        <!-- Actual Earned Input -->
-        <div class="bg-black/60 rounded-xl px-3 py-2 border border-zinc-800 focus-within:border-emerald-500 transition-colors">
-          <label class="block text-[9px] font-bold uppercase tracking-wider text-emerald-400 mb-0.5" for="actual-${day.id}">
-            Actual
-          </label>
+        <!-- Actual Earned: Taps to open YNAB math sheet -->
+        <div class="bg-black/60 rounded-xl px-3 py-2 border border-zinc-800 hover:border-emerald-500/60 cursor-pointer tap-btn transition-colors group" onclick="openCalcModal('${day.id}')" title="Tap to add or subtract earnings">
+          <div class="flex items-center justify-between mb-0.5">
+            <span class="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Actual</span>
+            <span class="text-[9px] text-zinc-500 font-mono group-hover:text-emerald-400 transition-colors">Tap +/−</span>
+          </div>
           <div class="flex items-center font-mono">
             <span class="text-sm font-bold text-emerald-400 mr-0.5">$</span>
-            <input 
-              type="number" 
-              inputmode="decimal"
-              id="actual-${day.id}" 
-              step="0.01" 
-              min="0"
-              value="${day.actual > 0 ? day.actual.toFixed(2) : ''}"
-              placeholder="0.00"
-              onfocus="selectDay('${day.id}')"
-              class="w-full bg-transparent text-base font-bold text-white focus:outline-none placeholder-zinc-700"
-            />
+            <span class="text-base font-extrabold text-white" id="actual-display-${day.id}">
+              ${day.actual > 0 ? day.actual.toFixed(2) : '0.00'}
+            </span>
           </div>
         </div>
 
         <!-- Planned Input -->
         <div class="bg-black/60 rounded-xl px-3 py-2 border border-zinc-800 focus-within:border-orange-500 transition-colors">
-          <label class="block text-[9px] font-bold uppercase tracking-wider text-orange-400 mb-0.5" for="planned-${day.id}">
-            Planned
-          </label>
+          <div class="text-[9px] font-bold uppercase tracking-wider text-orange-400 mb-0.5">
+            Planned Goal
+          </div>
           <div class="flex items-center font-mono">
             <span class="text-sm font-bold text-orange-400 mr-0.5">$</span>
             <input 
@@ -240,19 +198,9 @@ window.selectDay = function(dayId) {
 function attachInputListeners() {
   state.days.forEach(day => {
     const plannedInput = document.getElementById(`planned-${day.id}`);
-    const actualInput = document.getElementById(`actual-${day.id}`);
-
     if (plannedInput) {
       plannedInput.addEventListener('input', (e) => {
         day.planned = parseVal(e.target.value);
-        saveState();
-        updateCalculations();
-      });
-    }
-
-    if (actualInput) {
-      actualInput.addEventListener('input', (e) => {
-        day.actual = parseVal(e.target.value);
         saveState();
         updateCalculations();
       });
@@ -276,11 +224,11 @@ function updateCalculations() {
 
   const actualEarnings = state.days.reduce((sum, d) => sum + d.actual, 0);
   const estimatedEarnings = state.days.reduce((sum, d) => sum + d.planned, 0);
-  
-  // Current Paycheck Needed (based on actual earnings so far)
+
+  // Current Paycheck Needed: based on actual earnings so far
   const paycheckNeeded = Math.max(0, totalBill - actualEarnings);
 
-  // Goal Paycheck Needed (based on current planned goal)
+  // Goal Paycheck Needed: based on current planned goal
   const paycheckGoal = Math.max(0, totalBill - estimatedEarnings);
 
   // Dynamic Island
@@ -291,7 +239,7 @@ function updateCalculations() {
   const paycheckNeededDisplay = document.getElementById('paycheckNeededDisplay');
   if (paycheckNeededDisplay) paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
 
-  // Goal Paycheck Needed Display (updates dynamically with current goal!)
+  // Goal Paycheck Needed Display
   const paycheckGoalDisplay = document.getElementById('paycheckGoalDisplay');
   if (paycheckGoalDisplay) paycheckGoalDisplay.textContent = formatCurrency(paycheckGoal);
 
@@ -313,6 +261,12 @@ function updateCalculations() {
   state.days.forEach(day => {
     const diffEl = document.getElementById(`diff-${day.id}`);
     const barEl = document.getElementById(`bar-${day.id}`);
+    const actualDisplay = document.getElementById(`actual-display-${day.id}`);
+
+    if (actualDisplay) {
+      actualDisplay.textContent = day.actual > 0 ? day.actual.toFixed(2) : '0.00';
+    }
+
     const dayDiff = day.actual - day.planned;
     const dayPct = day.planned > 0 ? (day.actual / day.planned) * 100 : 100;
 
@@ -341,32 +295,30 @@ function updateCalculations() {
 }
 
 // -------------------------------------------------------------
-// LIVE DASH SESSION & ORDER TRACKING SYSTEM
+// YNAB-STYLE PROTECTED CALCULATOR MODAL ENGINE
 // -------------------------------------------------------------
 
-function startDash() {
+window.openCalcModal = function(dayId) {
   triggerHaptic();
-  dashSession.active = true;
-  dashSession.startTime = Date.now();
-  dashSession.targetDayId = getTodayId();
-  dashSession.orders = [];
-  saveDashSession();
+  calcDayId = dayId;
+  calcMode = 'add';
+  selectDay(dayId);
 
-  updateDashSessionUI();
-  startTimerLoop();
-  openDashSheet();
-  showToast('🚗 Dash session started!');
-}
+  const day = state.days.find(d => d.id === dayId);
+  if (!day) return;
 
-window.openDashSheet = function() {
-  triggerHaptic();
-  const modal = document.getElementById('dashModal');
-  const sheet = modal ? modal.querySelector('.dash-modal-sheet') : null;
-  const targetDaySelect = document.getElementById('sheetTargetDay');
+  const modal = document.getElementById('calcModal');
+  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
+  const dayTitle = document.getElementById('calcDayTitle');
+  const currentAmount = document.getElementById('calcCurrentAmount');
+  const input = document.getElementById('calcInputAmount');
 
-  if (targetDaySelect) {
-    targetDaySelect.value = dashSession.targetDayId || getTodayId();
-  }
+  if (dayTitle) dayTitle.textContent = day.name;
+  if (currentAmount) currentAmount.textContent = formatCurrency(day.actual);
+  if (input) input.value = '';
+
+  setCalcMode('add');
+  updateCalcPreview();
 
   if (modal && sheet) {
     modal.classList.remove('hidden');
@@ -378,15 +330,13 @@ window.openDashSheet = function() {
     });
   }
 
-  // Focus order input if on desktop/ready
-  const input = document.getElementById('orderAmountInput');
-  if (input) setTimeout(() => input.focus(), 300);
+  if (input) setTimeout(() => input.focus(), 250);
 };
 
-window.closeDashSheet = function() {
+window.closeCalcModal = function() {
   triggerHaptic();
-  const modal = document.getElementById('dashModal');
-  const sheet = modal ? modal.querySelector('.dash-modal-sheet') : null;
+  const modal = document.getElementById('calcModal');
+  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
 
   if (modal && sheet) {
     sheet.classList.remove('translate-y-0');
@@ -399,229 +349,160 @@ window.closeDashSheet = function() {
   }
 };
 
-function startTimerLoop() {
-  if (timerInterval) clearInterval(timerInterval);
+window.setCalcMode = function(mode) {
+  triggerHaptic();
+  calcMode = mode;
 
-  function tick() {
-    if (!dashSession.active || !dashSession.startTime) return;
-    const elapsedSeconds = Math.max(0, Math.floor((Date.now() - dashSession.startTime) / 1000));
-    const timeStr = formatDuration(elapsedSeconds);
+  const addBtn = document.getElementById('calcModeAdd');
+  const subBtn = document.getElementById('calcModeSubtract');
+  const operatorSymbol = document.getElementById('calcOperatorSymbol');
 
-    const hudTimer = document.getElementById('hudTimer');
-    const sheetTimer = document.getElementById('sheetTimer');
-    if (hudTimer) hudTimer.textContent = timeStr;
-    if (sheetTimer) sheetTimer.textContent = timeStr;
-
-    // Calculate hourly rate
-    const totalEarnings = dashSession.orders.reduce((sum, o) => sum + o.amount, 0);
-    const hourlyRate = elapsedSeconds > 60 ? (totalEarnings / (elapsedSeconds / 3600)) : 0;
-    const sheetHourlyRate = document.getElementById('sheetHourlyRate');
-    if (sheetHourlyRate) sheetHourlyRate.textContent = `${formatCurrency(hourlyRate)}/hr`;
-  }
-
-  tick();
-  timerInterval = setInterval(tick, 1000);
-}
-
-function updateDashSessionUI() {
-  const idleBar = document.getElementById('dashIdleBar');
-  const activeBar = document.getElementById('dashActiveBar');
-  const islandDot = document.getElementById('islandDot');
-
-  if (dashSession.active) {
-    if (idleBar) idleBar.classList.add('hidden');
-    if (activeBar) {
-      activeBar.classList.remove('hidden');
-      activeBar.classList.add('flex');
+  if (calcMode === 'add') {
+    if (addBtn) {
+      addBtn.className = 'tap-btn py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 bg-emerald-600 text-white shadow-md shadow-emerald-950/40';
     }
-    if (islandDot) {
-      islandDot.className = 'w-2 h-2 rounded-full bg-red-500 animate-pulse';
+    if (subBtn) {
+      subBtn.className = 'tap-btn py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white';
+    }
+    if (operatorSymbol) {
+      operatorSymbol.textContent = '+ $';
+      operatorSymbol.className = 'text-xl font-bold text-emerald-400 mr-2';
     }
   } else {
-    if (activeBar) {
-      activeBar.classList.add('hidden');
-      activeBar.classList.remove('flex');
+    if (subBtn) {
+      subBtn.className = 'tap-btn py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 bg-rose-600 text-white shadow-md shadow-rose-950/40';
     }
-    if (idleBar) idleBar.classList.remove('hidden');
-    if (islandDot) {
-      islandDot.className = 'w-2 h-2 rounded-full bg-blue-500/80';
+    if (addBtn) {
+      addBtn.className = 'tap-btn py-2 rounded-xl text-xs font-bold font-mono transition-all flex items-center justify-center gap-1.5 text-zinc-400 hover:text-white';
     }
-    if (timerInterval) clearInterval(timerInterval);
+    if (operatorSymbol) {
+      operatorSymbol.textContent = '− $';
+      operatorSymbol.className = 'text-xl font-bold text-rose-400 mr-2';
+    }
   }
 
-  // Calculate session totals
-  const totalEarnings = dashSession.orders.reduce((sum, o) => sum + o.amount, 0);
-  const count = dashSession.orders.length;
+  updateCalcPreview();
+};
 
-  const hudEarnings = document.getElementById('hudEarnings');
-  const hudOrderCount = document.getElementById('hudOrderCount');
-  const sheetSessionTotal = document.getElementById('sheetSessionTotal');
-  const sheetOrderCount = document.getElementById('sheetOrderCount');
-  const endDashBtnLabel = document.getElementById('endDashBtnLabel');
-
-  if (hudEarnings) hudEarnings.textContent = formatCurrency(totalEarnings);
-  if (hudOrderCount) hudOrderCount.textContent = count;
-  if (sheetSessionTotal) sheetSessionTotal.textContent = formatCurrency(totalEarnings);
-  if (sheetOrderCount) sheetOrderCount.textContent = `${count} order${count === 1 ? '' : 's'}`;
-  if (endDashBtnLabel) endDashBtnLabel.textContent = `End Dash & Transfer ${formatCurrency(totalEarnings)}`;
-
-  renderSessionOrdersList();
-}
-
-function renderSessionOrdersList() {
-  const container = document.getElementById('sessionOrdersList');
-  if (!container) return;
-
-  if (dashSession.orders.length === 0) {
-    container.innerHTML = `<p class="text-zinc-600 text-[11px] py-1">No orders logged yet in this session.</p>`;
-    return;
-  }
-
-  let html = '';
-  dashSession.orders.slice().reverse().forEach((order, revIdx) => {
-    const orderNum = dashSession.orders.length - revIdx;
-    html += `
-      <div class="flex items-center justify-between bg-black/50 px-3 py-1.5 rounded-xl border border-zinc-800/80">
-        <div class="flex items-center gap-2">
-          <span class="text-[10px] text-zinc-500 font-bold">#${orderNum}</span>
-          <span class="text-white font-bold text-xs">${formatCurrency(order.amount)}</span>
-          <span class="text-[10px] text-zinc-500">${order.timeStr || ''}</span>
-        </div>
-        <button onclick="removeOrder('${order.id}')" class="text-zinc-500 hover:text-red-400 px-1 text-xs" title="Delete">✕</button>
-      </div>
-    `;
-  });
-
-  container.innerHTML = html;
-}
-
-function addOrder(amount) {
-  if (isNaN(amount) || amount <= 0) return;
+window.calcQuickAdjust = function(amount) {
   triggerHaptic();
-
-  const now = new Date();
-  const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
-
-  dashSession.orders.push({
-    id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
-    amount: Math.round(amount * 100) / 100,
-    timeStr
-  });
-
-  saveDashSession();
-  updateDashSessionUI();
-
-  const input = document.getElementById('orderAmountInput');
+  const input = document.getElementById('calcInputAmount');
   if (input) {
-    input.value = '';
-    input.focus();
+    const currentVal = parseVal(input.value);
+    input.value = (currentVal + amount).toFixed(2);
+    updateCalcPreview();
+  }
+};
+
+function updateCalcPreview() {
+  const day = state.days.find(d => d.id === calcDayId);
+  if (!day) return;
+
+  const input = document.getElementById('calcInputAmount');
+  const adj = input ? parseVal(input.value) : 0;
+  const current = day.actual;
+
+  let newTotal = 0;
+  if (calcMode === 'add') {
+    newTotal = current + adj;
+  } else {
+    newTotal = Math.max(0, current - adj);
+  }
+  newTotal = Math.round(newTotal * 100) / 100;
+
+  const previewCurrent = document.getElementById('previewCurrent');
+  const previewOperator = document.getElementById('previewOperator');
+  const previewAdjustment = document.getElementById('previewAdjustment');
+  const previewResult = document.getElementById('previewResult');
+  const applyBtnText = document.getElementById('calcApplyBtnText');
+  const applyBtn = document.getElementById('calcApplyBtn');
+
+  if (previewCurrent) previewCurrent.textContent = formatCurrency(current);
+  if (previewOperator) {
+    previewOperator.textContent = calcMode === 'add' ? '+' : '−';
+    previewOperator.className = calcMode === 'add' ? 'text-emerald-400 font-bold' : 'text-rose-400 font-bold';
+  }
+  if (previewAdjustment) previewAdjustment.textContent = formatCurrency(adj);
+  if (previewResult) {
+    previewResult.textContent = formatCurrency(newTotal);
+    previewResult.className = `text-base font-extrabold ${newTotal >= current ? 'text-emerald-400' : 'text-amber-400'}`;
   }
 
-  showToast(`Added +${formatCurrency(amount)}`);
+  if (applyBtnText) {
+    if (adj === 0) {
+      applyBtnText.textContent = `Keep ${formatCurrency(current)}`;
+    } else if (calcMode === 'add') {
+      applyBtnText.textContent = `Add +${formatCurrency(adj)} (${formatCurrency(newTotal)})`;
+    } else {
+      applyBtnText.textContent = `Subtract −${formatCurrency(adj)} (${formatCurrency(newTotal)})`;
+    }
+  }
+
+  if (applyBtn) {
+    if (calcMode === 'add') {
+      applyBtn.className = 'tap-btn w-full py-3.5 px-4 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/40';
+    } else {
+      applyBtn.className = 'tap-btn w-full py-3.5 px-4 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-bold text-sm flex items-center justify-center gap-1.5 shadow-lg shadow-rose-950/40';
+    }
+  }
 }
 
-window.quickAddOrder = function(amount) {
-  addOrder(amount);
+window.applyCalcResult = function() {
+  triggerHaptic();
+  const day = state.days.find(d => d.id === calcDayId);
+  if (!day) return;
+
+  const input = document.getElementById('calcInputAmount');
+  const adj = input ? parseVal(input.value) : 0;
+  const current = day.actual;
+
+  let newTotal = current;
+  if (calcMode === 'add') {
+    newTotal = current + adj;
+  } else {
+    newTotal = Math.max(0, current - adj);
+  }
+  newTotal = Math.round(newTotal * 100) / 100;
+
+  day.actual = newTotal;
+  saveState();
+  updateCalculations();
+  closeCalcModal();
+
+  if (adj > 0) {
+    showToast(`${day.short}: ${calcMode === 'add' ? '+' : '−'}${formatCurrency(adj)} (Now ${formatCurrency(newTotal)})`);
+  }
 };
 
-window.removeOrder = function(orderId) {
+window.resetCurrentDayEarnings = function() {
   triggerHaptic();
-  dashSession.orders = dashSession.orders.filter(o => o.id !== orderId);
-  saveDashSession();
-  updateDashSessionUI();
-};
+  const day = state.days.find(d => d.id === calcDayId);
+  if (!day) return;
 
-function endDashAndTransfer() {
-  triggerHaptic();
-  const sessionTotal = dashSession.orders.reduce((sum, o) => sum + o.amount, 0);
-  const targetSelect = document.getElementById('sheetTargetDay');
-  const targetDayId = targetSelect ? targetSelect.value : (dashSession.targetDayId || getTodayId());
-
-  const targetDay = state.days.find(d => d.id === targetDayId);
-  if (!targetDay) return;
-
-  const confirmMsg = sessionTotal > 0 
-    ? `End Dash and transfer ${formatCurrency(sessionTotal)} to ${targetDay.name}'s actual earnings?`
-    : `End Dash session with $0.00?`;
-
-  if (confirm(confirmMsg)) {
-    // Transfer session earnings to the day's actual
-    targetDay.actual = Math.round((targetDay.actual + sessionTotal) * 100) / 100;
-    
-    // Update day input in DOM if rendered
-    const dayActualInput = document.getElementById(`actual-${targetDay.id}`);
-    if (dayActualInput) dayActualInput.value = targetDay.actual.toFixed(2);
-
+  if (confirm(`Reset ${day.name}'s actual earnings to $0.00?`)) {
+    day.actual = 0;
     saveState();
     updateCalculations();
-
-    // Reset session
-    dashSession.active = false;
-    dashSession.startTime = null;
-    dashSession.orders = [];
-    saveDashSession();
-
-    closeDashSheet();
-    updateDashSessionUI();
-
-    showToast(`🎉 Transferred ${formatCurrency(sessionTotal)} to ${targetDay.short}!`);
+    closeCalcModal();
+    showToast(`${day.short} reset to $0.00`);
   }
-}
-
-function discardDash() {
-  triggerHaptic();
-  if (confirm('Discard this dash session without saving to earnings?')) {
-    dashSession.active = false;
-    dashSession.startTime = null;
-    dashSession.orders = [];
-    saveDashSession();
-
-    closeDashSheet();
-    updateDashSessionUI();
-    showToast('Session discarded');
-  }
-}
+};
 
 // -------------------------------------------------------------
 // TOOLBAR ACTIONS & SETUP
 // -------------------------------------------------------------
 
 function setupToolbarActions() {
-  // Start Dash Button
-  const startDashBtn = document.getElementById('startDashBtn');
-  if (startDashBtn) {
-    startDashBtn.addEventListener('click', startDash);
-  }
-
-  // Add Order Button & Enter Key
-  const addOrderBtn = document.getElementById('addOrderBtn');
-  const orderAmountInput = document.getElementById('orderAmountInput');
-
-  if (addOrderBtn && orderAmountInput) {
-    addOrderBtn.addEventListener('click', () => {
-      const val = parseVal(orderAmountInput.value);
-      addOrder(val);
-    });
-
-    orderAmountInput.addEventListener('keydown', (e) => {
+  // Input live listener for calculator amount input
+  const calcInput = document.getElementById('calcInputAmount');
+  if (calcInput) {
+    calcInput.addEventListener('input', updateCalcPreview);
+    calcInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
-        const val = parseVal(orderAmountInput.value);
-        addOrder(val);
+        applyCalcResult();
       }
     });
-  }
-
-  // End Dash Button
-  const endDashBtn = document.getElementById('endDashBtn');
-  if (endDashBtn) {
-    endDashBtn.addEventListener('click', endDashAndTransfer);
-  }
-
-  // Discard Dash Button
-  const discardDashBtn = document.getElementById('discardDashBtn');
-  if (discardDashBtn) {
-    discardDashBtn.addEventListener('click', discardDash);
   }
 
   // Split Goal Evenly
@@ -651,15 +532,13 @@ function setupToolbarActions() {
   if (resetWeekBtn) {
     resetWeekBtn.addEventListener('click', () => {
       triggerHaptic();
-      if (confirm('Clear actual earnings for the week? Planned goals will stay.')) {
+      if (confirm('Clear actual earnings for the entire week? Planned goals will stay.')) {
         state.days.forEach(day => {
           day.actual = 0;
-          const input = document.getElementById(`actual-${day.id}`);
-          if (input) input.value = '';
         });
         saveState();
         updateCalculations();
-        showToast('Actuals cleared');
+        showToast('All week actuals cleared');
       }
     });
   }
@@ -710,15 +589,6 @@ function setupToolbarActions() {
     const now = new Date();
     headerDate.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   }
-
-  // Target Day change listener
-  const sheetTargetDay = document.getElementById('sheetTargetDay');
-  if (sheetTargetDay) {
-    sheetTargetDay.addEventListener('change', (e) => {
-      dashSession.targetDayId = e.target.value;
-      saveDashSession();
-    });
-  }
 }
 
 let toastTimeout;
@@ -743,21 +613,15 @@ document.addEventListener('DOMContentLoaded', () => {
   setupToolbarActions();
   updateCalculations();
 
-  // Ensure PC mousewheel scrolls the inner content naturally
+  // PC mousewheel forward
   const deviceFrame = document.getElementById('deviceFrame');
   const scrollContent = document.getElementById('scrollContent');
   if (deviceFrame && scrollContent) {
     deviceFrame.addEventListener('wheel', (e) => {
-      const modal = document.getElementById('dashModal');
+      const modal = document.getElementById('calcModal');
       if (modal && modal.classList.contains('hidden')) {
         scrollContent.scrollTop += e.deltaY;
       }
     }, { passive: true });
-  }
-
-  // Resume active dash session if page was reloaded during a dash
-  if (dashSession.active) {
-    updateDashSessionUI();
-    startTimerLoop();
   }
 });

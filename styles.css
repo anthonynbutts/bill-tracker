@@ -1,4 +1,4 @@
-/* Complete Redesign + Dash Session System for School Bill Tracker (iPhone 15) */
+/* School Bill Tracker - YNAB-style Calculator Design */
 
 :root {
   --sat: env(safe-area-inset-top, 0px);
@@ -24,7 +24,7 @@ body {
   font-family: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
 }
 
-/* Number input resets: Remove default browser arrows */
+/* Number input resets */
 input[type="number"] {
   font-size: 16px !important;
   -moz-appearance: textfield;
@@ -37,7 +37,19 @@ input[type="number"]::-webkit-inner-spin-button {
   margin: 0;
 }
 
-/* iPhone 15 Container */
+/* PC & Responsive Scrolling */
+html, body {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#scrollContent {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+/* iPhone 15 Chassis */
 @media (max-width: 639px) {
   #deviceFrame {
     max-width: 100% !important;
@@ -51,6 +63,13 @@ input[type="number"]::-webkit-inner-spin-button {
   }
 }
 
+@media (min-width: 640px) {
+  #deviceFrame {
+    height: 852px;
+    max-height: calc(100vh - 3.5rem) !important;
+  }
+}
+
 #deviceFrame.expanded-frame {
   max-width: 580px !important;
   min-height: auto !important;
@@ -61,32 +80,17 @@ input[type="number"]::-webkit-inner-spin-button {
   display: none !important;
 }
 
-/* PC & Responsive Desktop Scrolling */
-html, body {
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-#scrollContent {
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
-@media (min-width: 640px) {
-  #deviceFrame {
-    height: 852px;
-    max-height: calc(100vh - 4rem) !important;
-  }
-}
-
-/* Card aesthetics: Frosted dark surface with subtle depth */
+/* Frosted glass card */
 .glass-card {
   background: rgba(24, 24, 27, 0.75);
   backdrop-filter: blur(24px);
   -webkit-backdrop-filter: blur(24px);
   border: 1px solid rgba(255, 255, 255, 0.08);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.glass-card:hover {
+  border-color: rgba(255, 255, 255, 0.14);
 }
 
 .glass-card.is-active {
@@ -97,7 +101,7 @@ html, body {
 
 /* Smooth button tap states */
 .tap-btn {
-  transition: transform 0.1s ease, background-color 0.15s ease, opacity 0.15s ease;
+  transition: transform 0.1s ease, background-color 0.15s ease, opacity 0.15s ease, border-color 0.15s ease;
   touch-action: manipulation;
 }
 
@@ -105,7 +109,7 @@ html, body {
   transform: scale(0.96);
 }
 
-/* Subtle custom scrollbar */
+/* Subtle scrollbar */
 .smooth-scroll::-webkit-scrollbar {
   width: 4px;
 }
@@ -117,43 +121,7 @@ html, body {
   border-radius: 99px;
 }
 
-/* Modal Bottom Sheet Animations */
-.dash-modal-backdrop {
-  transition: opacity 0.25s ease;
+/* YNAB Modal Sheet Animation */
+.ynab-modal-sheet {
+  transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
-
-.dash-modal-sheet {
-  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-/* Floating Bottom Bar with Dark-Blurred Backdrop */
-.bottom-floating-bar {
-  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(10, 10, 12, 0.88) 60%, rgba(10, 10, 12, 0.4) 90%, transparent 100%);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border-top: 1px solid rgba(255, 255, 255, 0.06);
-  padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
-}
-
-/* Dark-Blurred Glass Dash Button */
-.dash-glass-btn {
-  background: rgba(24, 24, 27, 0.82);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.12);
-  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
-}
-
-.dash-glass-btn:hover {
-  background: rgba(39, 39, 42, 0.92);
-  border-color: rgba(255, 255, 255, 0.24);
-  box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.16);
-}
-
-.dash-glass-btn:active {
-  transform: scale(0.96);
-  background: rgba(20, 20, 22, 0.95);
-  border-color: rgba(255, 255, 255, 0.18);
-}
-
