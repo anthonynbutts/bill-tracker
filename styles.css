@@ -13,7 +13,7 @@
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", system-ui, -apple-system-body, sans-serif;
   letter-spacing: -0.012em;
-  background-color: #09090b;
+  background-color: #000000;
   color: #ffffff;
   margin: 0;
   padding: 0;
@@ -151,26 +151,27 @@ input, textarea {
 
 /* Modal sheet padding on iPhone to clear the swipe-up Home Indicator */
 .ynab-modal-sheet {
+  background: #000000 !important;
+  border-top: 1px solid #27272a !important;
   padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem)) !important;
 }
 
-/* Frosted glass card */
+/* OLED card */
 .glass-card {
-  background: rgba(24, 24, 27, 0.75);
-  backdrop-filter: blur(24px);
-  -webkit-backdrop-filter: blur(24px);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: #000000;
+  border: 1px solid #27272a;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.95);
   transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
 .glass-card:hover {
-  border-color: rgba(255, 255, 255, 0.14);
+  border-color: #3f3f46;
 }
 
 .glass-card.is-active {
-  background: rgba(28, 28, 32, 0.95);
-  border-color: rgba(52, 211, 153, 0.35);
-  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.5), 0 0 15px -3px rgba(52, 211, 153, 0.1);
+  background: #000000;
+  border-color: rgba(52, 211, 153, 0.45);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.95), 0 0 15px -3px rgba(52, 211, 153, 0.18);
 }
 
 /* Smooth button tap states */
@@ -208,11 +209,11 @@ input, textarea {
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Today Smart Highlight */
+/* Today Smart Highlight - OLED Pure Black with Emerald Rim */
 .today-card {
-  background: linear-gradient(135deg, rgba(16, 185, 129, 0.12) 0%, rgba(24, 24, 27, 0.95) 60%);
-  border: 1px solid rgba(52, 211, 153, 0.4);
-  box-shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.6), 0 0 16px -2px rgba(16, 185, 129, 0.15);
+  background: #000000;
+  border: 1px solid rgba(52, 211, 153, 0.45);
+  box-shadow: 0 8px 28px -6px rgba(0, 0, 0, 0.95), 0 0 16px -2px rgba(16, 185, 129, 0.2);
 }
 
 /* Segmented Bar Segments */
@@ -221,10 +222,10 @@ input, textarea {
 }
 
 .seg-paycheck {
-  background: linear-gradient(90deg, #3f3f46 0%, #27272a 100%);
+  background: #27272a;
 }
 
-/* Tactile Calculator Key */
+/* Tactile Calculator Key - Apple OLED Keypad Aesthetic */
 .calc-key {
   touch-action: manipulation;
   transition: transform 0.08s ease, background-color 0.12s ease, filter 0.12s ease;
@@ -233,7 +234,7 @@ input, textarea {
 
 .calc-key:active {
   transform: scale(0.93);
-  filter: brightness(1.25);
+  filter: brightness(1.35);
 }
 
 /* Smart Goal Input: Ghost placeholder */

@@ -48,10 +48,10 @@
   </script>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-zinc-950 text-zinc-100 min-h-screen flex items-center justify-center p-0 sm:p-4 selection:bg-emerald-500 selection:text-black">
+<body class="bg-black text-zinc-100 min-h-screen flex items-center justify-center p-0 sm:p-4 selection:bg-emerald-500 selection:text-black">
 
   <!-- iPhone 15 Phone Chassis (Strictly Phone Only) -->
-  <main id="deviceFrame" class="w-full sm:w-[393px] bg-black text-zinc-100 relative min-h-screen sm:min-h-0 sm:h-[852px] sm:rounded-[52px] sm:border-[9px] sm:border-zinc-800 sm:ring-1 sm:ring-zinc-700/60 sm:shadow-[0_25px_70px_rgba(0,0,0,0.95)] flex flex-col overflow-hidden select-none">
+  <main id="deviceFrame" class="w-full sm:w-[393px] bg-black text-zinc-100 relative min-h-screen sm:min-h-0 sm:h-[852px] sm:rounded-[52px] sm:border-[9px] sm:border-zinc-800 sm:ring-1 sm:ring-zinc-800/80 sm:shadow-[0_25px_70px_rgba(0,0,0,0.95)] flex flex-col overflow-hidden select-none">
     
     <!-- OLED Launch Screen (Splash) -->
     <div id="launchScreen" class="absolute inset-0 z-[100] bg-black flex items-center justify-center select-none cursor-pointer" title="Tap to skip">
@@ -63,7 +63,7 @@
     </div>
 
     <!-- Dynamic Island (Mockup) -->
-    <div id="dynamicIslandContainer" class="hidden sm:flex items-center justify-center pt-2.5 pb-1 select-none pointer-events-none sticky top-0 bg-black/80 backdrop-blur-md z-40">
+    <div id="dynamicIslandContainer" class="hidden sm:flex items-center justify-center pt-2.5 pb-1 select-none pointer-events-none sticky top-0 bg-black/90 backdrop-blur-md z-40">
       <div id="dynamicIsland" class="h-7 w-28 bg-black rounded-full flex items-center justify-between px-3 text-white border border-zinc-800 transition-transform">
         <span class="text-[10px] font-mono font-medium text-emerald-400" id="islandPaycheck">$215.00</span>
         <div class="w-2 h-2 rounded-full bg-blue-500/80"></div>
@@ -83,12 +83,12 @@
         </div>
 
         <div class="flex items-center gap-1.5">
-          <button id="openGoalsBtn" onclick="openGoalsModal()" title="Customize Daily Goals" class="tap-btn h-8 px-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center gap-1 text-xs text-zinc-300 hover:text-white">
+          <button id="openGoalsBtn" onclick="openGoalsModal()" title="Customize Daily Goals" class="tap-btn h-8 px-2.5 rounded-xl bg-black hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 flex items-center gap-1 text-xs text-zinc-300 hover:text-white">
             <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
             <span>Goals</span>
           </button>
           
-          <button id="resetWeekBtn" title="Reset Actuals" class="tap-btn w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-red-400">
+          <button id="resetWeekBtn" title="Reset Actuals" class="tap-btn w-8 h-8 rounded-xl bg-black hover:bg-zinc-900 border border-zinc-800 hover:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-red-400">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
           </button>
         </div>
@@ -100,14 +100,14 @@
         <!-- Total Bill Target Header (Plain text) -->
         <div class="flex items-center justify-between text-[11px] font-mono mb-2">
           <span class="text-zinc-400 uppercase tracking-wider text-[10px] font-bold">Total Bill Target</span>
-          <div class="flex items-center gap-1 bg-black/60 px-2.5 py-0.5 rounded-lg border border-zinc-800/80">
+          <div class="flex items-center gap-1 bg-black px-2.5 py-0.5 rounded-lg border border-zinc-800">
             <span class="text-zinc-500 font-bold">$</span>
             <span class="text-xs font-bold text-zinc-200" id="totalBillGoalDisplay">215.00</span>
           </div>
         </div>
 
         <!-- Primary Hero Focal Stat: Current Paycheck Needed -->
-        <div class="bg-black/70 rounded-2xl p-3 text-center mb-3 border border-zinc-800/90 shadow-inner">
+        <div class="bg-black rounded-2xl p-3 text-center mb-3 border border-zinc-800 shadow-inner">
           <span class="text-[9px] uppercase font-bold tracking-widest text-zinc-400 block mb-0.5">
             Current Paycheck Needed
           </span>
@@ -116,7 +116,7 @@
           </div>
           
           <!-- Contextual Goal Badge -->
-          <div class="inline-flex items-center gap-1 mt-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400">
+          <div class="inline-flex items-center gap-1 mt-1.5 px-2.5 py-0.5 rounded-full bg-black border border-zinc-800 text-[11px] font-mono text-zinc-400">
             <span id="paycheckGoalDisplay" class="text-emerald-400 font-bold">$53.75</span>
             <span>goal</span>
           </div>
@@ -124,14 +124,14 @@
 
         <!-- 2-Tone Segmented Progress Bar -->
         <div class="mb-3">
-          <div class="w-full h-2.5 rounded-full bg-zinc-900 border border-zinc-800/80 overflow-hidden flex p-0.5">
+          <div class="w-full h-2.5 rounded-full bg-black border border-zinc-800 overflow-hidden flex p-0.5">
             <div id="segDashBar" class="h-full rounded-full seg-dash transition-all duration-300" style="width: 0%"></div>
             <div id="segPaycheckBar" class="h-full rounded-full seg-paycheck transition-all duration-300 ml-0.5" style="width: 100%"></div>
           </div>
         </div>
 
         <!-- DoorDash Earnings Summary -->
-        <div class="bg-black/50 rounded-2xl p-3 border border-zinc-800/70 pt-2.5 border-t border-zinc-800/80 flex items-center justify-between">
+        <div class="bg-black rounded-2xl p-3 border border-zinc-800 flex items-center justify-between">
           <div>
             <div class="flex items-center gap-1.5 text-[10px] uppercase font-bold text-emerald-400 mb-0.5">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
@@ -166,7 +166,7 @@
 
         <!-- Toggle Button for Other Days -->
         <div class="flex justify-center my-2.5">
-          <button type="button" id="toggleOtherDaysBtn" onclick="toggleOtherDays()" class="tap-btn px-4 py-2 rounded-2xl bg-zinc-900/90 hover:bg-zinc-800 border border-zinc-800 text-xs font-mono text-zinc-300 hover:text-white flex items-center gap-2 shadow-sm transition-all">
+          <button type="button" id="toggleOtherDaysBtn" onclick="toggleOtherDays()" class="tap-btn px-4 py-2 rounded-2xl bg-black hover:bg-zinc-900 border border-zinc-800 text-xs font-mono text-zinc-300 hover:text-white flex items-center gap-2 shadow-sm transition-all">
             <span id="toggleOtherDaysIcon" class="text-xs text-emerald-400">▾</span>
             <span id="toggleOtherDaysText">View Full Week (5 Other Days)</span>
           </button>
@@ -190,13 +190,13 @@
     <!-- YNAB-STYLE CALCULATOR MODAL SHEET (LOCKED INSIDE PHONE FRAME) -->
     <div id="calcModal" class="absolute inset-0 z-50 hidden opacity-0 transition-opacity duration-200 flex flex-col justify-end pointer-events-none">
       <!-- Backdrop -->
-      <div id="calcModalBackdrop" class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" onclick="closeCalcModal()"></div>
+      <div id="calcModalBackdrop" class="absolute inset-0 bg-black/85 backdrop-blur-md cursor-pointer" onclick="closeCalcModal()"></div>
       
       <!-- Sheet Content -->
-      <div class="ynab-modal-sheet relative z-10 bg-zinc-900 border-t border-zinc-700/80 rounded-t-[32px] p-4 pb-6 max-h-[92%] overflow-y-auto no-scrollbar flex flex-col transform translate-y-full transition-transform duration-200">
+      <div class="ynab-modal-sheet relative z-10 bg-black border-t border-zinc-800 rounded-t-[32px] p-4 pb-6 max-h-[92%] overflow-y-auto no-scrollbar flex flex-col transform translate-y-full transition-transform duration-200">
         
         <!-- Sheet Handle -->
-        <div class="w-12 h-1 bg-zinc-700 rounded-full mx-auto mb-3 cursor-pointer" onclick="closeCalcModal()"></div>
+        <div class="w-12 h-1 bg-zinc-800 rounded-full mx-auto mb-3 cursor-pointer" onclick="closeCalcModal()"></div>
 
         <!-- Header Row -->
         <div class="flex items-center justify-between mb-2.5">
@@ -206,19 +206,19 @@
             </h3>
             <p class="text-[10px] text-zinc-400 font-mono">Use calculator to adjust your saved earnings</p>
           </div>
-          <button onclick="closeCalcModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white" title="Close">
+          <button onclick="closeCalcModal()" class="w-8 h-8 rounded-full bg-black border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white" title="Close">
             ✕
           </button>
         </div>
 
         <!-- Calculator Display Screen -->
-        <div class="bg-black/80 rounded-2xl p-3 border border-zinc-800 mb-2.5 shadow-inner font-mono">
+        <div class="bg-black rounded-2xl p-3 border border-zinc-800 mb-2.5 shadow-inner font-mono">
           <div class="flex items-center justify-between text-[10px] text-zinc-400 mb-1">
             <span class="flex items-center gap-1.5">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
               <span>BASE RECORDED: <strong id="calcCurrentAmount" class="text-zinc-200 font-bold">$0.00</strong></span>
             </span>
-            <span class="px-1.5 py-0.5 rounded bg-zinc-800/80 text-[9px] text-zinc-400 border border-zinc-700/50 uppercase tracking-wider font-semibold">Locked</span>
+            <span class="px-1.5 py-0.5 rounded bg-black text-[9px] text-zinc-400 border border-zinc-800 uppercase tracking-wider font-semibold">Locked</span>
           </div>
 
           <!-- Active Expression Display -->
@@ -227,7 +227,7 @@
           </div>
 
           <!-- Real-Time Total Result Display -->
-          <div class="flex items-baseline justify-between mt-1 pt-1.5 border-t border-zinc-800/80 font-mono">
+          <div class="flex items-baseline justify-between mt-1 pt-1.5 border-t border-zinc-800 font-mono">
             <span class="text-[10px] text-zinc-500 uppercase tracking-wider font-bold">New Total</span>
             <div class="text-2xl font-black text-emerald-400 tracking-tight" id="calcResultPreview">
               $0.00
@@ -237,40 +237,40 @@
 
         <!-- Quick Presets Row -->
         <div class="grid grid-cols-5 gap-1.5 mb-2.5 font-mono text-xs">
-          <button type="button" class="tap-btn py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="calcAppendPreset(5)">+5</button>
-          <button type="button" class="tap-btn py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="calcAppendPreset(10)">+10</button>
-          <button type="button" class="tap-btn py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="calcAppendPreset(15)">+15</button>
-          <button type="button" class="tap-btn py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="calcAppendPreset(20)">+20</button>
-          <button type="button" class="tap-btn py-1.5 rounded-xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="calcAppendPreset(25)">+25</button>
+          <button type="button" class="tap-btn py-1.5 rounded-xl bg-black hover:bg-zinc-900 text-zinc-200 border border-zinc-800 font-bold text-center" onclick="calcAppendPreset(5)">+5</button>
+          <button type="button" class="tap-btn py-1.5 rounded-xl bg-black hover:bg-zinc-900 text-zinc-200 border border-zinc-800 font-bold text-center" onclick="calcAppendPreset(10)">+10</button>
+          <button type="button" class="tap-btn py-1.5 rounded-xl bg-black hover:bg-zinc-900 text-zinc-200 border border-zinc-800 font-bold text-center" onclick="calcAppendPreset(15)">+15</button>
+          <button type="button" class="tap-btn py-1.5 rounded-xl bg-black hover:bg-zinc-900 text-zinc-200 border border-zinc-800 font-bold text-center" onclick="calcAppendPreset(20)">+20</button>
+          <button type="button" class="tap-btn py-1.5 rounded-xl bg-black hover:bg-zinc-900 text-zinc-200 border border-zinc-800 font-bold text-center" onclick="calcAppendPreset(25)">+25</button>
         </div>
 
         <!-- Calculator Keypad (4 columns x 4 rows) -->
         <div class="grid grid-cols-4 gap-1.5 mb-2.5">
           <!-- Row 1 -->
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('7')">7</button>
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('8')">8</button>
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('9')">9</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-800" onclick="calcInputKey('7')">7</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-800" onclick="calcInputKey('8')">8</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-800" onclick="calcInputKey('9')">9</button>
           <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-black text-xl flex items-center justify-center border border-emerald-500/40 shadow-sm shadow-emerald-950/40" onclick="calcInputKey('+')">+</button>
 
           <!-- Row 2 -->
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('4')">4</button>
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('5')">5</button>
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('6')">6</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-800" onclick="calcInputKey('4')">4</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-800" onclick="calcInputKey('5')">5</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-800" onclick="calcInputKey('6')">6</button>
           <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-rose-600 hover:bg-rose-500 text-white font-mono font-black text-xl flex items-center justify-center border border-rose-500/40 shadow-sm shadow-rose-950/40" onclick="calcInputKey('−')">−</button>
 
           <!-- Row 3 -->
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('1')">1</button>
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('2')">2</button>
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('3')">3</button>
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 font-mono font-bold flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('BACKSPACE')" title="Backspace">
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-800" onclick="calcInputKey('1')">1</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-800" onclick="calcInputKey('2')">2</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-800" onclick="calcInputKey('3')">3</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-zinc-300 font-mono font-bold flex items-center justify-center border border-zinc-800" onclick="calcInputKey('BACKSPACE')" title="Backspace">
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2M3 12l6.414-6.414a2 2 0 011.414-.586H19a2 2 0 012 2v10a2 2 0 01-2 2h-8.172a2 2 0 01-1.414-.586L3 12z"></path></svg>
           </button>
 
           <!-- Row 4 -->
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800/90 hover:bg-zinc-700 text-amber-400 font-mono font-bold text-sm flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('C')">C</button>
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('0')">0</button>
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-white font-mono font-black text-lg flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('.')">.</button>
-          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-mono font-bold text-xs flex items-center justify-center border border-zinc-700/30" onclick="calcInputKey('00')">00</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-amber-400 font-mono font-bold text-sm flex items-center justify-center border border-zinc-800" onclick="calcInputKey('C')">C</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-white font-mono font-bold text-base flex items-center justify-center border border-zinc-800" onclick="calcInputKey('0')">0</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-white font-mono font-black text-lg flex items-center justify-center border border-zinc-800" onclick="calcInputKey('.')">.</button>
+          <button type="button" class="calc-key tap-btn h-11 rounded-2xl bg-[#0d0d10] hover:bg-[#18181c] text-zinc-300 font-mono font-bold text-xs flex items-center justify-center border border-zinc-800" onclick="calcInputKey('00')">00</button>
         </div>
 
         <!-- Actions -->
@@ -290,12 +290,12 @@
     <!-- GOALS CUSTOMIZATION MODAL (LOCKED INSIDE PHONE FRAME) -->
     <div id="goalsModal" class="absolute inset-0 z-50 hidden opacity-0 transition-opacity duration-200 flex flex-col justify-end pointer-events-none">
       <!-- Backdrop -->
-      <div class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" onclick="closeGoalsModal()"></div>
+      <div class="absolute inset-0 bg-black/85 backdrop-blur-md cursor-pointer" onclick="closeGoalsModal()"></div>
       
       <!-- Sheet Content -->
-      <div class="ynab-modal-sheet relative z-10 bg-zinc-900 border-t border-zinc-700/80 rounded-t-[32px] p-4 pb-6 max-h-[92%] overflow-y-auto no-scrollbar flex flex-col transform translate-y-full transition-transform duration-200">
+      <div class="ynab-modal-sheet relative z-10 bg-black border-t border-zinc-800 rounded-t-[32px] p-4 pb-6 max-h-[92%] overflow-y-auto no-scrollbar flex flex-col transform translate-y-full transition-transform duration-200">
         <!-- Handle -->
-        <div class="w-12 h-1 bg-zinc-700 rounded-full mx-auto mb-3 cursor-pointer" onclick="closeGoalsModal()"></div>
+        <div class="w-12 h-1 bg-zinc-800 rounded-full mx-auto mb-3 cursor-pointer" onclick="closeGoalsModal()"></div>
 
         <!-- Header -->
         <div class="flex items-center justify-between mb-3">
@@ -303,18 +303,18 @@
             <h3 class="font-bold text-base text-white">Goals & Targets</h3>
             <p class="text-[10px] text-zinc-400 font-mono">Customize total bill & daily goals</p>
           </div>
-          <button onclick="closeGoalsModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white" title="Close">
+          <button onclick="closeGoalsModal()" class="w-8 h-8 rounded-full bg-black border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white" title="Close">
             ✕
           </button>
         </div>
 
         <!-- Total Bill Target Card (Editable in Goals Section) -->
-        <div class="bg-black/60 rounded-2xl p-3 border border-zinc-800 mb-2.5 flex items-center justify-between font-mono">
+        <div class="bg-black rounded-2xl p-3 border border-zinc-800 mb-2.5 flex items-center justify-between font-mono">
           <div>
             <span class="text-[9px] uppercase font-bold text-zinc-400 block mb-0.5">Total Bill Target</span>
             <span class="text-[10px] text-zinc-500">Weekly tuition / school bill</span>
           </div>
-          <div class="flex items-center bg-zinc-900 rounded-lg px-2.5 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
+          <div class="flex items-center bg-black rounded-lg px-2.5 py-1 border border-zinc-800 focus-within:border-emerald-500">
             <span class="text-xs font-bold text-emerald-400 mr-1">$</span>
             <input 
               type="number" 
@@ -330,14 +330,14 @@
         </div>
 
         <!-- Quick Split Evenly Action Banner -->
-        <div class="bg-black/60 rounded-2xl p-3 border border-zinc-800 mb-3 flex items-center justify-between">
+        <div class="bg-black rounded-2xl p-3 border border-zinc-800 mb-3 flex items-center justify-between">
           <div>
             <span class="text-[9px] uppercase font-bold text-zinc-500 block">Weekly Planned Total</span>
             <div class="text-xl font-black font-mono text-emerald-400" id="goalsModalTotal">
               $161.25
             </div>
           </div>
-          <button type="button" class="tap-btn px-3 py-1.5 rounded-xl bg-emerald-600/20 hover:bg-emerald-600/30 border border-emerald-500/40 text-emerald-400 font-mono font-bold text-xs flex items-center gap-1" onclick="splitGoalsEvenlyModal()">
+          <button type="button" class="tap-btn px-3 py-1.5 rounded-xl bg-black hover:bg-emerald-950/30 border border-emerald-500/40 text-emerald-400 font-mono font-bold text-xs flex items-center gap-1" onclick="splitGoalsEvenlyModal()">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12h16M12 4v16"/></svg>
             <span>Split Evenly</span>
           </button>
@@ -356,12 +356,12 @@
     </div>
 
     <!-- Toast (Anchored Inside Phone) -->
-    <div id="toast" class="absolute top-4 left-1/2 -translate-x-1/2 z-50 transform -translate-y-16 opacity-0 pointer-events-none transition-all duration-300 bg-zinc-900/95 border border-zinc-700 text-white px-3.5 py-1.5 rounded-full text-xs font-medium shadow-xl">
+    <div id="toast" class="absolute top-4 left-1/2 -translate-x-1/2 z-50 transform -translate-y-16 opacity-0 pointer-events-none transition-all duration-300 bg-black/95 border border-zinc-800 text-white px-3.5 py-1.5 rounded-full text-xs font-medium shadow-2xl">
       <span id="toastMessage">Saved</span>
     </div>
 
     <!-- iPhone 15 Home Indicator Bar (Mockup) -->
-    <div id="homeIndicatorMockup" class="hidden sm:block absolute bottom-1 left-1/2 -translate-x-1/2 w-28 h-1 bg-zinc-700/60 rounded-full pointer-events-none z-40"></div>
+    <div id="homeIndicatorMockup" class="hidden sm:block absolute bottom-1 left-1/2 -translate-x-1/2 w-28 h-1 bg-zinc-800 rounded-full pointer-events-none z-40"></div>
 
   </main>
 
