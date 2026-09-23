@@ -1,12 +1,12 @@
 // Service Worker for School Bill Tracker PWA
-const CACHE_NAME = 'school-bill-tracker-v3';
+const CACHE_NAME = 'school-bill-tracker-v4';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './styles.css',
-  './styles.css?v=3',
+  './styles.css?v=4',
   './app.js',
-  './app.js?v=3',
+  './app.js?v=4',
   './manifest.json',
   './apple-touch-icon.png',
   './icon-192.png',

@@ -196,65 +196,65 @@ function renderDays() {
 
     if (isToday) {
       // TODAY: Smart Prominent Card (Always Visible on Launch)
-      card.className = 'today-card rounded-2xl p-3.5 transition-all select-none';
+      card.className = 'today-card rounded-2xl p-3 transition-all select-none';
       card.innerHTML = `
         <!-- Top: Day Name + Today Badge -->
-        <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-white text-base">${day.name}</span>
-            <span class="text-[9px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 rounded-full uppercase tracking-wider">Today</span>
+        <div class="flex items-center justify-between mb-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="font-bold text-white text-sm">${day.name}</span>
+            <span class="text-[8.5px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Today</span>
           </div>
-          <span class="text-xs font-mono ${diffClass}">
+          <span class="text-[11px] font-mono ${diffClass}">
             ${diffText}
           </span>
         </div>
 
         <!-- Middle: Action Banner -->
-        <div class="flex items-center justify-between bg-black/60 rounded-xl p-2.5 border border-emerald-500/30 mb-2.5 cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="openCalcModal('${day.id}')" title="Tap to enter earnings">
+        <div class="flex items-center justify-between bg-black/60 rounded-xl p-2 border border-emerald-500/30 mb-2 cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="openCalcModal('${day.id}')" title="Tap to enter earnings">
           <div>
-            <span class="text-[9px] uppercase font-bold text-zinc-400 block mb-0.5">Today's Earnings</span>
+            <span class="text-[8.5px] uppercase font-bold text-zinc-400 block mb-0.5">Today's Earnings</span>
             <div class="flex items-baseline gap-1 font-mono">
-              <span class="text-2xl font-black text-emerald-400">$${day.actual.toFixed(2)}</span>
-              <span class="text-xs text-zinc-500">/ $${day.planned.toFixed(2)} goal</span>
+              <span class="text-xl font-bold text-emerald-400">$${day.actual.toFixed(2)}</span>
+              <span class="text-[11px] text-zinc-500">/ $${day.planned.toFixed(2)} goal</span>
             </div>
           </div>
           
-          <button type="button" class="tap-btn px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-950/40" onclick="event.stopPropagation(); openCalcModal('${day.id}')">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          <button type="button" class="tap-btn px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs flex items-center gap-1 shadow-md shadow-emerald-950/40" onclick="event.stopPropagation(); openCalcModal('${day.id}')">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
             <span>Log Dash</span>
           </button>
         </div>
 
         <!-- Mini Progress Bar -->
-        <div class="w-full bg-zinc-800/90 rounded-full h-1.5 overflow-hidden">
-          <div class="${barColor} h-1.5 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
+        <div class="w-full bg-zinc-800/90 rounded-full h-1 overflow-hidden">
+          <div class="${barColor} h-1 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
         </div>
       `;
       todayContainer.appendChild(card);
     } else {
       // OTHER DAYS: Sleek Minimal Row (Hidden until user clicks toggle button)
-      card.className = 'glass-card rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:border-zinc-700 transition-colors select-none';
+      card.className = 'glass-card rounded-xl px-3 py-2 flex items-center justify-between cursor-pointer hover:border-zinc-700 transition-colors select-none';
       card.setAttribute('onclick', `openCalcModal('${day.id}')`);
       card.setAttribute('title', 'Tap to enter earnings');
 
       card.innerHTML = `
         <!-- Left: Day badge, title, and goal -->
-        <div class="flex items-center gap-2.5">
-          <div class="w-9 h-9 rounded-xl bg-black/60 border border-zinc-800 flex flex-col items-center justify-center font-mono">
-            <span class="text-[9px] text-zinc-500 uppercase font-bold">${day.short}</span>
-            <span class="text-xs font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-emerald-400' : (day.actual > 0 ? 'text-amber-400' : 'text-zinc-600')}">
+        <div class="flex items-center gap-2">
+          <div class="w-8 h-8 rounded-lg bg-black/60 border border-zinc-800 flex flex-col items-center justify-center font-mono">
+            <span class="text-[8.5px] text-zinc-500 uppercase font-bold">${day.short}</span>
+            <span class="text-[11px] font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-emerald-400' : (day.actual > 0 ? 'text-amber-400' : 'text-zinc-600')}">
               ${day.actual >= day.planned && day.planned > 0 ? '✓' : (day.actual > 0 ? '•' : '—')}
             </span>
           </div>
 
           <div>
-            <div class="flex items-center gap-2">
-              <span class="font-bold text-white text-sm">${day.name}</span>
-              <span class="text-[10px] font-mono ${diffClass}">${diffText}</span>
+            <div class="flex items-center gap-1.5">
+              <span class="font-semibold text-white text-xs">${day.name}</span>
+              <span class="text-[9.5px] font-mono ${diffClass}">${diffText}</span>
             </div>
-            <div class="text-[11px] font-mono text-zinc-400 mt-0.5 flex items-center gap-1.5">
+            <div class="text-[10px] font-mono text-zinc-400 mt-0.5 flex items-center gap-1.5">
               <span>Goal: $${day.planned.toFixed(2)}</span>
-              <div class="w-14 bg-zinc-800 rounded-full h-1 overflow-hidden inline-block align-middle">
+              <div class="w-12 bg-zinc-800 rounded-full h-1 overflow-hidden inline-block align-middle">
                 <div class="${barColor} h-1 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
               </div>
             </div>
@@ -262,15 +262,15 @@ function renderDays() {
         </div>
 
         <!-- Right: Actual Amount + Tap Icon -->
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5">
           <div class="text-right font-mono">
-            <div class="text-base font-black ${day.actual > 0 ? 'text-white' : 'text-zinc-500'}">
+            <div class="text-sm font-bold ${day.actual > 0 ? 'text-white' : 'text-zinc-500'}">
               $${day.actual.toFixed(2)}
             </div>
-            <span class="text-[9px] text-zinc-500 block">Tap +/−</span>
+            <span class="text-[8.5px] text-zinc-500 block">Tap +/−</span>
           </div>
-          <div class="w-7 h-7 rounded-lg bg-black/60 border border-zinc-800 flex items-center justify-center text-zinc-400">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          <div class="w-6 h-6 rounded-md bg-black/60 border border-zinc-800 flex items-center justify-center text-zinc-400">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           </div>
         </div>
       `;
@@ -408,13 +408,13 @@ window.openGoalsModal = function(focusDayId) {
     list.innerHTML = '';
     state.days.forEach(day => {
       const row = document.createElement('div');
-      row.className = 'flex items-center justify-between bg-black/60 rounded-xl px-3.5 py-2.5 border border-zinc-800 font-mono';
+      row.className = 'flex items-center justify-between bg-black/60 rounded-lg px-3 py-1.5 border border-zinc-800 font-mono';
       row.innerHTML = `
         <div class="flex items-center gap-2">
-          <span class="w-8 text-[10px] uppercase font-bold text-zinc-400">${day.short}</span>
+          <span class="w-8 text-[9.5px] uppercase font-bold text-zinc-400">${day.short}</span>
           <span class="text-xs font-semibold text-white">${day.name}</span>
         </div>
-        <div class="flex items-center bg-zinc-900 rounded-lg px-2.5 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
+        <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
           <span class="text-xs font-bold text-emerald-400 mr-1">$</span>
           <input 
             type="number" 
