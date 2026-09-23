@@ -1,48 +1,50 @@
 # 🎓 School Bill Tracker
 
-A clean, modern, and minimal web application for tracking your school bill income in real time.
+A sleek, tactile financial tracking web app designed specifically for iPhone and mobile home screens to balance DoorDash gig earnings against paycheck contributions for your weekly school tuition bill.
+
+📱 **Live Web App**: [https://anthonynbutts.github.io/bill-tracker/](https://anthonynbutts.github.io/bill-tracker/)
+
+---
+
+## 📱 iPhone Add to Home Screen (PWA)
+
+This app is configured as a standalone Progressive Web App (PWA) with native iOS safe area support:
+
+1. Open **[https://anthonynbutts.github.io/bill-tracker/](https://anthonynbutts.github.io/bill-tracker/)** in **Safari** on your iPhone.
+2. Tap the **Share** button (box with upward arrow).
+3. Select **"Add to Home Screen"**.
+4. Confirm **"Bill Tracker"** and tap **Add**.
+5. Launch the app from your Home Screen for a fullscreen, native app experience with zero browser address bars!
+
+---
 
 ## 💡 How It Works
-- **Total School Bill**: Target **$215.00** (fully editable).
-- **DoorDash Share**: Target **$161.25** (customizable or distributed evenly across days).
+
+- **Total School Bill Target**: $215.00 (customizable inside the Goals modal).
+- **DoorDash Target**: $161.25 (75% default, customizable or split evenly).
 - **Paycheck Dynamic Calculation**:
   - Baseline planned paycheck share is **$53.75** ($215.00 − $161.25).
-  - As you log your actual DoorDash earnings for **Monday through Saturday**, the app automatically calculates **exactly how much you need to contribute from your paycheck in real time**!
-  - If you exceed your DoorDash goal, your paycheck requirement drops dollar-for-dollar.
-  - If you hit $215 from DoorDash alone, the app shows that **$0.00** is required from your paycheck, keeping 100% of your paycheck in your pocket!
+  - As you log DoorDash earnings, the **Current Paycheck Needed** updates in real time.
+  - If you hit $215.00 from DoorDash, your paycheck needed drops to **$0.00**, keeping your paycheck intact!
 
-## ✨ Key Features
-- **Goal vs. Actual Everywhere**:
-  - Overall Bill (Goal vs. Dash Earned vs. Remaining)
-  - DoorDash Overall (Goal vs. Actual vs. Status)
-  - Paycheck Share (Baseline Planned vs. Current Real-time Needed)
-  - Daily Dash Cards (Monday through Saturday) with customizable daily goals and live variance chips.
-- **Fast Daily Entry**:
-  - Direct keyboard inputs for goal and actual earnings.
-  - Quick addition buttons (`+$5`, `+$10`, `+$20`).
-  - "Hit Goal" autofill button for instant entry.
-- **Even Goal Distribution**:
-  - One-click "Split Dash Goal Evenly" distributes your DoorDash target evenly across all 6 days (~$26.88/day).
-  - "Sum Daily Goals to Dash Target" recalculates your weekly DoorDash goal if you customize days.
-- **Real-Time Running Breakdown**:
-  - Summary table showing cumulative dash earnings day by day and how your paycheck requirement decreases step-by-step.
-- **Auto-Saved to Browser**:
-  - Uses `localStorage` so your numbers and daily goals are saved automatically as you type.
-- **Copy Summary**:
-  - Copy a formatted text breakdown to your clipboard with one click.
-- **Dark & Light Theme**:
-  - Built-in toggle supporting dark and light aesthetics.
+---
 
-## 🚀 How to Open and Run
+## ✨ Features
 
-### Option 1: Direct Double-Click (Zero Setup)
-Simply double-click [`index.html`](file:///Users/anthony/Desktop/School%20Bill%20Tracker/index.html) or run:
-```bash
-open index.html
-```
+- **Tactile Calculator Modal**: YNAB-style protected input calculator with quick preset buttons (`+5`, `+10`, `+15`, `+20`, `+25`) and tactile keypad.
+- **Smart Goal Inputs**: Click on any goal to clear the input with a greyed-out placeholder of the original value. Type a fresh amount or click out without typing to revert cleanly.
+- **Change Detection**: "Goals updated" toast only fires when you actually modify a goal.
+- **Apple Typography**: Native Apple SF Pro & SF Mono typography stack with tabular figures (`tnum`).
+- **Offline Capable**: Service worker pre-caches assets for instant launch without cellular lag.
+- **Auto-Saved**: All entries and custom targets persist locally in `localStorage`.
 
-### Option 2: Local Web Server
+---
+
+## 🚀 Local Development
+
+To run locally on your Mac:
 ```bash
 npm start
-# Opens local server at http://localhost:3000
+# or open directly
+open index.html
 ```
