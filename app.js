@@ -218,19 +218,32 @@ function renderDays() {
           </span>
         </div>
 
-        <!-- Middle: Action Banner -->
-        <div class="flex items-center justify-between bg-black/60 rounded-xl p-2 border border-emerald-500/30 mb-2 cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="openCalcModal('${day.id}')" title="Tap to enter earnings">
+        <!-- Middle: Action Banner with Smart Current Dash Input -->
+        <div class="flex items-center justify-between bg-black/60 rounded-xl p-2 border border-emerald-500/30 mb-2">
           <div>
             <span class="text-[8.5px] uppercase font-bold text-zinc-400 block mb-0.5">${actionLabel}</span>
-            <div class="flex items-baseline gap-1 font-mono">
-              <span class="text-xl font-bold text-emerald-400">$${day.actual.toFixed(2)}</span>
+            <div class="flex items-center gap-1.5 font-mono">
+              <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-0.5 border border-emerald-500/40 focus-within:border-emerald-400 focus-within:ring-1 focus-within:ring-emerald-400/30" onclick="event.stopPropagation()">
+                <span class="text-sm font-bold text-emerald-400 mr-0.5">$</span>
+                <input 
+                  type="number" 
+                  inputmode="decimal" 
+                  id="actual-input-${day.id}" 
+                  step="0.01" 
+                  min="0" 
+                  value="${day.actual.toFixed(2)}" 
+                  placeholder="${day.actual.toFixed(2)}" 
+                  class="smart-goal-input w-20 bg-transparent text-left text-sm font-bold text-emerald-400 focus:outline-none placeholder-zinc-500 font-mono" 
+                  title="Click to edit current dash"
+                />
+              </div>
               <span class="text-[11px] text-zinc-500">/ $${day.planned.toFixed(2)} goal</span>
             </div>
           </div>
           
-          <button type="button" class="tap-btn px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs flex items-center gap-1 shadow-md shadow-emerald-950/40" onclick="event.stopPropagation(); openCalcModal('${day.id}')">
-            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-            <span>Log Dash</span>
+          <button type="button" class="tap-btn px-2.5 py-1.5 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/60 font-mono font-bold text-xs flex items-center gap-1 shadow-sm" onclick="event.stopPropagation(); openCalcModal('${day.id}')" title="Open Calculator">
+            <svg class="w-3.5 h-3.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="18" height="18" x="3" y="3" rx="2"/><line x1="8" x2="16" y1="12" y2="12"/><line x1="12" x2="12" y1="8" y2="16"/></svg>
+            <span>Calc</span>
           </button>
         </div>
 
@@ -240,6 +253,18 @@ function renderDays() {
         </div>
       `;
       todayContainer.appendChild(card);
+
+      const actualInputToday = card.querySelector(`#actual-input-${day.id}`);
+      if (actualInputToday) {
+        setupSmartGoalInput(actualInputToday, (newVal, changed) => {
+          if (changed) {
+            day.actual = newVal;
+            saveState();
+            updateCalculations();
+            showToast(`${day.name}: $${newVal.toFixed(2)} saved`);
+          }
+        });
+      }
     } else {
       // OTHER DAYS: Sleek Minimal Row (Hidden until user clicks toggle button)
       card.className = 'glass-card rounded-xl px-3 py-2 flex items-center justify-between cursor-pointer hover:border-zinc-700 transition-colors select-none';
@@ -270,20 +295,40 @@ function renderDays() {
           </div>
         </div>
 
-        <!-- Right: Actual Amount + Tap Icon -->
-        <div class="flex items-center gap-1.5">
-          <div class="text-right font-mono">
-            <div class="text-sm font-bold ${day.actual > 0 ? 'text-white' : 'text-zinc-500'}">
-              $${day.actual.toFixed(2)}
-            </div>
-            <span class="text-[8.5px] text-zinc-500 block">Tap +/−</span>
+        <!-- Right: Smart Current Dash Input + Calc Icon -->
+        <div class="flex items-center gap-1.5" onclick="event.stopPropagation()">
+          <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-0.5 border border-zinc-700/60 focus-within:border-emerald-500">
+            <span class="text-xs font-bold text-emerald-400 mr-0.5 font-mono">$</span>
+            <input 
+              type="number" 
+              inputmode="decimal" 
+              id="actual-input-${day.id}" 
+              step="0.01" 
+              min="0" 
+              value="${day.actual.toFixed(2)}" 
+              placeholder="${day.actual.toFixed(2)}" 
+              class="smart-goal-input w-16 bg-transparent text-right font-mono text-xs font-bold text-white focus:outline-none placeholder-zinc-500" 
+              title="Click to edit current dash"
+            />
           </div>
-          <div class="w-6 h-6 rounded-md bg-black/60 border border-zinc-800 flex items-center justify-center text-zinc-400">
+          <button type="button" onclick="openCalcModal('${day.id}')" class="w-6 h-6 rounded-md bg-black/60 border border-zinc-800 hover:border-zinc-700 flex items-center justify-center text-zinc-400 hover:text-white" title="Open Calculator">
             <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-          </div>
+          </button>
         </div>
       `;
       otherDaysList.appendChild(card);
+
+      const actualInputOther = card.querySelector(`#actual-input-${day.id}`);
+      if (actualInputOther) {
+        setupSmartGoalInput(actualInputOther, (newVal, changed) => {
+          if (changed) {
+            day.actual = newVal;
+            saveState();
+            updateCalculations();
+            showToast(`${day.name}: $${newVal.toFixed(2)} saved`);
+          }
+        });
+      }
     }
   });
 
