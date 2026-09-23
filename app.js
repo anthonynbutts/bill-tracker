@@ -1,16 +1,16 @@
-// School Bill Tracker - iPhone 15 Real-Time Engine
+// School Bill Tracker - Super Minimal Engine
 
 const STORAGE_KEY = 'school_bill_tracker_state_v1';
 const THEME_KEY = 'school_bill_tracker_theme';
 const FRAME_KEY = 'school_bill_tracker_frame';
 
 const DEFAULT_DAYS = [
-  { id: 'mon', name: 'Monday', dayIndex: 1, goal: 26.88, actual: 0 },
-  { id: 'tue', name: 'Tuesday', dayIndex: 2, goal: 26.88, actual: 0 },
-  { id: 'wed', name: 'Wednesday', dayIndex: 3, goal: 26.88, actual: 0 },
-  { id: 'thu', name: 'Thursday', dayIndex: 4, goal: 26.87, actual: 0 },
-  { id: 'fri', name: 'Friday', dayIndex: 5, goal: 26.87, actual: 0 },
-  { id: 'sat', name: 'Saturday', dayIndex: 6, goal: 26.87, actual: 0 }
+  { id: 'mon', name: 'Mon', fullName: 'Monday', dayIndex: 1, goal: 26.88, actual: 0 },
+  { id: 'tue', name: 'Tue', fullName: 'Tuesday', dayIndex: 2, goal: 26.88, actual: 0 },
+  { id: 'wed', name: 'Wed', fullName: 'Wednesday', dayIndex: 3, goal: 26.88, actual: 0 },
+  { id: 'thu', name: 'Thu', fullName: 'Thursday', dayIndex: 4, goal: 26.87, actual: 0 },
+  { id: 'fri', name: 'Fri', fullName: 'Friday', dayIndex: 5, goal: 26.87, actual: 0 },
+  { id: 'sat', name: 'Sat', fullName: 'Saturday', dayIndex: 6, goal: 26.87, actual: 0 }
 ];
 
 const DEFAULT_STATE = {
@@ -21,16 +21,12 @@ const DEFAULT_STATE = {
 
 let state = loadState();
 
-// Trigger tactile haptics on iOS / mobile
 function triggerHaptic() {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
-    try {
-      navigator.vibrate(12);
-    } catch (e) {}
+    try { navigator.vibrate(10); } catch (e) {}
   }
 }
 
-// Load state from localStorage
 function loadState() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
@@ -41,6 +37,7 @@ function loadState() {
       return {
         id: defDay.id,
         name: defDay.name,
+        fullName: defDay.fullName,
         dayIndex: defDay.dayIndex,
         goal: match && typeof match.goal === 'number' ? match.goal : defDay.goal,
         actual: match && typeof match.actual === 'number' ? match.actual : 0
@@ -52,7 +49,6 @@ function loadState() {
       days
     };
   } catch (e) {
-    console.error('Failed to parse localStorage', e);
     return JSON.parse(JSON.stringify(DEFAULT_STATE));
   }
 }
@@ -60,9 +56,7 @@ function loadState() {
 function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch (e) {
-    console.error('Failed to save state', e);
-  }
+  } catch (e) {}
 }
 
 function formatCurrency(num) {
@@ -75,12 +69,11 @@ function parseVal(val) {
   return isNaN(n) ? 0 : n;
 }
 
-// Determine current day of week (0=Sun, 1=Mon, ..., 6=Sat)
 function getCurrentDayIndex() {
   return new Date().getDay();
 }
 
-// Render iOS-optimized daily cards
+// Render super-clean minimal day rows
 function renderDayCards() {
   const container = document.getElementById('daysContainer');
   if (!container) return;
@@ -92,50 +85,28 @@ function renderDayCards() {
     const isToday = day.dayIndex === todayIndex;
     const card = document.createElement('div');
     card.id = `card-${day.id}`;
-    card.className = `ios-card rounded-2xl p-3.5 bg-zinc-900 border ${isToday ? 'border-emerald-500/50 ring-1 ring-emerald-500/30' : 'border-zinc-800/80'} shadow-sm transition-all`;
+    card.className = `rounded-2xl p-3 bg-zinc-900 border ${isToday ? 'border-emerald-500/50' : 'border-zinc-800'} transition-all`;
 
     card.innerHTML = `
-      <!-- Card Header -->
-      <div class="flex items-center justify-between gap-2 mb-2.5">
+      <!-- Top Row: Day & Difference -->
+      <div class="flex items-center justify-between mb-2">
         <div class="flex items-center gap-1.5">
-          <span class="w-2 h-2 rounded-full ${isToday ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}"></span>
-          <span class="font-bold text-white text-sm tracking-tight">${day.name}</span>
-          ${isToday ? '<span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">TODAY</span>' : ''}
+          <span class="w-1.5 h-1.5 rounded-full ${isToday ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}"></span>
+          <span class="font-bold text-white text-xs">${day.name}</span>
+          ${isToday ? '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/10 px-1 rounded">TODAY</span>' : ''}
         </div>
-        <span id="badge-${day.id}" class="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700/50">
-          Pending
+        <span id="diff-${day.id}" class="text-[11px] font-mono text-zinc-400">
+          -$${day.goal.toFixed(2)}
         </span>
       </div>
 
-      <!-- Dual Touch Inputs: Goal & Actual -->
-      <div class="grid grid-cols-2 gap-2 mb-2.5">
-        <!-- Goal Input -->
-        <div class="bg-zinc-950/70 rounded-xl p-2 border border-zinc-800 focus-within:border-emerald-500 transition-colors">
-          <label class="block text-[9px] uppercase font-bold text-zinc-400 mb-0.5" for="goal-${day.id}">
-            Daily Goal
-          </label>
-          <div class="flex items-center">
-            <span class="text-zinc-500 text-xs font-mono mr-1">$</span>
-            <input 
-              type="number" 
-              inputmode="decimal"
-              id="goal-${day.id}" 
-              step="0.01" 
-              min="0"
-              value="${day.goal.toFixed(2)}"
-              class="w-full bg-transparent text-sm font-bold font-mono text-zinc-200 focus:outline-none focus:text-white"
-              placeholder="0.00"
-            />
-          </div>
-        </div>
-
-        <!-- Actual Input -->
-        <div class="bg-zinc-950/70 rounded-xl p-2 border border-zinc-800 focus-within:border-orange-500 transition-colors">
-          <label class="block text-[9px] uppercase font-bold text-orange-400 mb-0.5" for="actual-${day.id}">
-            Actual Earned
-          </label>
-          <div class="flex items-center">
-            <span class="text-orange-500 text-xs font-mono mr-1">$</span>
+      <!-- Inputs: Actual & Goal -->
+      <div class="grid grid-cols-2 gap-2 mb-2">
+        <!-- Actual -->
+        <div class="bg-zinc-950/70 rounded-xl px-2.5 py-1.5 border border-zinc-800 focus-within:border-emerald-500 flex items-center justify-between">
+          <span class="text-[10px] uppercase font-bold text-zinc-400">Actual</span>
+          <div class="flex items-center font-mono">
+            <span class="text-xs text-emerald-400 mr-0.5">$</span>
             <input 
               type="number" 
               inputmode="decimal"
@@ -143,30 +114,41 @@ function renderDayCards() {
               step="0.01" 
               min="0"
               value="${day.actual > 0 ? day.actual.toFixed(2) : ''}"
-              class="w-full bg-transparent text-sm font-bold font-mono text-white focus:outline-none placeholder-zinc-600"
+              class="w-16 bg-transparent text-right text-xs font-bold text-white focus:outline-none placeholder-zinc-700"
+              placeholder="0.00"
+            />
+          </div>
+        </div>
+
+        <!-- Goal -->
+        <div class="bg-zinc-950/70 rounded-xl px-2.5 py-1.5 border border-zinc-800 focus-within:border-zinc-600 flex items-center justify-between">
+          <span class="text-[10px] uppercase font-bold text-zinc-400">Goal</span>
+          <div class="flex items-center font-mono">
+            <span class="text-xs text-zinc-500 mr-0.5">$</span>
+            <input 
+              type="number" 
+              inputmode="decimal"
+              id="goal-${day.id}" 
+              step="0.01" 
+              min="0"
+              value="${day.goal.toFixed(2)}"
+              class="w-16 bg-transparent text-right text-xs font-bold text-zinc-300 focus:outline-none"
               placeholder="0.00"
             />
           </div>
         </div>
       </div>
 
-      <!-- iPhone Thumb-Friendly Quick Add Buttons -->
-      <div class="flex items-center gap-1.5 mb-2.5">
-        <button type="button" class="ios-tap-target text-[10px] font-mono font-medium px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="quickAdd('${day.id}', 5)">+$5</button>
-        <button type="button" class="ios-tap-target text-[10px] font-mono font-medium px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="quickAdd('${day.id}', 10)">+$10</button>
-        <button type="button" class="ios-tap-target text-[10px] font-mono font-medium px-2 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="quickAdd('${day.id}', 20)">+$20</button>
-        <button type="button" class="ios-tap-target text-[10px] font-mono font-medium px-2 py-1 rounded-lg bg-orange-950/40 text-orange-300 border border-orange-800/40 ml-auto" onclick="fillGoal('${day.id}')">Hit Goal</button>
-        <button type="button" class="ios-tap-target text-[10px] font-mono px-2 py-1 rounded-lg text-zinc-500 hover:text-red-400" onclick="clearDay('${day.id}')" title="Clear">✕</button>
-      </div>
-
-      <!-- Mini Progress & Variance -->
-      <div class="pt-2 border-t border-zinc-800/60">
-        <div class="flex items-center justify-between text-[10px] mb-1 font-mono">
-          <span class="text-zinc-500">Day Variance</span>
-          <span id="diff-${day.id}" class="font-medium text-zinc-400">-$26.88</span>
+      <!-- Quick Steppers -->
+      <div class="flex items-center justify-between gap-1 pt-1 border-t border-zinc-800/50">
+        <div class="flex items-center gap-1 font-mono text-[10px]">
+          <button type="button" class="px-2 py-0.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 active:scale-95 transition-transform" onclick="quickAdd('${day.id}', 5)">+5</button>
+          <button type="button" class="px-2 py-0.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 active:scale-95 transition-transform" onclick="quickAdd('${day.id}', 10)">+10</button>
+          <button type="button" class="px-2 py-0.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 active:scale-95 transition-transform" onclick="quickAdd('${day.id}', 20)">+20</button>
         </div>
-        <div class="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden">
-          <div id="bar-${day.id}" class="bg-emerald-500 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
+        <div class="flex items-center gap-1 font-mono text-[10px]">
+          <button type="button" class="px-2 py-0.5 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 active:scale-95 transition-transform" onclick="fillGoal('${day.id}')">Hit</button>
+          <button type="button" class="px-1.5 py-0.5 rounded-md hover:bg-zinc-800 text-zinc-500 hover:text-red-400 active:scale-95 transition-colors" onclick="clearDay('${day.id}')">✕</button>
         </div>
       </div>
     `;
@@ -177,7 +159,6 @@ function renderDayCards() {
   attachInputListeners();
 }
 
-// Global actions
 window.quickAdd = function(dayId, amount) {
   triggerHaptic();
   const day = state.days.find(d => d.id === dayId);
@@ -187,7 +168,6 @@ window.quickAdd = function(dayId, amount) {
   if (input) input.value = day.actual.toFixed(2);
   saveState();
   updateCalculations();
-  showToast(`+$${amount} on ${day.name}`);
 };
 
 window.fillGoal = function(dayId) {
@@ -199,7 +179,6 @@ window.fillGoal = function(dayId) {
   if (input) input.value = day.actual.toFixed(2);
   saveState();
   updateCalculations();
-  showToast(`${day.name} set to goal`);
 };
 
 window.clearDay = function(dayId) {
@@ -256,180 +235,85 @@ function attachInputListeners() {
   }
 }
 
-// Master calculation update
+// Minimal master calculation
 function updateCalculations() {
   const totalBill = state.totalBillGoal;
   const dashGoal = state.dashGoal;
 
-  // 1. Dash totals
   const dashActual = state.days.reduce((sum, d) => sum + d.actual, 0);
-  const dashRemaining = Math.max(0, dashGoal - dashActual);
-  const rawDashPercent = dashGoal > 0 ? (dashActual / dashGoal) * 100 : 100;
-  const dashPercent = Math.min(100, Math.round(rawDashPercent));
-
-  // 2. Paycheck calculations
   const plannedPaycheck = Math.max(0, totalBill - dashGoal);
   const paycheckNeeded = Math.max(0, totalBill - dashActual);
-  const paycheckSaved = plannedPaycheck - paycheckNeeded;
 
-  // 3. Bill progress
-  const billFundedByDashPct = totalBill > 0 ? Math.min(100, Math.round((dashActual / totalBill) * 100)) : 100;
+  // Dynamic Island
+  const islandPaycheck = document.getElementById('islandPaycheck');
+  if (islandPaycheck) islandPaycheck.textContent = formatCurrency(paycheckNeeded);
 
-  // Update Dynamic Island on iPhone
-  const islandPaycheckNeeded = document.getElementById('islandPaycheckNeeded');
-  const dynamicIsland = document.getElementById('dynamicIsland');
-  if (islandPaycheckNeeded) {
-    islandPaycheckNeeded.textContent = formatCurrency(paycheckNeeded);
-  }
-  if (dynamicIsland) {
-    dynamicIsland.classList.remove('island-updated');
-    void dynamicIsland.offsetWidth; // trigger reflow
-    dynamicIsland.classList.add('island-updated');
-  }
-
-  // Update Top Hero Cards
+  // Main Display
   const paycheckNeededDisplay = document.getElementById('paycheckNeededDisplay');
-  const plannedPaycheckDisplay = document.getElementById('plannedPaycheckDisplay');
-  const paycheckImpactBadge = document.getElementById('paycheckImpactBadge');
-  const paycheckSavingsDisplay = document.getElementById('paycheckSavingsDisplay');
-  const paycheckStatusMessage = document.getElementById('paycheckStatusMessage');
-
   if (paycheckNeededDisplay) paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
-  if (plannedPaycheckDisplay) plannedPaycheckDisplay.textContent = formatCurrency(plannedPaycheck);
 
-  if (paycheckSavingsDisplay && paycheckStatusMessage && paycheckImpactBadge) {
-    if (dashActual === 0) {
-      paycheckImpactBadge.textContent = 'Unlogged';
-      paycheckImpactBadge.className = 'text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700/50';
-      paycheckSavingsDisplay.textContent = '$0.00 saved';
-      paycheckSavingsDisplay.className = 'font-bold text-zinc-400';
-      paycheckStatusMessage.innerHTML = `Hit your <strong>${formatCurrency(dashGoal)}</strong> Dash goal to lower your paycheck share to <strong>${formatCurrency(plannedPaycheck)}</strong>.`;
-    } else if (dashActual < dashGoal) {
-      const neededForPlanned = dashGoal - dashActual;
-      paycheckImpactBadge.textContent = 'Lowering 📉';
-      paycheckImpactBadge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-indigo-500/20 text-indigo-300 border border-indigo-500/30';
-      
-      const savedFromFull = totalBill - paycheckNeeded;
-      paycheckSavingsDisplay.textContent = `${formatCurrency(savedFromFull)} reduced`;
-      paycheckSavingsDisplay.className = 'font-bold text-indigo-300';
-      paycheckStatusMessage.innerHTML = `DoorDash covered <strong>${formatCurrency(dashActual)}</strong>. Need <strong>${formatCurrency(neededForPlanned)}</strong> more to reach your planned <strong>${formatCurrency(plannedPaycheck)}</strong> paycheck share.`;
-    } else if (dashActual >= dashGoal && dashActual < totalBill) {
-      paycheckImpactBadge.textContent = 'Goal Hit! 🚀';
-      paycheckImpactBadge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-      
-      paycheckSavingsDisplay.textContent = `+${formatCurrency(paycheckSaved)} extra saved!`;
-      paycheckSavingsDisplay.className = 'font-bold text-emerald-400';
-      paycheckStatusMessage.innerHTML = `🎉 Dash goal beaten! You only owe <strong>${formatCurrency(paycheckNeeded)}</strong> from your paycheck instead of <strong>${formatCurrency(plannedPaycheck)}</strong>!`;
+  const paycheckBadge = document.getElementById('paycheckBadge');
+  if (paycheckBadge) {
+    if (dashActual >= totalBill) {
+      const extra = dashActual - totalBill;
+      paycheckBadge.textContent = extra > 0 ? `+$${extra.toFixed(2)} surplus` : '$0 needed';
+      paycheckBadge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+    } else if (dashActual >= dashGoal) {
+      const saved = plannedPaycheck - paycheckNeeded;
+      paycheckBadge.textContent = `+$${saved.toFixed(2)} saved`;
+      paycheckBadge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
     } else {
-      paycheckImpactBadge.textContent = '100% Free! 🎉';
-      paycheckImpactBadge.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500 text-zinc-950';
-      
-      const extraProfit = dashActual - totalBill;
-      paycheckSavingsDisplay.textContent = `$0 needed! (+$${extraProfit.toFixed(2)})`;
-      paycheckSavingsDisplay.className = 'font-bold text-emerald-400';
-      paycheckStatusMessage.innerHTML = `🔥 <strong>100% covered by DoorDash!</strong> Paycheck untouched${extraProfit > 0 ? ` with <strong>${formatCurrency(extraProfit)}</strong> profit!` : '!'}`;
+      paycheckBadge.textContent = `${formatCurrency(plannedPaycheck)} planned`;
+      paycheckBadge.className = 'text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700';
     }
   }
 
-  // Update Bill & Dash Cards
-  const billProgressPct = document.getElementById('billProgressPct');
-  const totalActualDisplay = document.getElementById('totalActualDisplay');
-  const billProgressBar = document.getElementById('billProgressBar');
-
-  if (billProgressPct) billProgressPct.textContent = `${billFundedByDashPct}%`;
-  if (totalActualDisplay) totalActualDisplay.textContent = formatCurrency(dashActual);
-  if (billProgressBar) billProgressBar.style.width = `${Math.min(100, (dashActual / totalBill) * 100)}%`;
-
-  const dashActualDisplay = document.getElementById('dashActualDisplay');
-  const dashStatusBadge = document.getElementById('dashStatusBadge');
+  // Progress Bar
   const dashProgressBar = document.getElementById('dashProgressBar');
+  if (dashProgressBar) {
+    const pct = totalBill > 0 ? Math.min(100, (dashActual / totalBill) * 100) : 0;
+    dashProgressBar.style.width = `${pct}%`;
+  }
 
+  // Top Card Secondary
+  const dashActualDisplay = document.getElementById('dashActualDisplay');
   if (dashActualDisplay) dashActualDisplay.textContent = formatCurrency(dashActual);
-  if (dashStatusBadge) dashStatusBadge.textContent = `${dashPercent}%`;
-  if (dashProgressBar) dashProgressBar.style.width = `${Math.min(100, rawDashPercent)}%`;
 
-  // Update Floating Bottom Bar
+  // Floating Bottom Bar
   const bottomPaycheckDisplay = document.getElementById('bottomPaycheckDisplay');
   const bottomDashDisplay = document.getElementById('bottomDashDisplay');
-
   if (bottomPaycheckDisplay) bottomPaycheckDisplay.textContent = formatCurrency(paycheckNeeded);
   if (bottomDashDisplay) bottomDashDisplay.textContent = `${formatCurrency(dashActual)} / ${formatCurrency(dashGoal)}`;
 
-  // Update Daily Cards
+  // Daily rows variance
   state.days.forEach(day => {
     const diffEl = document.getElementById(`diff-${day.id}`);
-    const badgeEl = document.getElementById(`badge-${day.id}`);
-    const barEl = document.getElementById(`bar-${day.id}`);
-
+    const cardEl = document.getElementById(`card-${day.id}`);
     const dayDiff = day.actual - day.goal;
-    const dayPct = day.goal > 0 ? (day.actual / day.goal) * 100 : 100;
 
     if (diffEl) {
       if (day.actual === 0) {
-        diffEl.textContent = `-${formatCurrency(day.goal)}`;
-        diffEl.className = 'font-medium text-zinc-500 font-mono';
+        diffEl.textContent = `-$${day.goal.toFixed(2)}`;
+        diffEl.className = 'text-[11px] font-mono text-zinc-500';
       } else if (dayDiff >= 0) {
-        diffEl.textContent = dayDiff === 0 ? 'Goal Met' : `+${formatCurrency(dayDiff)}`;
-        diffEl.className = 'font-bold text-emerald-400 font-mono';
+        diffEl.textContent = dayDiff === 0 ? '✓ Goal' : `+$${dayDiff.toFixed(2)}`;
+        diffEl.className = 'text-[11px] font-mono font-bold text-emerald-400';
       } else {
-        diffEl.textContent = `-${formatCurrency(Math.abs(dayDiff))}`;
-        diffEl.className = 'font-medium text-amber-400 font-mono';
+        diffEl.textContent = `-$${Math.abs(dayDiff).toFixed(2)}`;
+        diffEl.className = 'text-[11px] font-mono text-zinc-400';
       }
     }
 
-    if (badgeEl) {
-      if (day.actual === 0) {
-        badgeEl.textContent = 'Pending';
-        badgeEl.className = 'text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700/50';
-      } else if (day.actual >= day.goal) {
-        badgeEl.textContent = day.actual > day.goal ? `+${formatCurrency(dayDiff)}` : 'Hit Goal';
-        badgeEl.className = 'text-[10px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
-      } else {
-        badgeEl.textContent = `${Math.round(dayPct)}%`;
-        badgeEl.className = 'text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-orange-500/20 text-orange-400 border border-orange-500/30';
-      }
-    }
-
-    if (barEl) {
-      barEl.style.width = `${Math.min(100, dayPct)}%`;
+    if (cardEl) {
       if (day.actual >= day.goal && day.goal > 0) {
-        barEl.className = 'bg-emerald-400 h-1.5 rounded-full transition-all duration-200';
+        cardEl.classList.add('border-emerald-500/40');
       } else {
-        barEl.className = 'bg-orange-500 h-1.5 rounded-full transition-all duration-200';
+        cardEl.classList.remove('border-emerald-500/40');
       }
     }
   });
-
-  // Update Compact Running Log Table
-  updateSummaryTable(totalBill);
 }
 
-function updateSummaryTable(totalBill) {
-  const tbody = document.getElementById('summaryTableBody');
-  if (!tbody) return;
-
-  let runningDashTotal = 0;
-  let rowsHtml = '';
-
-  state.days.forEach(day => {
-    runningDashTotal += day.actual;
-    const paycheckAtStep = Math.max(0, totalBill - runningDashTotal);
-
-    rowsHtml += `
-      <tr class="hover:bg-zinc-800/30 transition-colors">
-        <td class="py-1 px-1 font-sans text-zinc-300 font-medium">${day.name.substring(0, 3)}</td>
-        <td class="py-1 px-1 text-right text-zinc-400">${formatCurrency(day.goal)}</td>
-        <td class="py-1 px-1 text-right font-bold ${day.actual > 0 ? 'text-white' : 'text-zinc-600'}">${formatCurrency(day.actual)}</td>
-        <td class="py-1 px-1 text-right text-orange-400">${formatCurrency(runningDashTotal)}</td>
-        <td class="py-1 px-1 text-right text-indigo-300 font-bold">${formatCurrency(paycheckAtStep)}</td>
-      </tr>
-    `;
-  });
-
-  tbody.innerHTML = rowsHtml;
-}
-
-// iPhone toolbar & controls setup
 function setupToolbarActions() {
   // Split Dash Goal Evenly
   const distributeEvenlyBtn = document.getElementById('distributeEvenlyBtn');
@@ -448,22 +332,7 @@ function setupToolbarActions() {
 
       saveState();
       updateCalculations();
-      showToast(`Split into ~${formatCurrency(perDay)}/day`);
-    });
-  }
-
-  // Sum Daily Goals
-  const syncTotalGoalBtn = document.getElementById('syncTotalGoalBtn');
-  if (syncTotalGoalBtn) {
-    syncTotalGoalBtn.addEventListener('click', () => {
-      triggerHaptic();
-      const sum = state.days.reduce((acc, d) => acc + d.goal, 0);
-      state.dashGoal = Math.round(sum * 100) / 100;
-      const dashGoalInput = document.getElementById('dashGoalInput');
-      if (dashGoalInput) dashGoalInput.value = state.dashGoal.toFixed(2);
-      saveState();
-      updateCalculations();
-      showToast(`Goal updated: ${formatCurrency(state.dashGoal)}`);
+      showToast(`Split into ~$${perDay.toFixed(2)}/day`);
     });
   }
 
@@ -472,7 +341,7 @@ function setupToolbarActions() {
   if (resetWeekBtn) {
     resetWeekBtn.addEventListener('click', () => {
       triggerHaptic();
-      if (confirm('Clear actual earnings for the week? Daily goals will stay.')) {
+      if (confirm('Clear actuals?')) {
         state.days.forEach(day => {
           day.actual = 0;
           const input = document.getElementById(`actual-${day.id}`);
@@ -480,7 +349,7 @@ function setupToolbarActions() {
         });
         saveState();
         updateCalculations();
-        showToast('Week earnings reset');
+        showToast('Reset');
       }
     });
   }
@@ -492,29 +361,19 @@ function setupToolbarActions() {
       triggerHaptic();
       const dashActual = state.days.reduce((sum, d) => sum + d.actual, 0);
       const paycheckNeeded = Math.max(0, state.totalBillGoal - dashActual);
-      const plannedPaycheck = Math.max(0, state.totalBillGoal - state.dashGoal);
 
-      let text = `📱 School Bill Tracker (iPhone)\n`;
-      text += `Total Bill: ${formatCurrency(state.totalBillGoal)}\n`;
-      text += `Dash Actual: ${formatCurrency(dashActual)} / Goal: ${formatCurrency(state.dashGoal)}\n`;
-      text += `Paycheck Needed: ${formatCurrency(paycheckNeeded)} (Planned: ${formatCurrency(plannedPaycheck)})\n\n`;
+      let text = `Bill: ${formatCurrency(state.totalBillGoal)} | Dash: ${formatCurrency(dashActual)} | Paycheck: ${formatCurrency(paycheckNeeded)}\n`;
       state.days.forEach(d => {
-        text += `• ${d.name}: Goal ${formatCurrency(d.goal)} | Actual ${formatCurrency(d.actual)}\n`;
+        text += `${d.name}: ${formatCurrency(d.actual)} / ${formatCurrency(d.goal)}\n`;
       });
 
       if (navigator.clipboard) {
-        navigator.clipboard.writeText(text).then(() => {
-          showToast('Copied summary!');
-        }).catch(() => {
-          window.prompt('Copy summary:', text);
-        });
-      } else {
-        window.prompt('Copy summary:', text);
+        navigator.clipboard.writeText(text).then(() => showToast('Copied'));
       }
     });
   }
 
-  // Scroll to Top helper for floating bar
+  // Scroll to Top
   const scrollToTopBtn = document.getElementById('scrollToTopBtn');
   const scrollContainer = document.getElementById('scrollContainer');
   if (scrollToTopBtn && scrollContainer) {
@@ -524,19 +383,19 @@ function setupToolbarActions() {
     });
   }
 
-  // Desktop Frame Toggle (iPhone 15 Frame vs Full Width)
+  // Toggle Desktop Frame
   const toggleFrameBtn = document.getElementById('toggleFrameBtn');
   const deviceFrame = document.getElementById('deviceFrame');
   if (toggleFrameBtn && deviceFrame) {
     const savedFrame = localStorage.getItem(FRAME_KEY);
     if (savedFrame === 'expanded') {
       deviceFrame.classList.add('expanded-frame');
-      toggleFrameBtn.textContent = 'Switch to iPhone 15 Frame';
+      toggleFrameBtn.textContent = 'iPhone 15';
     }
 
     toggleFrameBtn.addEventListener('click', () => {
       const isExpanded = deviceFrame.classList.toggle('expanded-frame');
-      toggleFrameBtn.textContent = isExpanded ? 'Switch to iPhone 15 Frame' : 'Switch to Full Width';
+      toggleFrameBtn.textContent = isExpanded ? 'iPhone 15' : 'Full Width';
       localStorage.setItem(FRAME_KEY, isExpanded ? 'expanded' : 'iphone');
     });
   }
@@ -559,8 +418,7 @@ function setupToolbarActions() {
   }
 
   const storedTheme = localStorage.getItem(THEME_KEY);
-  const isDark = storedTheme ? storedTheme === 'dark' : true;
-  applyTheme(isDark);
+  applyTheme(storedTheme ? storedTheme === 'dark' : true);
 
   if (themeToggleBtn) {
     themeToggleBtn.addEventListener('click', () => {
@@ -570,9 +428,15 @@ function setupToolbarActions() {
       localStorage.setItem(THEME_KEY, willBeDark ? 'dark' : 'light');
     });
   }
+
+  // Display today's date in header
+  const headerDatePill = document.getElementById('headerDatePill');
+  if (headerDatePill) {
+    const now = new Date();
+    headerDatePill.textContent = now.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+  }
 }
 
-// Toast helper
 let toastTimeout;
 function showToast(msg) {
   const toast = document.getElementById('toast');
@@ -587,10 +451,9 @@ function showToast(msg) {
   toastTimeout = setTimeout(() => {
     toast.classList.add('-translate-y-16', 'opacity-0');
     toast.classList.remove('translate-y-0', 'opacity-100');
-  }, 2000);
+  }, 1400);
 }
 
-// Initialize on DOM load
 document.addEventListener('DOMContentLoaded', () => {
   renderDayCards();
   setupToolbarActions();
