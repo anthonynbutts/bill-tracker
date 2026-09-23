@@ -56,9 +56,15 @@
     <!-- OLED Launch Screen (Splash) -->
     <div id="launchScreen" class="absolute inset-0 z-[100] bg-black flex items-center justify-center select-none cursor-pointer" title="Tap to skip">
       <div id="launchLogo" class="flex flex-col items-center justify-center text-center px-4">
-        <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-emerald-400 drop-shadow-[0_0_35px_rgba(16,185,129,0.5)]">
-          Bill Tracker
-        </h1>
+        <div class="relative inline-flex items-start justify-center">
+          <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-emerald-400 drop-shadow-[0_0_35px_rgba(16,185,129,0.5)] flex items-start">
+            <span>Bill Tracker</span>
+            <span class="text-xs sm:text-sm font-bold text-emerald-400/80 ml-1 mt-0.5 select-none font-sans" title="Copyright">©</span>
+          </h1>
+        </div>
+        <p class="text-xs sm:text-sm font-medium tracking-wide text-slate-500 mt-2 font-sans select-none" style="color: #64748b;">
+          by Anthony
+        </p>
       </div>
     </div>
 
@@ -76,8 +82,9 @@
       <!-- Top Bar -->
       <header class="flex items-center justify-between py-1 mb-3">
         <div>
-          <h1 class="text-base font-bold tracking-tight text-white">
-            School Bill
+          <h1 class="text-lg font-black tracking-tight text-emerald-400 drop-shadow-[0_0_15px_rgba(16,185,129,0.35)] flex items-start">
+            <span>Bill Tracker</span>
+            <span class="text-[9px] font-bold text-emerald-400/80 ml-0.5 mt-0.5 select-none font-sans">©</span>
           </h1>
           <p class="text-[11px] text-zinc-500 font-mono" id="headerDate"></p>
         </div>
