@@ -93,6 +93,58 @@ function parseVal(val) {
   return isNaN(n) ? 0 : n;
 }
 
+/**
+ * Sets up a "ghost placeholder" focus/blur UX pattern for editable goals:
+ * 1. On click/focus: current value disappears and becomes a greyed-out placeholder so original goal is visible.
+ * 2. If user types a new number: starts clean with only the new number.
+ * 3. If user clicks in and clicks out (blur) without typing: reverts to original goal.
+ */
+function setupSmartGoalInput(input, onCommit, onLiveChange) {
+  let originalVal = '';
+
+  input.addEventListener('focus', () => {
+    const current = input.value.trim() !== '' ? input.value.trim() : (input.placeholder || '');
+    originalVal = current;
+    input.placeholder = current;
+    input.value = '';
+  });
+
+  if (onLiveChange) {
+    input.addEventListener('input', () => {
+      onLiveChange(input.value, originalVal);
+    });
+  }
+
+  input.addEventListener('blur', () => {
+    const trimmed = input.value.trim();
+    if (trimmed === '' || isNaN(parseFloat(trimmed))) {
+      // Revert to original goal if empty or invalid
+      input.value = originalVal;
+      if (onCommit) {
+        onCommit(parseFloat(originalVal) || 0, false);
+      }
+    } else {
+      // User typed a new valid number
+      const num = Math.max(0, parseFloat(trimmed));
+      const formatted = num.toFixed(2);
+      input.value = formatted;
+      input.placeholder = formatted;
+      if (onCommit) {
+        onCommit(num, true);
+      }
+    }
+  });
+
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter') {
+      input.blur();
+    } else if (e.key === 'Escape') {
+      input.value = originalVal;
+      input.blur();
+    }
+  });
+}
+
 function getTodayIndex() {
   return new Date().getDay();
 }
@@ -163,7 +215,7 @@ function renderDays() {
             <span class="text-[9px] uppercase font-bold text-zinc-400 block mb-0.5">Today's Earnings</span>
             <div class="flex items-baseline gap-1 font-mono">
               <span class="text-2xl font-black text-emerald-400">$${day.actual.toFixed(2)}</span>
-              <span class="text-xs text-zinc-500">/ $${day.planned.toFixed(2)} goal</span>
+              <button type="button" class="text-xs text-zinc-400 hover:text-white underline decoration-dotted underline-offset-2 transition-colors cursor-pointer" onclick="event.stopPropagation(); openGoalsModal('${day.id}')" title="Tap to change goal">/ $${day.planned.toFixed(2)} goal</button>
             </div>
           </div>
           
@@ -201,7 +253,7 @@ function renderDays() {
               <span class="text-[10px] font-mono ${diffClass}">${diffText}</span>
             </div>
             <div class="text-[11px] font-mono text-zinc-400 mt-0.5 flex items-center gap-1.5">
-              <span>Goal: $${day.planned.toFixed(2)}</span>
+              <button type="button" class="hover:text-white underline decoration-dotted underline-offset-2 text-left cursor-pointer transition-colors" onclick="event.stopPropagation(); openGoalsModal('${day.id}')" title="Tap to change goal">Goal: $${day.planned.toFixed(2)}</button>
               <div class="w-14 bg-zinc-800 rounded-full h-1 overflow-hidden inline-block align-middle">
                 <div class="${barColor} h-1 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
               </div>
@@ -312,6 +364,7 @@ function updateCalculations() {
   const totalBillGoalInput = document.getElementById('totalBillGoalInput');
   if (totalBillGoalInput && document.activeElement !== totalBillGoalInput) {
     totalBillGoalInput.value = totalBill.toFixed(2);
+    totalBillGoalInput.placeholder = totalBill.toFixed(2);
   }
 
   // Update day cards
@@ -322,7 +375,7 @@ function updateCalculations() {
 // GOALS CUSTOMIZATION MODAL ENGINE
 // -------------------------------------------------------------
 
-window.openGoalsModal = function() {
+window.openGoalsModal = function(focusDayId) {
   triggerHaptic();
   const modal = document.getElementById('goalsModal');
   const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
@@ -347,12 +400,24 @@ window.openGoalsModal = function() {
             step="0.01" 
             min="0" 
             value="${day.planned.toFixed(2)}"
-            oninput="updateGoalsModalTotal()"
-            class="w-16 bg-transparent text-right text-xs font-bold text-white focus:outline-none"
+            placeholder="${day.planned.toFixed(2)}"
+            class="smart-goal-input w-16 bg-transparent text-right text-xs font-bold text-white focus:outline-none placeholder-zinc-500"
           />
         </div>
       `;
       list.appendChild(row);
+
+      const input = row.querySelector(`#goal-input-${day.id}`);
+      if (input) {
+        setupSmartGoalInput(input, (newVal, changed) => {
+          if (changed) {
+            day.planned = newVal;
+          }
+          updateGoalsModalTotal();
+        }, () => {
+          updateGoalsModalTotal();
+        });
+      }
     });
   }
 
@@ -365,6 +430,15 @@ window.openGoalsModal = function() {
       modal.classList.add('opacity-100');
       sheet.classList.remove('translate-y-full');
       sheet.classList.add('translate-y-0');
+
+      if (focusDayId) {
+        setTimeout(() => {
+          const targetInput = document.getElementById(`goal-input-${focusDayId}`);
+          if (targetInput) {
+            targetInput.focus();
+          }
+        }, 220);
+      }
     });
   }
 };
@@ -375,7 +449,8 @@ window.closeGoalsModal = function() {
   state.days.forEach(day => {
     const input = document.getElementById(`goal-input-${day.id}`);
     if (input) {
-      day.planned = parseVal(input.value);
+      const valStr = input.value.trim() !== '' ? input.value : input.placeholder;
+      day.planned = Math.max(0, parseVal(valStr));
     }
   });
 
@@ -406,7 +481,14 @@ window.updateGoalsModalTotal = function() {
   state.days.forEach(day => {
     const input = document.getElementById(`goal-input-${day.id}`);
     if (input) {
-      sum += parseVal(input.value);
+      const trimmed = input.value.trim();
+      if (trimmed !== '' && !isNaN(parseFloat(trimmed))) {
+        sum += Math.max(0, parseFloat(trimmed));
+      } else if (input.placeholder && !isNaN(parseFloat(input.placeholder))) {
+        sum += Math.max(0, parseFloat(input.placeholder));
+      } else {
+        sum += day.planned;
+      }
     } else {
       sum += day.planned;
     }
@@ -424,7 +506,11 @@ window.splitGoalsEvenlyModal = function() {
     const extraCent = i < Math.round(remainder * 100) ? 0.01 : 0;
     const val = Math.round((perDay + extraCent) * 100) / 100;
     const input = document.getElementById(`goal-input-${day.id}`);
-    if (input) input.value = val.toFixed(2);
+    if (input) {
+      input.value = val.toFixed(2);
+      input.placeholder = val.toFixed(2);
+    }
+    day.planned = val;
   });
 
   updateGoalsModalTotal();
@@ -669,10 +755,16 @@ function setupToolbarActions() {
   const totalBillGoalInput = document.getElementById('totalBillGoalInput');
   if (totalBillGoalInput) {
     totalBillGoalInput.value = state.totalBillGoal.toFixed(2);
-    totalBillGoalInput.addEventListener('input', (e) => {
-      state.totalBillGoal = parseVal(e.target.value);
-      saveState();
-      updateCalculations();
+    totalBillGoalInput.placeholder = state.totalBillGoal.toFixed(2);
+    setupSmartGoalInput(totalBillGoalInput, (newVal, changed) => {
+      if (changed) {
+        state.totalBillGoal = newVal;
+        saveState();
+        updateCalculations();
+        showToast(`Target bill updated: ${formatCurrency(newVal)}`);
+      } else {
+        updateCalculations();
+      }
     });
   }
 

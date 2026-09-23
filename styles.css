@@ -160,3 +160,26 @@ input[type="number"]::-webkit-inner-spin-button {
   filter: brightness(1.25);
 }
 
+/* Smart Goal Input: Ghost placeholder */
+.smart-goal-input::placeholder {
+  color: #71717a !important; /* zinc-500 */
+  opacity: 0.7 !important;
+  font-weight: 700;
+}
+.smart-goal-input::-webkit-input-placeholder {
+  color: #71717a !important;
+  opacity: 0.7 !important;
+  font-weight: 700;
+}
+.smart-goal-input::-moz-placeholder {
+  color: #71717a !important;
+  opacity: 0.7 !important;
+  font-weight: 700;
+}
+.smart-goal-input:-ms-input-placeholder {
+  color: #71717a !important;
+  opacity: 0.7 !important;
+  font-weight: 700;
+}
+
+

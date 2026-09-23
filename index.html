@@ -71,8 +71,8 @@
           <span class="text-zinc-400 uppercase tracking-wider text-[10px] font-bold">Total Bill Target</span>
           <div class="flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded-lg border border-zinc-800/80">
             <span class="text-zinc-500 font-bold">$</span>
-            <input type="number" id="totalBillGoalInput" inputmode="decimal" step="0.01" min="0" value="215.00"
-              class="w-16 bg-transparent text-right font-bold text-zinc-200 focus:text-white focus:outline-none">
+            <input type="number" id="totalBillGoalInput" inputmode="decimal" step="0.01" min="0" value="215.00" placeholder="215.00"
+              class="smart-goal-input w-16 bg-transparent text-right font-bold text-zinc-200 focus:text-white focus:outline-none placeholder-zinc-500">
           </div>
         </div>
 
@@ -86,7 +86,7 @@
           </div>
           
           <!-- Contextual Goal Badge -->
-          <div class="inline-flex items-center gap-1 mt-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400">
+          <div class="inline-flex items-center gap-1 mt-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400 cursor-pointer hover:border-zinc-700 transition-colors" onclick="openGoalsModal()" title="View daily goals">
             <span id="paycheckGoalDisplay" class="text-emerald-400 font-bold">$53.75</span>
             <span>goal</span>
           </div>
@@ -120,7 +120,7 @@
               <span>DoorDash Earnings</span>
             </div>
             <div class="text-[11px] font-mono text-zinc-500">
-              of <span id="estimatedEarningsDisplay" class="text-zinc-300 font-semibold">$161.25</span> week goal
+              of <button type="button" class="text-zinc-300 font-semibold hover:text-white underline decoration-dotted underline-offset-2 transition-colors cursor-pointer" onclick="openGoalsModal()" title="Customize goals"><span id="estimatedEarningsDisplay">$161.25</span> week goal</button>
             </div>
           </div>
           <div class="text-2xl font-black font-mono text-white tracking-tight" id="actualEarningsDisplay">
