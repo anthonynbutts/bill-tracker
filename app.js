@@ -870,10 +870,40 @@ function showToast(msg) {
   }, 1600);
 }
 
+function initLaunchTransition() {
+  const launchScreen = document.getElementById('launchScreen');
+  const scrollContent = document.getElementById('scrollContent');
+  if (!launchScreen || !scrollContent) return;
+
+  let transitioned = false;
+  const triggerTransition = () => {
+    if (transitioned) return;
+    transitioned = true;
+
+    // Simultaneous cross-blur fade: splash blurs out as app blurs in
+    launchScreen.classList.add('launch-fade-out');
+    scrollContent.classList.add('app-blur-active');
+
+    setTimeout(() => {
+      launchScreen.style.display = 'none';
+      scrollContent.style.willChange = 'auto';
+      scrollContent.classList.remove('app-blur-in', 'app-blur-active');
+    }, 700);
+  };
+
+  // Cinematic hold (800ms) or tap anywhere on splash to skip instantly
+  const timer = setTimeout(triggerTransition, 800);
+  launchScreen.addEventListener('click', () => {
+    clearTimeout(timer);
+    triggerTransition();
+  }, { once: true });
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   renderDays();
   setupToolbarActions();
   updateCalculations();
+  initLaunchTransition();
 
   // PC mousewheel forward
   const deviceFrame = document.getElementById('deviceFrame');
@@ -885,11 +915,6 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollContent.scrollTop += e.deltaY;
       }
     }, { passive: true });
-
-    // Clean up will-change after launch blur fade-in completes
-    scrollContent.addEventListener('animationend', () => {
-      scrollContent.style.willChange = 'auto';
-    }, { once: true });
   }
 
   // PC / Hardware Keyboard Listener for Calculator

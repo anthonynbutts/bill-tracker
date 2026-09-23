@@ -53,6 +53,15 @@
   <!-- iPhone 15 Phone Chassis (Strictly Phone Only) -->
   <main id="deviceFrame" class="w-full sm:w-[393px] bg-black text-zinc-100 relative min-h-screen sm:min-h-0 sm:h-[852px] sm:rounded-[52px] sm:border-[9px] sm:border-zinc-800 sm:ring-1 sm:ring-zinc-700/60 sm:shadow-[0_25px_70px_rgba(0,0,0,0.95)] flex flex-col overflow-hidden select-none">
     
+    <!-- OLED Launch Screen (Splash) -->
+    <div id="launchScreen" class="absolute inset-0 z-[100] bg-black flex items-center justify-center select-none cursor-pointer" title="Tap to skip">
+      <div id="launchLogo" class="flex flex-col items-center justify-center text-center px-4">
+        <h1 class="text-3xl sm:text-4xl font-black tracking-tight text-emerald-400 drop-shadow-[0_0_35px_rgba(16,185,129,0.5)]">
+          Bill Tracker
+        </h1>
+      </div>
+    </div>
+
     <!-- Dynamic Island (Mockup) -->
     <div id="dynamicIslandContainer" class="hidden sm:flex items-center justify-center pt-2.5 pb-1 select-none pointer-events-none sticky top-0 bg-black/80 backdrop-blur-md z-40">
       <div id="dynamicIsland" class="h-7 w-28 bg-black rounded-full flex items-center justify-between px-3 text-white border border-zinc-800 transition-transform">
@@ -62,7 +71,7 @@
     </div>
 
     <!-- Scrollable Content -->
-    <div class="flex-1 overflow-y-auto px-4 pt-3 pb-8 smooth-scroll launch-fade" id="scrollContent">
+    <div class="flex-1 overflow-y-auto px-4 pt-3 pb-8 smooth-scroll app-blur-in" id="scrollContent">
       
       <!-- Top Bar -->
       <header class="flex items-center justify-between py-1 mb-3">
