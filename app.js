@@ -360,11 +360,17 @@ function updateCalculations() {
   const estimatedEarningsDisplay = document.getElementById('estimatedEarningsDisplay');
   if (estimatedEarningsDisplay) estimatedEarningsDisplay.textContent = formatCurrency(estimatedEarnings);
 
-  // Update total bill goal input if not focused
-  const totalBillGoalInput = document.getElementById('totalBillGoalInput');
-  if (totalBillGoalInput && document.activeElement !== totalBillGoalInput) {
-    totalBillGoalInput.value = totalBill.toFixed(2);
-    totalBillGoalInput.placeholder = totalBill.toFixed(2);
+  // Update total bill goal display on main screen
+  const totalBillGoalDisplay = document.getElementById('totalBillGoalDisplay');
+  if (totalBillGoalDisplay) {
+    totalBillGoalDisplay.textContent = formatCurrency(totalBill);
+  }
+
+  // Update total bill goal input in modal if not focused
+  const goalsModalTotalBillInput = document.getElementById('goalsModalTotalBillInput');
+  if (goalsModalTotalBillInput && document.activeElement !== goalsModalTotalBillInput) {
+    goalsModalTotalBillInput.value = totalBill.toFixed(2);
+    goalsModalTotalBillInput.placeholder = totalBill.toFixed(2);
   }
 
   // Update day cards
@@ -375,11 +381,28 @@ function updateCalculations() {
 // GOALS CUSTOMIZATION MODAL ENGINE
 // -------------------------------------------------------------
 
+let goalsInitialSnapshot = null;
+
 window.openGoalsModal = function(focusDayId) {
   triggerHaptic();
+
+  // Snapshot initial values to detect if user actually makes changes
+  goalsInitialSnapshot = {
+    totalBillGoal: state.totalBillGoal,
+    days: state.days.map(d => ({ id: d.id, planned: d.planned }))
+  };
+
   const modal = document.getElementById('goalsModal');
   const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
   const list = document.getElementById('goalsModalList');
+
+  // Total Bill Target input in Goals modal
+  const totalBillInput = document.getElementById('goalsModalTotalBillInput');
+  if (totalBillInput) {
+    totalBillInput.value = state.totalBillGoal.toFixed(2);
+    totalBillInput.placeholder = state.totalBillGoal.toFixed(2);
+    setupSmartGoalInput(totalBillInput);
+  }
 
   if (list) {
     list.innerHTML = '';
@@ -431,7 +454,11 @@ window.openGoalsModal = function(focusDayId) {
       sheet.classList.remove('translate-y-full');
       sheet.classList.add('translate-y-0');
 
-      if (focusDayId) {
+      if (focusDayId === 'total-bill') {
+        setTimeout(() => {
+          if (totalBillInput) totalBillInput.focus();
+        }, 220);
+      } else if (focusDayId) {
         setTimeout(() => {
           const targetInput = document.getElementById(`goal-input-${focusDayId}`);
           if (targetInput) {
@@ -445,17 +472,39 @@ window.openGoalsModal = function(focusDayId) {
 
 window.closeGoalsModal = function() {
   triggerHaptic();
-  // Read values from modal inputs
+
+  let hasChanged = false;
+
+  // Read total bill input from modal
+  const totalBillInput = document.getElementById('goalsModalTotalBillInput');
+  let newTotalBill = state.totalBillGoal;
+  if (totalBillInput) {
+    const valStr = totalBillInput.value.trim() !== '' ? totalBillInput.value : totalBillInput.placeholder;
+    newTotalBill = Math.max(0, parseVal(valStr));
+    if (goalsInitialSnapshot && Math.abs(newTotalBill - goalsInitialSnapshot.totalBillGoal) > 0.001) {
+      hasChanged = true;
+    }
+  }
+  state.totalBillGoal = newTotalBill;
+
+  // Read day inputs from modal
   state.days.forEach(day => {
     const input = document.getElementById(`goal-input-${day.id}`);
     if (input) {
       const valStr = input.value.trim() !== '' ? input.value : input.placeholder;
-      day.planned = Math.max(0, parseVal(valStr));
+      const newPlanned = Math.max(0, parseVal(valStr));
+      const prev = goalsInitialSnapshot ? goalsInitialSnapshot.days.find(d => d.id === day.id) : null;
+      if (prev && Math.abs(newPlanned - prev.planned) > 0.001) {
+        hasChanged = true;
+      }
+      day.planned = newPlanned;
     }
   });
 
-  saveState();
-  updateCalculations();
+  if (hasChanged) {
+    saveState();
+    updateCalculations();
+  }
 
   const modal = document.getElementById('goalsModal');
   const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
@@ -470,7 +519,10 @@ window.closeGoalsModal = function() {
     }, 220);
   }
 
-  showToast('Goals updated');
+  // Only display "Goals updated" when the user actually made a change
+  if (hasChanged) {
+    showToast('Goals updated');
+  }
 };
 
 window.updateGoalsModalTotal = function() {
@@ -498,7 +550,11 @@ window.updateGoalsModalTotal = function() {
 
 window.splitGoalsEvenlyModal = function() {
   triggerHaptic();
-  const targetBase = 161.25;
+  const totalBillInput = document.getElementById('goalsModalTotalBillInput');
+  const currentTotalBill = totalBillInput
+    ? parseVal(totalBillInput.value || totalBillInput.placeholder || state.totalBillGoal)
+    : state.totalBillGoal;
+  const targetBase = currentTotalBill > 0 ? Math.round(currentTotalBill * 0.75 * 100) / 100 : 161.25;
   const perDay = Math.floor((targetBase / 6) * 100) / 100;
   const remainder = Math.round((targetBase - perDay * 6) * 100) / 100;
   
@@ -751,23 +807,6 @@ window.resetCurrentDayEarnings = function() {
 // -------------------------------------------------------------
 
 function setupToolbarActions() {
-  // Total Bill Goal Input listener
-  const totalBillGoalInput = document.getElementById('totalBillGoalInput');
-  if (totalBillGoalInput) {
-    totalBillGoalInput.value = state.totalBillGoal.toFixed(2);
-    totalBillGoalInput.placeholder = state.totalBillGoal.toFixed(2);
-    setupSmartGoalInput(totalBillGoalInput, (newVal, changed) => {
-      if (changed) {
-        state.totalBillGoal = newVal;
-        saveState();
-        updateCalculations();
-        showToast(`Target bill updated: ${formatCurrency(newVal)}`);
-      } else {
-        updateCalculations();
-      }
-    });
-  }
-
   // Split Goal Evenly
   const distributeEvenlyBtn = document.getElementById('distributeEvenlyBtn');
   if (distributeEvenlyBtn) {

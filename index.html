@@ -17,8 +17,8 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 'Inter', 'sans-serif'],
-            mono: ['"SF Mono"', '"JetBrains Mono"', 'Menlo', 'monospace']
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Display"', '"SF Pro"', 'system-ui', 'sans-serif'],
+            mono: ['ui-monospace', '"SF Mono"', 'SFMono-Regular', 'Menlo', 'Monaco', 'Consolas', 'monospace']
           }
         }
       }
@@ -66,14 +66,12 @@
       <!-- HERO SEGMENTED SPLIT-THE-BILL DASHBOARD -->
       <section class="glass-card rounded-3xl p-4 mb-4 relative overflow-hidden">
         
-        <!-- Total Bill Target Header -->
+        <!-- Total Bill Target Header (Tap to edit in Goals) -->
         <div class="flex items-center justify-between text-[11px] font-mono mb-2">
           <span class="text-zinc-400 uppercase tracking-wider text-[10px] font-bold">Total Bill Target</span>
-          <div class="flex items-center gap-1 bg-black/60 px-2 py-0.5 rounded-lg border border-zinc-800/80">
-            <span class="text-zinc-500 font-bold">$</span>
-            <input type="number" id="totalBillGoalInput" inputmode="decimal" step="0.01" min="0" value="215.00" placeholder="215.00"
-              class="smart-goal-input w-16 bg-transparent text-right font-bold text-zinc-200 focus:text-white focus:outline-none placeholder-zinc-500">
-          </div>
+          <button type="button" onclick="openGoalsModal('total-bill')" title="Customize in Goals" class="tap-btn flex items-center gap-1 bg-black/60 px-2.5 py-0.5 rounded-lg border border-zinc-800/80 hover:border-zinc-700 transition-colors cursor-pointer group">
+            <span class="text-xs font-bold text-zinc-200 group-hover:text-white" id="totalBillGoalDisplay">$215.00</span>
+          </button>
         </div>
 
         <!-- Primary Hero Focal Stat: Current Paycheck Needed -->
@@ -98,18 +96,6 @@
             <div id="segDashBar" class="h-full rounded-full seg-dash transition-all duration-300" style="width: 0%"></div>
             <div id="segPaycheckBar" class="h-full rounded-full seg-paycheck transition-all duration-300 ml-0.5" style="width: 100%"></div>
           </div>
-          
-          <!-- Segmented Labels -->
-          <div class="flex items-center justify-between text-[10px] font-mono mt-1.5 px-0.5">
-            <span class="flex items-center gap-1 text-emerald-400 font-medium">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
-              <span id="dashPctLabel">0%</span> Dashed
-            </span>
-            <span class="flex items-center gap-1 text-zinc-400 font-medium">
-              <span class="w-1.5 h-1.5 rounded-full bg-zinc-500"></span>
-              <span id="paycheckPctLabel">100%</span> Paycheck
-            </span>
-          </div>
         </div>
 
         <!-- DoorDash Earnings Summary -->
@@ -120,7 +106,7 @@
               <span>DoorDash Earnings</span>
             </div>
             <div class="text-[11px] font-mono text-zinc-500">
-              of <button type="button" class="text-zinc-300 font-semibold hover:text-white underline decoration-dotted underline-offset-2 transition-colors cursor-pointer" onclick="openGoalsModal()" title="Customize goals"><span id="estimatedEarningsDisplay">$161.25</span> week goal</button>
+              of <button type="button" class="text-zinc-300 font-semibold hover:text-white underline decoration-dotted underline-offset-2 transition-colors cursor-pointer" onclick="openGoalsModal()" title="Customize goals"><span id="estimatedEarningsDisplay">$161.25</span></button>
             </div>
           </div>
           <div class="text-2xl font-black font-mono text-white tracking-tight" id="actualEarningsDisplay">
@@ -163,10 +149,6 @@
           <div class="flex flex-col gap-2" id="otherDaysList">
             <!-- Rendered dynamically by app.js -->
           </div>
-        </div>
-
-        <div class="text-center text-[10px] text-zinc-600 font-mono pt-3 pb-1">
-          Tap any day to open calculator and adjust earnings
         </div>
 
       </section>
@@ -286,12 +268,33 @@
         <!-- Header -->
         <div class="flex items-center justify-between mb-3">
           <div>
-            <h3 class="font-bold text-base text-white">Daily Planned Goals</h3>
-            <p class="text-[10px] text-zinc-400 font-mono">Customize planned earnings for Mon – Sat</p>
+            <h3 class="font-bold text-base text-white">Goals & Targets</h3>
+            <p class="text-[10px] text-zinc-400 font-mono">Customize total bill & daily goals</p>
           </div>
           <button onclick="closeGoalsModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white" title="Close">
             ✕
           </button>
+        </div>
+
+        <!-- Total Bill Target Card (Editable in Goals Section) -->
+        <div class="bg-black/60 rounded-2xl p-3 border border-zinc-800 mb-2.5 flex items-center justify-between font-mono">
+          <div>
+            <span class="text-[9px] uppercase font-bold text-zinc-400 block mb-0.5">Total Bill Target</span>
+            <span class="text-[10px] text-zinc-500">Weekly tuition / school bill</span>
+          </div>
+          <div class="flex items-center bg-zinc-900 rounded-lg px-2.5 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
+            <span class="text-xs font-bold text-emerald-400 mr-1">$</span>
+            <input 
+              type="number" 
+              inputmode="decimal" 
+              id="goalsModalTotalBillInput" 
+              step="0.01" 
+              min="0" 
+              value="215.00"
+              placeholder="215.00"
+              class="smart-goal-input w-20 bg-transparent text-right text-xs font-bold text-white focus:outline-none placeholder-zinc-500"
+            />
+          </div>
         </div>
 
         <!-- Quick Split Evenly Action Banner -->
