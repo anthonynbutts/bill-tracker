@@ -158,21 +158,8 @@ function renderDays() {
       </div>
 
       <!-- Day Progress Bar -->
-      <div class="w-full bg-zinc-800/80 rounded-full h-1.5 overflow-hidden mb-2.5">
+      <div class="w-full bg-zinc-800/80 rounded-full h-1.5 overflow-hidden">
         <div id="bar-${day.id}" class="bg-orange-500 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
-      </div>
-
-      <!-- Quick Steppers Strip (Comfortable Tap Targets) -->
-      <div class="flex items-center justify-between gap-1 pt-2 border-t border-zinc-800/60 font-mono text-xs">
-        <div class="flex items-center gap-1.5">
-          <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50" onclick="quickAdd('${day.id}', 5)">+$5</button>
-          <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50" onclick="quickAdd('${day.id}', 10)">+$10</button>
-          <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800/80 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50" onclick="quickAdd('${day.id}', 20)">+$20</button>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-orange-950/40 hover:bg-orange-900/40 text-orange-300 border border-orange-800/50 font-medium" onclick="fillGoal('${day.id}')">Hit Goal</button>
-          <button type="button" class="tap-btn px-2 py-1 rounded-lg hover:bg-zinc-800 text-zinc-500 hover:text-red-400" onclick="clearDay('${day.id}')" title="Clear">✕</button>
-        </div>
       </div>
     `;
 
