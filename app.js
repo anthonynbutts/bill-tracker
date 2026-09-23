@@ -918,4 +918,19 @@ document.addEventListener('DOMContentLoaded', () => {
       closeCalcModal();
     }
   });
+
+  // iOS Standalone Web App: Stay within standalone frame on link navigation
+  if ('standalone' in window.navigator && window.navigator.standalone) {
+    document.addEventListener('click', (e) => {
+      let node = e.target;
+      while (node && node.nodeName !== 'A' && node.nodeName !== 'HTML') {
+        node = node.parentNode;
+      }
+      if (node && node.nodeName === 'A' && node.getAttribute('href') && !node.getAttribute('target') && node.href.startsWith(window.location.origin)) {
+        e.preventDefault();
+        window.location.href = node.href;
+      }
+    }, false);
+  }
 });
+
