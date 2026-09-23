@@ -46,7 +46,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=9">
+  <link rel="stylesheet" href="styles.css?v=10">
 </head>
 <body class="bg-black text-zinc-100 min-h-screen flex items-center justify-center p-0 sm:p-4 selection:bg-emerald-500 selection:text-black">
 
@@ -196,7 +196,7 @@
         <div class="flex items-center justify-between mb-3">
           <div>
             <div class="flex items-center gap-1.5">
-              <h3 class="font-bold text-sm text-white">+ Add Earnings</h3>
+              <h3 class="font-bold text-sm text-white">Add Earnings</h3>
               <span id="addModalDayBadge" class="text-[9.5px] font-mono font-bold px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 border border-emerald-500/40 uppercase tracking-wider">Today</span>
             </div>
             <p class="text-[10px] text-zinc-400 font-mono mt-0.5">
@@ -208,36 +208,28 @@
           </button>
         </div>
 
-        <!-- Amount to Add Input -->
-        <div class="bg-black/80 rounded-xl p-3 border border-zinc-800 mb-2.5 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/30">
-          <span class="text-[9.5px] uppercase font-bold text-zinc-400 block mb-1 font-mono">Amount to Add</span>
-          <div class="flex items-center">
-            <span class="text-2xl font-bold text-emerald-400 mr-1.5 font-mono">+ $</span>
+        <!-- Amount to Add Card -->
+        <div class="bg-black/70 rounded-2xl py-3 px-4 border border-zinc-800 mb-3 text-center focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/30">
+          <span class="text-[10px] uppercase font-bold text-zinc-400 block mb-1.5 tracking-wider font-mono">Amount to Add</span>
+          <div class="inline-flex items-center justify-center font-mono">
+            <span class="text-2xl font-bold text-emerald-400 mr-1 select-none">$</span>
             <input 
-              type="number" 
+              type="text" 
               inputmode="decimal" 
               id="addModalAmountInput" 
-              step="0.01" 
-              min="0" 
               placeholder="0.00" 
-              class="w-full bg-transparent text-2xl font-bold font-mono text-white focus:outline-none placeholder-zinc-600"
+              class="w-36 bg-transparent text-3xl font-bold font-mono text-white text-center focus:outline-none placeholder-zinc-600 tracking-tight"
               autocomplete="off"
             />
           </div>
         </div>
 
-        <!-- Quick Presets -->
-        <div class="grid grid-cols-5 gap-1 mb-2.5 font-mono text-[11px]">
-          <button type="button" class="tap-btn py-1 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="quickAddPreset(5)">+5</button>
-          <button type="button" class="tap-btn py-1 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="quickAddPreset(10)">+10</button>
-          <button type="button" class="tap-btn py-1 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="quickAddPreset(15)">+15</button>
-          <button type="button" class="tap-btn py-1 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="quickAddPreset(20)">+20</button>
-          <button type="button" class="tap-btn py-1 rounded-lg bg-zinc-800/90 hover:bg-zinc-700 text-zinc-200 border border-zinc-700/50 font-bold text-center" onclick="quickAddPreset(25)">+25</button>
-        </div>
-
         <!-- Live Preview -->
-        <div class="bg-black/40 rounded-xl px-3 py-2 border border-zinc-800/80 mb-3 flex items-center justify-between font-mono">
-          <span class="text-[11px] text-zinc-400">New Total:</span>
+        <div class="bg-black/40 rounded-xl px-3 py-2 border border-zinc-800/80 mb-3.5 flex items-center justify-between font-mono">
+          <div class="flex items-center gap-1.5 text-[11px] text-zinc-400">
+            <span>New Total:</span>
+            <span id="addModalFormulaPreview" class="text-zinc-500 text-[10px] hidden font-mono"></span>
+          </div>
           <span id="addModalNewTotalDisplay" class="text-base font-bold text-emerald-400">$0.00</span>
         </div>
 
@@ -246,8 +238,9 @@
           type="button" 
           id="addModalConfirmBtn" 
           onclick="confirmAddEarnings()" 
-          class="tap-btn w-full py-3 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-1.5 shadow-lg shadow-emerald-950/40"
+          class="tap-btn w-full py-3.5 px-4 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/40"
         >
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
           <span id="addModalConfirmBtnText">Add to Earnings</span>
         </button>
       </div>
@@ -344,6 +337,6 @@
 
   </main>
 
-  <script src="app.js?v=9"></script>
+  <script src="app.js?v=10"></script>
 </body>
 </html>

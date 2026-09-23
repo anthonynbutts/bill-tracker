@@ -35,8 +35,8 @@ Install **Bill Tracker** as a standalone app on your iPhone with zero address ba
 
 - 🖤 **True OLED Pitch-Black Canvas**: Pure `#000000` base background for deep contrast, battery preservation on OLED screens, and elevated dark-zinc frosted glass cards (`rgba(24, 24, 27, 0.75)`).
 - 🎬 **Cinematic Launch Splash**: Pitch-black launch screen with cross-blur fade into the app interface.
-- ➕ **Quick "+ Add" Earnings**: Seamless "+ Add" button to quickly add dash earnings with live total preview and quick presets (+5, +10, +15, +20, +25).
-- 🌈 **Dynamic Color-Transitioning Progress Bars**: Daily and weekly progress bars start in a sleek electric sky-blue / cyan and smoothly shift through oceanic teal into radiant emerald green as earnings climb toward 100%.
+- ➕ **Quick "Add" Earnings**: Seamless Add button (with plus icon) to quickly add dash earnings with live formula breakdown preview and mobile-optimized input.
+- 🌈 **Dynamic Color-Transitioning Progress Bars**: Daily and weekly progress bars start in a sleek crimson/rose red, smoothly shift through warm golden amber/yellow at the midpoint, and transition into vibrant emerald green as earnings reach 100%.
 - 💵 **Direct Smart Earnings Inputs**: Seamless inline smart inputs on the Today card and weekly rows with ghost-placeholder UX—tap to clear and enter earnings directly.
 - 🔔 **Smart Change Detection**: "Goals updated" toast notifications only trigger when an actual value change is committed.
 - 🍎 **Native Apple Typography**: Crafted with Apple's native San Francisco Pro & SF Mono font stacks with tabular numerals (`tnum`).

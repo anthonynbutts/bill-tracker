@@ -151,29 +151,55 @@ function getTodayId() {
 
 /**
  * Dynamic color interpolation for progress bars:
- * Starts off at electric sky blue / cyan (at 0-10%), smoothly transitions through
- * oceanic teal and mint as earnings rise, and finishes in the signature filled emerald green at 100%.
+ * Starts off as a sleek, warm crimson/rose red at low earnings,
+ * smoothly shifts through warm gold/amber yellow around the midpoint,
+ * and finishes in the signature filled emerald green at 100%.
  */
 function getProgressGradient(pct) {
   const p = Math.min(100, Math.max(0, pct)) / 100;
 
-  // Start (0%): rgb(14, 165, 233) -> rgb(56, 189, 248) [Sky Blue / Electric Cyan]
-  // Finish (100%): rgb(16, 185, 129) -> rgb(52, 211, 153) [Emerald Green]
-  const r1 = Math.round(14 + (16 - 14) * p);
-  const g1 = Math.round(165 + (185 - 165) * p);
-  const b1 = Math.round(233 + (129 - 233) * p);
+  // Keyframes:
+  // 0.0 (Red):    left = (244, 63, 94)  [#f43f5e], right = (251, 113, 133) [#fb7185]
+  // 0.5 (Yellow): left = (245, 158, 11) [#f59e0b], right = (250, 204, 21)  [#facc15]
+  // 1.0 (Green):  left = (16, 185, 129) [#10b981], right = (52, 211, 153)  [#34d399]
 
-  const r2 = Math.round(56 + (52 - 56) * p);
-  const g2 = Math.round(189 + (211 - 189) * p);
-  const b2 = Math.round(248 + (153 - 248) * p);
+  let r1, g1, b1;
+  let r2, g2, b2;
+  let glowR, glowG, glowB;
+
+  if (p <= 0.5) {
+    // Red -> Yellow (t from 0 to 1)
+    const t = p / 0.5;
+    r1 = Math.round(244 + (245 - 244) * t);
+    g1 = Math.round(63 + (158 - 63) * t);
+    b1 = Math.round(94 + (11 - 94) * t);
+
+    r2 = Math.round(251 + (250 - 251) * t);
+    g2 = Math.round(113 + (204 - 113) * t);
+    b2 = Math.round(133 + (21 - 133) * t);
+
+    glowR = Math.round(244 + (250 - 244) * t);
+    glowG = Math.round(63 + (204 - 63) * t);
+    glowB = Math.round(94 + (21 - 94) * t);
+  } else {
+    // Yellow -> Green (t from 0 to 1)
+    const t = (p - 0.5) / 0.5;
+    r1 = Math.round(245 + (16 - 245) * t);
+    g1 = Math.round(158 + (185 - 158) * t);
+    b1 = Math.round(11 + (129 - 11) * t);
+
+    r2 = Math.round(250 + (52 - 250) * t);
+    g2 = Math.round(204 + (211 - 204) * t);
+    b2 = Math.round(21 + (153 - 21) * t);
+
+    glowR = Math.round(250 + (16 - 250) * t);
+    glowG = Math.round(204 + (185 - 204) * t);
+    glowB = Math.round(21 + (129 - 21) * t);
+  }
 
   const fromColor = `rgb(${r1}, ${g1}, ${b1})`;
   const toColor = `rgb(${r2}, ${g2}, ${b2})`;
-
-  const glowR = Math.round(14 + (52 - 14) * p);
-  const glowG = Math.round(165 + (211 - 165) * p);
-  const glowB = Math.round(233 + (153 - 233) * p);
-  const glowAlpha = (0.2 + 0.3 * p).toFixed(2);
+  const glowAlpha = (0.22 + 0.28 * p).toFixed(2);
 
   return {
     background: `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 100%)`,
@@ -216,7 +242,7 @@ function renderDays() {
       diffClass = 'text-emerald-400 font-bold';
     } else {
       diffText = `$${(day.planned - day.actual).toFixed(2)} left`;
-      diffClass = 'text-sky-400 font-medium';
+      diffClass = dayPct < 40 ? 'text-rose-400 font-medium' : 'text-amber-400 font-medium';
     }
 
     const card = document.createElement('div');
@@ -243,7 +269,7 @@ function renderDays() {
           </span>
         </div>
 
-        <!-- Middle: Action Banner with Smart Current Dash Input & + Add Button -->
+        <!-- Middle: Action Banner with Smart Current Dash Input & Add Button -->
         <div class="flex items-center justify-between bg-black/60 rounded-xl p-2 border border-emerald-500/30 mb-2">
           <div>
             <span class="text-[8.5px] uppercase font-bold text-zinc-400 block mb-0.5">${actionLabel}</span>
@@ -268,7 +294,7 @@ function renderDays() {
           
           <button type="button" class="tap-btn px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs flex items-center gap-1 shadow-md shadow-emerald-950/40 transition-colors" onclick="openAddModal('${day.id}')" title="Add to earnings">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
-            <span>+ Add</span>
+            <span>Add</span>
           </button>
         </div>
 
@@ -333,8 +359,9 @@ function renderDays() {
               title="Click to edit earnings"
             />
           </div>
-          <button type="button" onclick="openAddModal('${day.id}')" class="px-2 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/60 text-[11px] font-mono font-bold flex items-center gap-0.5 transition-colors" title="Add to ${day.name}">
-            <span>+ Add</span>
+          <button type="button" onclick="openAddModal('${day.id}')" class="px-2.5 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/60 text-[11px] font-mono font-bold flex items-center gap-1 transition-colors" title="Add to ${day.name}">
+            <svg class="w-2.5 h-2.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Add</span>
           </button>
         </div>
       `;
@@ -761,6 +788,7 @@ window.openAddModal = function(dayId) {
   const dayBadge = document.getElementById('addModalDayBadge');
   const currentDisplay = document.getElementById('addModalCurrentAmount');
   const input = document.getElementById('addModalAmountInput');
+  const formulaPreview = document.getElementById('addModalFormulaPreview');
   const newTotalDisplay = document.getElementById('addModalNewTotalDisplay');
   const confirmBtnText = document.getElementById('addModalConfirmBtnText');
 
@@ -769,6 +797,10 @@ window.openAddModal = function(dayId) {
   if (input) {
     input.value = '';
     input.placeholder = '0.00';
+  }
+  if (formulaPreview) {
+    formulaPreview.textContent = '';
+    formulaPreview.classList.add('hidden');
   }
   if (newTotalDisplay) newTotalDisplay.textContent = formatCurrency(day.actual);
   if (confirmBtnText) confirmBtnText.textContent = 'Add to Earnings';
@@ -803,30 +835,30 @@ window.closeAddModal = function() {
   }
 };
 
-window.quickAddPreset = function(amount) {
-  triggerHaptic();
-  const input = document.getElementById('addModalAmountInput');
-  if (!input) return;
-  const current = parseFloat(input.value) || 0;
-  const next = Math.round((current + amount) * 100) / 100;
-  input.value = next.toFixed(2);
-  updateAddModalPreview();
-};
-
 function updateAddModalPreview() {
   const day = state.days.find(d => d.id === addTargetDayId);
   if (!day) return;
   const input = document.getElementById('addModalAmountInput');
+  const formulaPreview = document.getElementById('addModalFormulaPreview');
   const newTotalDisplay = document.getElementById('addModalNewTotalDisplay');
   const confirmBtnText = document.getElementById('addModalConfirmBtnText');
-  const val = input ? parseFloat(input.value) || 0 : 0;
+  const raw = input ? input.value.replace(/[^0-9.]/g, '') : '';
+  const val = parseFloat(raw) || 0;
   const newTotal = Math.max(0, Math.round((day.actual + val) * 100) / 100);
 
   if (newTotalDisplay) {
     newTotalDisplay.textContent = formatCurrency(newTotal);
   }
+  if (formulaPreview) {
+    if (val > 0) {
+      formulaPreview.textContent = `($${day.actual.toFixed(2)} + $${val.toFixed(2)})`;
+      formulaPreview.classList.remove('hidden');
+    } else {
+      formulaPreview.classList.add('hidden');
+    }
+  }
   if (confirmBtnText) {
-    confirmBtnText.textContent = val > 0 ? `Add +$${val.toFixed(2)}` : 'Add to Earnings';
+    confirmBtnText.textContent = val > 0 ? `Add $${val.toFixed(2)}` : 'Add to Earnings';
   }
 }
 
@@ -835,7 +867,8 @@ window.confirmAddEarnings = function() {
   const day = state.days.find(d => d.id === addTargetDayId);
   if (!day) return;
   const input = document.getElementById('addModalAmountInput');
-  const val = input ? parseFloat(input.value) || 0 : 0;
+  const raw = input ? input.value.replace(/[^0-9.]/g, '') : '';
+  const val = parseFloat(raw) || 0;
   if (val > 0) {
     day.actual = Math.round((day.actual + val) * 100) / 100;
     saveState();
@@ -956,10 +989,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }, { passive: true });
   }
 
-  // + Add Earnings Modal live input & keyboard submit
+  // Add Earnings Modal live input & keyboard submit
   const addInput = document.getElementById('addModalAmountInput');
   if (addInput) {
     addInput.addEventListener('input', updateAddModalPreview);
+    addInput.addEventListener('focus', () => {
+      addInput.select();
+    });
     addInput.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         e.preventDefault();
