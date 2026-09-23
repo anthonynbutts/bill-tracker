@@ -105,6 +105,38 @@ input, textarea {
   overscroll-behavior-y: contain;
 }
 
+/* App Launch Blur Fade In */
+@keyframes launchBlurFadeIn {
+  0% {
+    opacity: 0;
+    filter: blur(14px);
+    transform: translateY(8px) scale(0.988);
+  }
+  65% {
+    opacity: 0.95;
+    filter: blur(2px);
+  }
+  100% {
+    opacity: 1;
+    filter: blur(0px);
+    transform: translateY(0) scale(1);
+  }
+}
+
+.launch-fade {
+  animation: launchBlurFadeIn 0.55s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, filter, transform;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .launch-fade {
+    animation: none !important;
+    opacity: 1 !important;
+    filter: none !important;
+    transform: none !important;
+  }
+}
+
 /* Modal sheet padding on iPhone to clear the swipe-up Home Indicator */
 .ynab-modal-sheet {
   padding-bottom: max(1.5rem, calc(env(safe-area-inset-bottom, 0px) + 1.25rem)) !important;

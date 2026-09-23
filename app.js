@@ -885,6 +885,11 @@ document.addEventListener('DOMContentLoaded', () => {
         scrollContent.scrollTop += e.deltaY;
       }
     }, { passive: true });
+
+    // Clean up will-change after launch blur fade-in completes
+    scrollContent.addEventListener('animationend', () => {
+      scrollContent.style.willChange = 'auto';
+    }, { once: true });
   }
 
   // PC / Hardware Keyboard Listener for Calculator
