@@ -295,22 +295,6 @@ function updateCalculations() {
   const paycheckNeededDisplay = document.getElementById('paycheckNeededDisplay');
   if (paycheckNeededDisplay) paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
 
-  // Status Badge
-  const paycheckBadge = document.getElementById('paycheckBadge');
-  if (paycheckBadge) {
-    if (dashActual >= totalBill) {
-      const extra = dashActual - totalBill;
-      paycheckBadge.textContent = extra > 0 ? `+$${extra.toFixed(2)} extra!` : '$0 needed';
-      paycheckBadge.className = 'text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-500 text-black mt-1';
-    } else if (dashActual >= dashGoal) {
-      const saved = plannedPaycheck - paycheckNeeded;
-      paycheckBadge.textContent = `+$${saved.toFixed(2)} saved!`;
-      paycheckBadge.className = 'text-[11px] font-mono font-bold px-2.5 py-1 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 mt-1';
-    } else {
-      paycheckBadge.textContent = `${formatCurrency(plannedPaycheck)} planned`;
-      paycheckBadge.className = 'text-[11px] font-mono font-medium px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700/60 mt-1';
-    }
-  }
 
   // Overall Bill Progress Bar
   const billProgressBar = document.getElementById('billProgressBar');
