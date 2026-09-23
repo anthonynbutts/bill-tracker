@@ -1,6 +1,7 @@
-// School Bill Tracker - Separate Actual & Estimated Earnings Engine
+// School Bill Tracker - Complete Engine with Live Dash Session & Auto-Transfer
 
 const STORAGE_KEY = 'school_bill_tracker_state_v2';
+const SESSION_KEY = 'school_bill_tracker_dash_session_v1';
 const FRAME_KEY = 'school_bill_tracker_frame';
 
 const DEFAULT_DAYS = [
@@ -19,6 +20,8 @@ const DEFAULT_STATE = {
 
 let state = loadState();
 let activeDayId = getTodayId();
+let dashSession = loadDashSession();
+let timerInterval = null;
 
 function triggerHaptic() {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
@@ -26,11 +29,11 @@ function triggerHaptic() {
   }
 }
 
+// Load Tracker State
 function loadState() {
   try {
     const saved = localStorage.getItem(STORAGE_KEY);
     if (!saved) {
-      // Also check if v1 state exists to migrate planned/goal
       const v1 = localStorage.getItem('school_bill_tracker_state_v1');
       if (v1) {
         const p1 = JSON.parse(v1);
@@ -60,7 +63,7 @@ function loadState() {
         name: defDay.name,
         short: defDay.short,
         dayIndex: defDay.dayIndex,
-        planned: match && typeof match.planned === 'number' ? match.planned : (match && typeof match.goal === 'number' ? match.goal : defDay.planned),
+        planned: match && typeof match.planned === 'number' ? match.planned : defDay.planned,
         actual: match && typeof match.actual === 'number' ? match.actual : 0
       };
     });
@@ -76,6 +79,29 @@ function loadState() {
 function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+// Load Active Dash Session (Persists across tab reloads)
+function loadDashSession() {
+  try {
+    const saved = localStorage.getItem(SESSION_KEY);
+    if (!saved) return { active: false, startTime: null, targetDayId: getTodayId(), orders: [] };
+    const parsed = JSON.parse(saved);
+    return {
+      active: !!parsed.active,
+      startTime: parsed.startTime || null,
+      targetDayId: parsed.targetDayId || getTodayId(),
+      orders: Array.isArray(parsed.orders) ? parsed.orders : []
+    };
+  } catch (e) {
+    return { active: false, startTime: null, targetDayId: getTodayId(), orders: [] };
+  }
+}
+
+function saveDashSession() {
+  try {
+    localStorage.setItem(SESSION_KEY, JSON.stringify(dashSession));
   } catch (e) {}
 }
 
@@ -97,6 +123,13 @@ function getTodayId() {
   const today = getTodayIndex();
   const match = DEFAULT_DAYS.find(d => d.dayIndex === today);
   return match ? match.id : 'mon';
+}
+
+function formatDuration(seconds) {
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = seconds % 60;
+  return `${hrs.toString().padStart(2, '0')}:${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 }
 
 // Render Daily Cards
@@ -156,7 +189,7 @@ function renderDays() {
           </div>
         </div>
 
-        <!-- Planned Input (Feeds Estimated Earnings) -->
+        <!-- Planned Input -->
         <div class="bg-black/60 rounded-xl px-3 py-2 border border-zinc-800 focus-within:border-orange-500 transition-colors">
           <label class="block text-[9px] font-bold uppercase tracking-wider text-orange-400 mb-0.5" for="planned-${day.id}">
             Planned
@@ -241,24 +274,19 @@ function attachInputListeners() {
 function updateCalculations() {
   const totalBill = state.totalBillGoal;
 
-  // 1. Actual Earnings: sum of actuals
   const actualEarnings = state.days.reduce((sum, d) => sum + d.actual, 0);
-
-  // 2. Estimated Earnings: dynamically based off planned earnings for each day!
   const estimatedEarnings = state.days.reduce((sum, d) => sum + d.planned, 0);
-
-  // 3. Paycheck Needed right now: Total bill - Actual Earnings
   const paycheckNeeded = Math.max(0, totalBill - actualEarnings);
 
   // Dynamic Island
   const islandPaycheck = document.getElementById('islandPaycheck');
   if (islandPaycheck) islandPaycheck.textContent = formatCurrency(paycheckNeeded);
 
-  // Main Paycheck Needed Display
+  // Main Display
   const paycheckNeededDisplay = document.getElementById('paycheckNeededDisplay');
   if (paycheckNeededDisplay) paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
 
-  // Separate Top Tiles: Actual Earnings vs Estimated Earnings
+  // Separate Top Tiles
   const actualEarningsDisplay = document.getElementById('actualEarningsDisplay');
   if (actualEarningsDisplay) actualEarningsDisplay.textContent = formatCurrency(actualEarnings);
 
@@ -303,8 +331,285 @@ function updateCalculations() {
   });
 }
 
+// -------------------------------------------------------------
+// LIVE DASH SESSION & ORDER TRACKING SYSTEM
+// -------------------------------------------------------------
+
+function startDash() {
+  triggerHaptic();
+  dashSession.active = true;
+  dashSession.startTime = Date.now();
+  dashSession.targetDayId = getTodayId();
+  dashSession.orders = [];
+  saveDashSession();
+
+  updateDashSessionUI();
+  startTimerLoop();
+  openDashSheet();
+  showToast('🚗 Dash session started!');
+}
+
+window.openDashSheet = function() {
+  triggerHaptic();
+  const modal = document.getElementById('dashModal');
+  const sheet = modal ? modal.querySelector('.dash-modal-sheet') : null;
+  const targetDaySelect = document.getElementById('sheetTargetDay');
+
+  if (targetDaySelect) {
+    targetDaySelect.value = dashSession.targetDayId || getTodayId();
+  }
+
+  if (modal && sheet) {
+    modal.classList.remove('opacity-0', 'pointer-events-none');
+    modal.classList.add('opacity-100');
+    sheet.classList.remove('translate-y-full');
+    sheet.classList.add('translate-y-0');
+  }
+
+  // Focus order input if on desktop/ready
+  const input = document.getElementById('orderAmountInput');
+  if (input) setTimeout(() => input.focus(), 300);
+};
+
+window.closeDashSheet = function() {
+  triggerHaptic();
+  const modal = document.getElementById('dashModal');
+  const sheet = modal ? modal.querySelector('.dash-modal-sheet') : null;
+
+  if (modal && sheet) {
+    sheet.classList.remove('translate-y-0');
+    sheet.classList.add('translate-y-full');
+    modal.classList.remove('opacity-100');
+    modal.classList.add('opacity-0', 'pointer-events-none');
+  }
+};
+
+function startTimerLoop() {
+  if (timerInterval) clearInterval(timerInterval);
+
+  function tick() {
+    if (!dashSession.active || !dashSession.startTime) return;
+    const elapsedSeconds = Math.max(0, Math.floor((Date.now() - dashSession.startTime) / 1000));
+    const timeStr = formatDuration(elapsedSeconds);
+
+    const hudTimer = document.getElementById('hudTimer');
+    const sheetTimer = document.getElementById('sheetTimer');
+    if (hudTimer) hudTimer.textContent = timeStr;
+    if (sheetTimer) sheetTimer.textContent = timeStr;
+
+    // Calculate hourly rate
+    const totalEarnings = dashSession.orders.reduce((sum, o) => sum + o.amount, 0);
+    const hourlyRate = elapsedSeconds > 60 ? (totalEarnings / (elapsedSeconds / 3600)) : 0;
+    const sheetHourlyRate = document.getElementById('sheetHourlyRate');
+    if (sheetHourlyRate) sheetHourlyRate.textContent = `${formatCurrency(hourlyRate)}/hr`;
+  }
+
+  tick();
+  timerInterval = setInterval(tick, 1000);
+}
+
+function updateDashSessionUI() {
+  const idleBar = document.getElementById('dashIdleBar');
+  const activeBar = document.getElementById('dashActiveBar');
+  const islandDot = document.getElementById('islandDot');
+
+  if (dashSession.active) {
+    if (idleBar) idleBar.classList.add('hidden');
+    if (activeBar) {
+      activeBar.classList.remove('hidden');
+      activeBar.classList.add('flex');
+    }
+    if (islandDot) {
+      islandDot.className = 'w-2 h-2 rounded-full bg-red-500 animate-pulse';
+    }
+  } else {
+    if (activeBar) {
+      activeBar.classList.add('hidden');
+      activeBar.classList.remove('flex');
+    }
+    if (idleBar) idleBar.classList.remove('hidden');
+    if (islandDot) {
+      islandDot.className = 'w-2 h-2 rounded-full bg-blue-500/80';
+    }
+    if (timerInterval) clearInterval(timerInterval);
+  }
+
+  // Calculate session totals
+  const totalEarnings = dashSession.orders.reduce((sum, o) => sum + o.amount, 0);
+  const count = dashSession.orders.length;
+
+  const hudEarnings = document.getElementById('hudEarnings');
+  const hudOrderCount = document.getElementById('hudOrderCount');
+  const sheetSessionTotal = document.getElementById('sheetSessionTotal');
+  const sheetOrderCount = document.getElementById('sheetOrderCount');
+  const endDashBtnLabel = document.getElementById('endDashBtnLabel');
+
+  if (hudEarnings) hudEarnings.textContent = formatCurrency(totalEarnings);
+  if (hudOrderCount) hudOrderCount.textContent = count;
+  if (sheetSessionTotal) sheetSessionTotal.textContent = formatCurrency(totalEarnings);
+  if (sheetOrderCount) sheetOrderCount.textContent = `${count} order${count === 1 ? '' : 's'}`;
+  if (endDashBtnLabel) endDashBtnLabel.textContent = `End Dash & Transfer ${formatCurrency(totalEarnings)}`;
+
+  renderSessionOrdersList();
+}
+
+function renderSessionOrdersList() {
+  const container = document.getElementById('sessionOrdersList');
+  if (!container) return;
+
+  if (dashSession.orders.length === 0) {
+    container.innerHTML = `<p class="text-zinc-600 text-[11px] py-1">No orders logged yet in this session.</p>`;
+    return;
+  }
+
+  let html = '';
+  dashSession.orders.slice().reverse().forEach((order, revIdx) => {
+    const orderNum = dashSession.orders.length - revIdx;
+    html += `
+      <div class="flex items-center justify-between bg-black/50 px-3 py-1.5 rounded-xl border border-zinc-800/80">
+        <div class="flex items-center gap-2">
+          <span class="text-[10px] text-zinc-500 font-bold">#${orderNum}</span>
+          <span class="text-white font-bold text-xs">${formatCurrency(order.amount)}</span>
+          <span class="text-[10px] text-zinc-500">${order.timeStr || ''}</span>
+        </div>
+        <button onclick="removeOrder('${order.id}')" class="text-zinc-500 hover:text-red-400 px-1 text-xs" title="Delete">✕</button>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function addOrder(amount) {
+  if (isNaN(amount) || amount <= 0) return;
+  triggerHaptic();
+
+  const now = new Date();
+  const timeStr = now.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+
+  dashSession.orders.push({
+    id: Date.now().toString() + Math.random().toString(36).substr(2, 4),
+    amount: Math.round(amount * 100) / 100,
+    timeStr
+  });
+
+  saveDashSession();
+  updateDashSessionUI();
+
+  const input = document.getElementById('orderAmountInput');
+  if (input) {
+    input.value = '';
+    input.focus();
+  }
+
+  showToast(`Added +${formatCurrency(amount)}`);
+}
+
+window.quickAddOrder = function(amount) {
+  addOrder(amount);
+};
+
+window.removeOrder = function(orderId) {
+  triggerHaptic();
+  dashSession.orders = dashSession.orders.filter(o => o.id !== orderId);
+  saveDashSession();
+  updateDashSessionUI();
+};
+
+function endDashAndTransfer() {
+  triggerHaptic();
+  const sessionTotal = dashSession.orders.reduce((sum, o) => sum + o.amount, 0);
+  const targetSelect = document.getElementById('sheetTargetDay');
+  const targetDayId = targetSelect ? targetSelect.value : (dashSession.targetDayId || getTodayId());
+
+  const targetDay = state.days.find(d => d.id === targetDayId);
+  if (!targetDay) return;
+
+  const confirmMsg = sessionTotal > 0 
+    ? `End Dash and transfer ${formatCurrency(sessionTotal)} to ${targetDay.name}'s actual earnings?`
+    : `End Dash session with $0.00?`;
+
+  if (confirm(confirmMsg)) {
+    // Transfer session earnings to the day's actual
+    targetDay.actual = Math.round((targetDay.actual + sessionTotal) * 100) / 100;
+    
+    // Update day input in DOM if rendered
+    const dayActualInput = document.getElementById(`actual-${targetDay.id}`);
+    if (dayActualInput) dayActualInput.value = targetDay.actual.toFixed(2);
+
+    saveState();
+    updateCalculations();
+
+    // Reset session
+    dashSession.active = false;
+    dashSession.startTime = null;
+    dashSession.orders = [];
+    saveDashSession();
+
+    closeDashSheet();
+    updateDashSessionUI();
+
+    showToast(`🎉 Transferred ${formatCurrency(sessionTotal)} to ${targetDay.short}!`);
+  }
+}
+
+function discardDash() {
+  triggerHaptic();
+  if (confirm('Discard this dash session without saving to earnings?')) {
+    dashSession.active = false;
+    dashSession.startTime = null;
+    dashSession.orders = [];
+    saveDashSession();
+
+    closeDashSheet();
+    updateDashSessionUI();
+    showToast('Session discarded');
+  }
+}
+
+// -------------------------------------------------------------
+// TOOLBAR ACTIONS & SETUP
+// -------------------------------------------------------------
+
 function setupToolbarActions() {
-  // Split Goal Evenly across 6 days (~$26.88/day to equal $161.25 base target)
+  // Start Dash Button
+  const startDashBtn = document.getElementById('startDashBtn');
+  if (startDashBtn) {
+    startDashBtn.addEventListener('click', startDash);
+  }
+
+  // Add Order Button & Enter Key
+  const addOrderBtn = document.getElementById('addOrderBtn');
+  const orderAmountInput = document.getElementById('orderAmountInput');
+
+  if (addOrderBtn && orderAmountInput) {
+    addOrderBtn.addEventListener('click', () => {
+      const val = parseVal(orderAmountInput.value);
+      addOrder(val);
+    });
+
+    orderAmountInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        const val = parseVal(orderAmountInput.value);
+        addOrder(val);
+      }
+    });
+  }
+
+  // End Dash Button
+  const endDashBtn = document.getElementById('endDashBtn');
+  if (endDashBtn) {
+    endDashBtn.addEventListener('click', endDashAndTransfer);
+  }
+
+  // Discard Dash Button
+  const discardDashBtn = document.getElementById('discardDashBtn');
+  if (discardDashBtn) {
+    discardDashBtn.addEventListener('click', discardDash);
+  }
+
+  // Split Goal Evenly
   const distributeEvenlyBtn = document.getElementById('distributeEvenlyBtn');
   if (distributeEvenlyBtn) {
     distributeEvenlyBtn.addEventListener('click', () => {
@@ -390,6 +695,15 @@ function setupToolbarActions() {
     const now = new Date();
     headerDate.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   }
+
+  // Target Day change listener
+  const sheetTargetDay = document.getElementById('sheetTargetDay');
+  if (sheetTargetDay) {
+    sheetTargetDay.addEventListener('change', (e) => {
+      dashSession.targetDayId = e.target.value;
+      saveDashSession();
+    });
+  }
 }
 
 let toastTimeout;
@@ -406,11 +720,17 @@ function showToast(msg) {
   toastTimeout = setTimeout(() => {
     toast.classList.add('-translate-y-16', 'opacity-0');
     toast.classList.remove('translate-y-0', 'opacity-100');
-  }, 1400);
+  }, 1600);
 }
 
 document.addEventListener('DOMContentLoaded', () => {
   renderDays();
   setupToolbarActions();
   updateCalculations();
+
+  // Resume active dash session if page was reloaded during a dash
+  if (dashSession.active) {
+    updateDashSessionUI();
+    startTimerLoop();
+  }
 });

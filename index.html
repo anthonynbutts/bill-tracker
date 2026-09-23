@@ -44,12 +44,12 @@
     <div id="dynamicIslandContainer" class="hidden sm:flex items-center justify-center pt-2.5 pb-1 select-none pointer-events-none sticky top-0 bg-black/80 backdrop-blur-md z-50">
       <div id="dynamicIsland" class="h-7 w-28 bg-black rounded-full flex items-center justify-between px-3 text-white border border-zinc-800 transition-transform">
         <span class="text-[10px] font-mono font-medium text-emerald-400" id="islandPaycheck">$215.00</span>
-        <div class="w-2 h-2 rounded-full bg-blue-500/80"></div>
+        <div class="w-2 h-2 rounded-full bg-blue-500/80" id="islandDot"></div>
       </div>
     </div>
 
     <!-- Scrollable Content -->
-    <div class="flex-1 overflow-y-auto px-4 pt-3 pb-10 smooth-scroll" id="scrollContent">
+    <div class="flex-1 overflow-y-auto px-4 pt-3 pb-24 smooth-scroll" id="scrollContent">
       
       <!-- Top Bar -->
       <header class="flex items-center justify-between py-1 mb-3">
@@ -70,7 +70,7 @@
         </div>
       </header>
 
-      <!-- HERO OVERVIEW CARD: GOAL VS ACTUAL -->
+      <!-- HERO OVERVIEW CARD -->
       <section class="glass-card rounded-3xl p-4 sm:p-5 mb-4 relative overflow-hidden">
         
         <!-- Paycheck Needed & Total Needed Row -->
@@ -91,7 +91,7 @@
           </div>
         </div>
 
-        <!-- Overall Bill Progress Bar -->
+        <!-- Progress Bar -->
         <div class="w-full bg-zinc-800/80 rounded-full h-2 overflow-hidden my-3">
           <div id="billProgressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
         </div>
@@ -137,6 +137,146 @@
         Auto-saved • School Bill Tracker
       </div>
 
+    </div>
+
+    <!-- FLOATING DASH BAR (PINNED AT BOTTOM) -->
+    <div class="absolute bottom-0 left-0 right-0 z-40 px-4 py-2.5 bottom-floating-bar" id="bottomDashBar">
+      <!-- IDLE STATE: START DASH BUTTON -->
+      <div id="dashIdleBar" class="flex items-center justify-between gap-3">
+        <button id="startDashBtn" class="tap-btn flex-1 py-3 px-4 rounded-2xl bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-orange-950/40">
+          <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>Start Dash</span>
+        </button>
+      </div>
+
+      <!-- ACTIVE DASH STATE: LIVE DASH HUD -->
+      <div id="dashActiveBar" class="hidden items-center justify-between gap-2 cursor-pointer" onclick="openDashSheet()">
+        <div class="flex items-center gap-2.5">
+          <span class="relative flex h-3 w-3">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
+          </span>
+          <div>
+            <div class="text-[10px] font-bold uppercase tracking-wider text-red-400 font-mono flex items-center gap-1.5">
+              <span>DASHING</span>
+              <span>•</span>
+              <span id="hudTimer" class="text-white">00:00:00</span>
+            </div>
+            <div class="text-xs font-mono font-bold text-white">
+              <span id="hudEarnings" class="text-emerald-400">$0.00</span>
+              <span class="text-zinc-500 font-normal"> (<span id="hudOrderCount">0</span> orders)</span>
+            </div>
+          </div>
+        </div>
+
+        <button type="button" class="tap-btn px-3 py-2 rounded-xl bg-orange-600 hover:bg-orange-500 text-white text-xs font-bold font-mono">
+          Manage
+        </button>
+      </div>
+    </div>
+
+    <!-- DASH SESSION MODAL / BOTTOM SHEET -->
+    <div id="dashModal" class="fixed inset-0 z-50 pointer-events-none opacity-0 transition-opacity duration-200 flex flex-col justify-end">
+      <!-- Backdrop -->
+      <div id="dashModalBackdrop" class="absolute inset-0 bg-black/75 backdrop-blur-sm pointer-events-auto" onclick="closeDashSheet()"></div>
+      
+      <!-- Sheet Content -->
+      <div class="dash-modal-sheet relative z-10 bg-zinc-900 border-t border-zinc-700/80 rounded-t-[32px] p-5 pb-8 max-h-[85vh] overflow-y-auto flex flex-col pointer-events-auto transform translate-y-full">
+        
+        <!-- Sheet Handle -->
+        <div class="w-12 h-1 bg-zinc-700 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeDashSheet()"></div>
+
+        <!-- Header Row -->
+        <div class="flex items-center justify-between mb-4">
+          <div class="flex items-center gap-2">
+            <span class="w-2.5 h-2.5 rounded-full bg-red-500 animate-pulse"></span>
+            <span class="font-bold text-sm text-white">Live Dash Session</span>
+          </div>
+          <div class="flex items-center gap-3">
+            <span id="sheetTimer" class="font-mono text-sm font-bold text-white bg-black/60 px-2.5 py-1 rounded-xl border border-zinc-800">
+              00:00:00
+            </span>
+            <button onclick="closeDashSheet()" class="w-7 h-7 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white" title="Minimize">
+              ✕
+            </button>
+          </div>
+        </div>
+
+        <!-- Big Session Total -->
+        <div class="bg-black/50 rounded-2xl p-4 border border-zinc-800 mb-4 text-center">
+          <span class="text-[10px] uppercase font-bold tracking-widest text-zinc-400">Session Total</span>
+          <div class="text-4xl font-extrabold font-mono text-emerald-400 tracking-tight my-0.5" id="sheetSessionTotal">
+            $0.00
+          </div>
+          <div class="flex items-center justify-center gap-2 text-xs font-mono text-zinc-400">
+            <span id="sheetOrderCount">0 orders</span>
+            <span>•</span>
+            <span id="sheetHourlyRate">$0.00/hr</span>
+          </div>
+        </div>
+
+        <!-- Target Day Selector -->
+        <div class="flex items-center justify-between text-xs bg-black/40 rounded-xl px-3 py-2 border border-zinc-800 mb-4 font-mono">
+          <span class="text-zinc-400">Transfer to:</span>
+          <select id="sheetTargetDay" class="bg-transparent text-white font-bold focus:outline-none cursor-pointer">
+            <option value="mon">Monday</option>
+            <option value="tue">Tuesday</option>
+            <option value="wed" selected>Wednesday (Today)</option>
+            <option value="thu">Thursday</option>
+            <option value="fri">Friday</option>
+            <option value="sat">Saturday</option>
+          </select>
+        </div>
+
+        <!-- Add Order Section -->
+        <div class="mb-4">
+          <label class="block text-[10px] font-bold uppercase tracking-wider text-zinc-400 mb-1.5" for="orderAmountInput">
+            Add Delivery Order
+          </label>
+          <div class="flex items-center gap-2">
+            <div class="flex-1 flex items-center bg-black rounded-xl px-3 py-2.5 border border-zinc-800 focus-within:border-emerald-500 font-mono">
+              <span class="text-emerald-400 font-bold mr-1">$</span>
+              <input type="number" id="orderAmountInput" inputmode="decimal" step="0.01" min="0" placeholder="0.00"
+                class="w-full bg-transparent text-lg font-bold text-white focus:outline-none placeholder-zinc-700">
+            </div>
+            <button id="addOrderBtn" class="tap-btn px-4 py-2.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-bold text-xs font-mono flex items-center gap-1">
+              <span>+ Add</span>
+            </button>
+          </div>
+
+          <!-- Quick Order Presets -->
+          <div class="flex items-center gap-1.5 mt-2 flex-wrap font-mono text-xs">
+            <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="quickAddOrder(5)">+$5</button>
+            <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="quickAddOrder(7.50)">+$7.50</button>
+            <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="quickAddOrder(10)">+$10</button>
+            <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="quickAddOrder(12.50)">+$12.50</button>
+            <button type="button" class="tap-btn px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 border border-zinc-700/50" onclick="quickAddOrder(15)">+$15</button>
+          </div>
+        </div>
+
+        <!-- Orders Completed List -->
+        <div class="mb-5 flex-1 max-h-40 overflow-y-auto custom-scroll">
+          <span class="text-[10px] font-bold uppercase tracking-wider text-zinc-400 block mb-1.5">
+            Orders This Session
+          </span>
+          <div id="sessionOrdersList" class="flex flex-col gap-1.5 text-xs font-mono">
+            <p class="text-zinc-600 text-[11px] py-1">No orders logged yet in this session.</p>
+          </div>
+        </div>
+
+        <!-- End Dash & Transfer Actions -->
+        <div class="flex flex-col gap-2 pt-2 border-t border-zinc-800">
+          <button id="endDashBtn" class="tap-btn w-full py-3.5 px-4 rounded-2xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white font-bold text-sm flex items-center justify-center gap-2 shadow-lg shadow-emerald-950/50">
+            <svg class="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="20 6 9 17 4 12"/></svg>
+            <span id="endDashBtnLabel">End Dash & Transfer Earnings</span>
+          </button>
+          
+          <button id="discardDashBtn" class="tap-btn py-2 text-xs font-mono text-zinc-500 hover:text-red-400 text-center">
+            Discard Session (Don't Save)
+          </button>
+        </div>
+
+      </div>
     </div>
 
     <!-- iPhone 15 Home Indicator Bar (Mockup) -->

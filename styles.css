@@ -1,4 +1,4 @@
-/* Complete Ground-Up Redesign for School Bill Tracker (iPhone 15) */
+/* Complete Redesign + Dash Session System for School Bill Tracker (iPhone 15) */
 
 :root {
   --sat: env(safe-area-inset-top, 0px);
@@ -83,7 +83,7 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 .tap-btn:active {
-  transform: scale(0.95);
+  transform: scale(0.96);
 }
 
 /* Subtle custom scrollbar */
@@ -96,4 +96,22 @@ input[type="number"]::-webkit-inner-spin-button {
 .smooth-scroll::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
   border-radius: 99px;
+}
+
+/* Modal Bottom Sheet Animations */
+.dash-modal-backdrop {
+  transition: opacity 0.25s ease;
+}
+
+.dash-modal-sheet {
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* Floating Bottom Bar */
+.bottom-floating-bar {
+  background: rgba(10, 10, 12, 0.88);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
 }
