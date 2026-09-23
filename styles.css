@@ -1,4 +1,4 @@
-/* Clean, Calm Minimalist iOS Design for School Bill Tracker */
+/* Complete Ground-Up Redesign for School Bill Tracker (iPhone 15) */
 
 :root {
   --sat: env(safe-area-inset-top, 0px);
@@ -11,22 +11,22 @@
 }
 
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "Inter", sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", -system-ui, sans-serif;
   background-color: #000000;
-  color: #ededed;
+  color: #ffffff;
   margin: 0;
   padding: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
 
 .font-mono {
   font-family: "SF Mono", "JetBrains Mono", Menlo, Monaco, Consolas, monospace;
 }
 
-/* Number input styling: no ugly spinners, clear focused borders */
+/* Number input resets: Remove default browser arrows */
 input[type="number"] {
-  font-size: 15px !important;
+  font-size: 16px !important;
   -moz-appearance: textfield;
   appearance: textfield;
 }
@@ -37,7 +37,7 @@ input[type="number"]::-webkit-inner-spin-button {
   margin: 0;
 }
 
-/* iPhone 15 frame sizing */
+/* iPhone 15 Container */
 @media (max-width: 639px) {
   #deviceFrame {
     max-width: 100% !important;
@@ -52,40 +52,48 @@ input[type="number"]::-webkit-inner-spin-button {
 }
 
 #deviceFrame.expanded-frame {
-  max-width: 640px !important;
+  max-width: 580px !important;
   min-height: auto !important;
-  border-radius: 24px !important;
+  border-radius: 32px !important;
 }
 
 #deviceFrame.expanded-frame #dynamicIslandContainer {
   display: none !important;
 }
 
-/* Smooth row selection and transitions */
-.day-row {
-  transition: background-color 0.15s ease;
+/* Card aesthetics: Frosted dark surface with subtle depth */
+.glass-card {
+  background: rgba(24, 24, 27, 0.75);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.day-row.is-active {
-  background-color: rgba(255, 255, 255, 0.05);
+.glass-card.is-active {
+  background: rgba(28, 28, 32, 0.95);
+  border-color: rgba(52, 211, 153, 0.35);
+  box-shadow: 0 4px 20px -5px rgba(0, 0, 0, 0.5), 0 0 15px -3px rgba(52, 211, 153, 0.1);
 }
 
-.quick-chip {
+/* Smooth button tap states */
+.tap-btn {
   transition: transform 0.1s ease, background-color 0.15s ease, opacity 0.15s ease;
+  touch-action: manipulation;
 }
 
-.quick-chip:active {
-  transform: scale(0.94);
+.tap-btn:active {
+  transform: scale(0.95);
 }
 
-/* Custom subtle scrollbar */
-.custom-scroll::-webkit-scrollbar {
-  width: 3px;
+/* Subtle custom scrollbar */
+.smooth-scroll::-webkit-scrollbar {
+  width: 4px;
 }
-.custom-scroll::-webkit-scrollbar-track {
+.smooth-scroll::-webkit-scrollbar-track {
   background: transparent;
 }
-.custom-scroll::-webkit-scrollbar-thumb {
+.smooth-scroll::-webkit-scrollbar-thumb {
   background: rgba(255, 255, 255, 0.12);
-  border-radius: 4px;
+  border-radius: 99px;
 }

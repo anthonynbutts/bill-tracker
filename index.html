@@ -8,7 +8,8 @@
   <meta name="apple-mobile-web-app-title" content="Bill Tracker">
   <meta name="theme-color" content="#000000">
   <title>Bill Tracker</title>
-  
+
+  <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <script>
     tailwind.config = {
@@ -16,7 +17,7 @@
       theme: {
         extend: {
           fontFamily: {
-            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Display"', 'Inter', 'sans-serif'],
+            sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Display"', '"SF Pro Text"', 'Inter', 'sans-serif'],
             mono: ['"SF Mono"', '"JetBrains Mono"', 'Menlo', 'monospace']
           }
         }
@@ -25,11 +26,11 @@
   </script>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-black text-zinc-100 min-h-screen flex flex-col items-center justify-start sm:py-6 overflow-x-hidden selection:bg-zinc-800">
+<body class="bg-black text-zinc-100 min-h-screen flex flex-col items-center justify-start sm:py-6 overflow-x-hidden selection:bg-emerald-500 selection:text-black">
 
   <!-- Desktop Toggle (iPhone 15 Frame / Full Width) -->
   <aside aria-label="Desktop View Switcher" class="hidden sm:flex items-center gap-2.5 mb-3 px-3.5 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 text-[11px] text-zinc-400">
-    <span class="text-zinc-200 font-medium">iPhone 15</span>
+    <span class="text-zinc-200 font-medium">iPhone 15 View</span>
     <span class="text-zinc-600">•</span>
     <button id="toggleFrameBtn" class="hover:text-white transition-colors underline decoration-zinc-700 underline-offset-4">
       Full Width
@@ -37,7 +38,7 @@
   </aside>
 
   <!-- iPhone 15 Shell -->
-  <main id="deviceFrame" class="w-full sm:max-w-[400px] bg-black text-zinc-100 relative min-h-screen sm:min-h-[844px] sm:max-h-[890px] sm:rounded-[48px] sm:border-[8px] sm:border-zinc-800 sm:ring-1 sm:ring-zinc-700/50 sm:shadow-2xl flex flex-col overflow-hidden">
+  <main id="deviceFrame" class="w-full sm:max-w-[412px] bg-black text-zinc-100 relative min-h-screen sm:min-h-[852px] sm:max-h-[900px] sm:rounded-[52px] sm:border-[9px] sm:border-zinc-800 sm:ring-1 sm:ring-zinc-700/60 sm:shadow-[0_25px_60px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden">
     
     <!-- Dynamic Island (Mockup) -->
     <div id="dynamicIslandContainer" class="hidden sm:flex items-center justify-center pt-2.5 pb-1 select-none pointer-events-none sticky top-0 bg-black/80 backdrop-blur-md z-50">
@@ -47,115 +48,102 @@
       </div>
     </div>
 
-    <!-- Main Viewport Area -->
-    <div class="flex-1 overflow-y-auto px-4 pt-2.5 pb-8 custom-scroll">
+    <!-- Scrollable Content -->
+    <div class="flex-1 overflow-y-auto px-4 pt-3 pb-10 smooth-scroll" id="scrollContent">
       
-      <!-- Top Action Bar -->
+      <!-- Top Bar -->
       <header class="flex items-center justify-between py-1 mb-3">
-        <div class="flex items-center gap-2">
-          <span class="text-sm font-semibold tracking-tight text-white">Bill Tracker</span>
-          <span class="text-[10px] font-mono text-zinc-500" id="headerDate"></span>
+        <div>
+          <h1 class="text-base font-bold tracking-tight text-white">Bill Tracker</h1>
+          <p class="text-[11px] text-zinc-500 font-mono" id="headerDate"></p>
         </div>
 
-        <div class="flex items-center gap-1 font-mono text-[11px]">
-          <button id="distributeEvenlyBtn" title="Split Dash Goal Evenly" class="px-2 py-1 rounded-lg bg-zinc-900 border border-zinc-800 text-zinc-400 hover:text-white active:scale-95 transition-all">
-            Split ~$26.88
+        <div class="flex items-center gap-1.5">
+          <button id="copySummaryBtn" title="Copy Summary" class="tap-btn h-8 px-2.5 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center gap-1 text-xs text-zinc-300 hover:text-white">
+            <svg class="w-3.5 h-3.5 text-zinc-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
+            <span>Copy</span>
           </button>
-          <button id="copySummaryBtn" title="Copy Summary" class="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white active:scale-95 transition-all">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect width="14" height="14" x="8" y="8" rx="2" ry="2"/><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"/></svg>
-          </button>
-          <button id="resetWeekBtn" title="Reset Actuals" class="w-7 h-7 rounded-lg bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-red-400 active:scale-95 transition-all">
+          
+          <button id="resetWeekBtn" title="Reset Actuals" class="tap-btn w-8 h-8 rounded-xl bg-zinc-900 border border-zinc-800 flex items-center justify-center text-zinc-400 hover:text-red-400">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>
           </button>
         </div>
       </header>
 
-      <!-- Clean Hero Card (Primary Focus) -->
-      <section class="rounded-2xl bg-zinc-900/90 border border-zinc-800/90 p-4 mb-3 shadow-sm">
-        
-        <div class="flex items-start justify-between mb-3">
+      <!-- HERO OVERVIEW CARD: GOAL VS ACTUAL -->
+      <section class="glass-card rounded-3xl p-4 sm:p-5 mb-4 relative overflow-hidden">
+        <div class="flex items-start justify-between mb-2">
           <div>
-            <div class="text-[10px] uppercase font-semibold text-zinc-400 tracking-wider mb-0.5">Paycheck Needed</div>
-            <div class="text-3xl font-extrabold font-mono tracking-tight text-white" id="paycheckNeededDisplay">
+            <span class="text-[10px] font-bold uppercase tracking-widest text-zinc-400">Paycheck Needed</span>
+            <div class="text-3xl sm:text-4xl font-extrabold font-mono tracking-tight text-white mt-0.5" id="paycheckNeededDisplay">
               $215.00
             </div>
           </div>
-          <span id="paycheckBadge" class="text-[10px] font-mono font-medium px-2 py-0.5 rounded-full bg-zinc-800 text-zinc-400 border border-zinc-700/60 mt-1">
+          <span id="paycheckBadge" class="text-[11px] font-mono font-medium px-2.5 py-1 rounded-full bg-zinc-800 text-zinc-300 border border-zinc-700/60 mt-1">
             $53.75 planned
           </span>
         </div>
 
-        <!-- Progress Bar -->
-        <div class="w-full bg-zinc-800 rounded-full h-1.5 overflow-hidden mb-3">
-          <div id="dashProgressBar" class="bg-emerald-400 h-1.5 rounded-full transition-all duration-300" style="width: 0%"></div>
+        <!-- Overall Bill Progress Bar -->
+        <div class="w-full bg-zinc-800/80 rounded-full h-2 overflow-hidden my-3">
+          <div id="billProgressBar" class="bg-gradient-to-r from-emerald-500 to-teal-400 h-2 rounded-full transition-all duration-300" style="width: 0%"></div>
         </div>
 
-        <!-- Subtle Sub-Metrics Row -->
-        <div class="flex items-center justify-between pt-2.5 border-t border-zinc-800/80 text-xs font-mono">
-          <div class="flex items-center gap-1.5">
-            <span class="text-zinc-500">Dash:</span>
-            <span id="dashActualDisplay" class="font-bold text-orange-400">$0.00</span>
-            <span class="text-zinc-600">/</span>
-            <div class="flex items-center">
-              <span class="text-zinc-500 text-[10px]">$</span>
-              <input type="number" id="dashGoalInput" inputmode="decimal" step="0.01" min="0" value="161.25"
-                class="w-12 bg-transparent text-zinc-300 font-semibold focus:outline-none focus:text-white border-b border-transparent focus:border-zinc-500">
+        <!-- Two Clear Comparison Stats -->
+        <div class="grid grid-cols-2 gap-3 pt-3 border-t border-zinc-800/80 text-xs">
+          <!-- DoorDash Goal vs Actual -->
+          <div class="bg-black/40 rounded-2xl p-2.5 border border-zinc-800/60">
+            <div class="text-[10px] uppercase font-bold text-zinc-400 mb-0.5">DoorDash (Mon-Sat)</div>
+            <div class="flex items-baseline gap-1 font-mono">
+              <span class="text-base font-bold text-orange-400" id="dashActualDisplay">$0.00</span>
+              <span class="text-zinc-600">/</span>
+              <div class="flex items-center text-zinc-400">
+                <span class="text-[10px] mr-0.5">$</span>
+                <input type="number" id="dashGoalInput" inputmode="decimal" step="0.01" min="0" value="161.25"
+                  class="w-14 bg-transparent text-xs font-semibold focus:outline-none focus:text-white border-b border-transparent focus:border-zinc-500">
+              </div>
             </div>
           </div>
 
-          <div class="flex items-center gap-1.5">
-            <span class="text-zinc-500">Needed:</span>
-            <div class="flex items-center">
-              <span class="text-zinc-500 text-[10px]">$</span>
+          <!-- Total Needed Goal -->
+          <div class="bg-black/40 rounded-2xl p-2.5 border border-zinc-800/60">
+            <div class="text-[10px] uppercase font-bold text-zinc-400 mb-0.5">Total Bill Needed</div>
+            <div class="flex items-center text-zinc-200 font-mono text-base font-bold">
+              <span class="text-xs text-zinc-500 mr-0.5">$</span>
               <input type="number" id="totalBillGoalInput" inputmode="decimal" step="0.01" min="0" value="215.00"
-                class="w-12 bg-transparent text-zinc-200 font-bold focus:outline-none focus:text-white border-b border-transparent focus:border-zinc-500">
+                class="w-16 bg-transparent text-base font-bold focus:outline-none focus:text-white border-b border-transparent focus:border-zinc-500">
             </div>
           </div>
         </div>
-
       </section>
 
-      <!-- Weekly Schedule (Single Clean Grouped List) -->
-      <section class="rounded-2xl bg-zinc-900/90 border border-zinc-800/90 overflow-hidden mb-3">
-        
-        <!-- Table Column Headers -->
-        <div class="grid grid-cols-12 gap-1 px-3 py-2 border-b border-zinc-800/80 text-[10px] uppercase font-semibold text-zinc-500 font-mono tracking-wider">
-          <div class="col-span-3">Day</div>
-          <div class="col-span-3 text-right">Goal</div>
-          <div class="col-span-3 text-right">Actual</div>
-          <div class="col-span-3 text-right">Diff</div>
-        </div>
+      <!-- DAILY SECTION HEADER -->
+      <div class="flex items-center justify-between mb-2.5 px-1">
+        <span class="text-[11px] font-bold uppercase tracking-wider text-zinc-400">Daily Dashes</span>
+        <button id="distributeEvenlyBtn" class="tap-btn text-[11px] font-mono text-emerald-400 hover:text-emerald-300 flex items-center gap-1">
+          <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 12h16M12 4v16"/></svg>
+          <span>Split Goal (~$26.88/day)</span>
+        </button>
+      </div>
 
-        <!-- Daily Rows Container -->
-        <div id="daysList" class="divide-y divide-zinc-800/60 font-mono text-xs">
-          <!-- Injected via app.js -->
-        </div>
+      <!-- 6 DAILY CARDS CONTAINER (MONDAY - SATURDAY) -->
+      <div class="flex flex-col gap-2.5 mb-6" id="daysList">
+        <!-- Rendered dynamically by app.js -->
+      </div>
 
-      </section>
-
-      <!-- Quick Steppers Drawer (Operates on Active Day) -->
-      <section id="stepperDrawer" class="rounded-2xl bg-zinc-900/70 border border-zinc-800/70 p-2.5 flex items-center justify-between">
-        <div class="flex items-center gap-1.5">
-          <span class="text-[10px] uppercase font-semibold text-zinc-500 font-mono" id="activeDayLabel">Wed:</span>
-          <button type="button" class="quick-chip px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono" onclick="activeQuickAdd(5)">+5</button>
-          <button type="button" class="quick-chip px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono" onclick="activeQuickAdd(10)">+10</button>
-          <button type="button" class="quick-chip px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-200 text-xs font-mono" onclick="activeQuickAdd(20)">+20</button>
-        </div>
-        <div class="flex items-center gap-1.5">
-          <button type="button" class="quick-chip px-2.5 py-1 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-orange-400 text-xs font-mono font-medium" onclick="activeFillGoal()">Goal</button>
-          <button type="button" class="quick-chip px-2 py-1 rounded-lg text-zinc-500 hover:text-red-400 text-xs font-mono" onclick="activeClear()" title="Clear">✕</button>
-        </div>
-      </section>
+      <div class="text-center text-[10px] text-zinc-600 font-mono pb-2">
+        Auto-saved • School Bill Tracker
+      </div>
 
     </div>
 
-    <!-- iPhone Home Bar (Mockup) -->
+    <!-- iPhone 15 Home Indicator Bar (Mockup) -->
     <div class="hidden sm:block absolute bottom-1 left-1/2 -translate-x-1/2 w-28 h-1 bg-zinc-700/60 rounded-full pointer-events-none z-50"></div>
 
   </main>
 
   <!-- iOS Toast -->
-  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transform -translate-y-16 opacity-0 pointer-events-none transition-all duration-300 bg-zinc-900/95 border border-zinc-700 text-white px-3 py-1.5 rounded-full text-xs font-medium shadow-xl">
+  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transform -translate-y-16 opacity-0 pointer-events-none transition-all duration-300 bg-zinc-900/95 border border-zinc-700 text-white px-3.5 py-1.5 rounded-full text-xs font-medium shadow-xl">
     <span id="toastMessage">Saved</span>
   </div>
 
