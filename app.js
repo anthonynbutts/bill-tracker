@@ -362,7 +362,7 @@ function setupToolbarActions() {
       const dashActual = state.days.reduce((sum, d) => sum + d.actual, 0);
       const paycheckNeeded = Math.max(0, state.totalBillGoal - dashActual);
 
-      let text = `Bill: ${formatCurrency(state.totalBillGoal)} | Dash: ${formatCurrency(dashActual)} | Paycheck: ${formatCurrency(paycheckNeeded)}\n`;
+      let text = `Needed: ${formatCurrency(state.totalBillGoal)} | Dash: ${formatCurrency(dashActual)} | Paycheck: ${formatCurrency(paycheckNeeded)}\n`;
       state.days.forEach(d => {
         text += `${d.name}: ${formatCurrency(d.actual)} / ${formatCurrency(d.goal)}\n`;
       });
