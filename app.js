@@ -126,16 +126,16 @@ function renderDays() {
     let barColor = 'bg-emerald-500';
 
     if (day.actual === 0) {
-      diffText = `-$${day.planned.toFixed(2)} to go`;
-      diffClass = 'text-zinc-500 font-medium';
+      diffText = '';
+      diffClass = '';
       barColor = 'bg-zinc-700';
     } else if (dayDiff >= 0) {
       diffText = dayDiff === 0 ? '✓ Hit Goal' : `+$${dayDiff.toFixed(2)} ahead`;
       diffClass = 'text-emerald-400 font-bold';
       barColor = 'bg-emerald-400';
     } else {
-      diffText = `-$${Math.abs(dayDiff).toFixed(2)} to go`;
-      diffClass = 'text-amber-400 font-medium';
+      diffText = '';
+      diffClass = '';
       barColor = 'bg-amber-400';
     }
 
