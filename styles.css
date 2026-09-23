@@ -34,17 +34,27 @@ body {
   letter-spacing: -0.02em;
 }
 
-/* Number input resets */
-input[type="number"] {
+/* Input resets & iOS Safari auto-zoom prevention */
+input, textarea, select {
   font-size: 16px !important;
-  -moz-appearance: textfield;
-  appearance: textfield;
+  -webkit-appearance: none;
+  appearance: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+#addModalAmountInput {
+  font-size: 1.875rem !important; /* 30px text-3xl */
+  line-height: 2.25rem !important;
 }
 
 input[type="number"]::-webkit-outer-spin-button,
 input[type="number"]::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
+}
+input[type="number"] {
+  -moz-appearance: textfield;
+  appearance: textfield;
 }
 
 /* Prevent iOS page-level rubber-band dragging */
@@ -63,6 +73,11 @@ input, textarea {
   body {
     background-color: #000000 !important;
     padding: 0 !important;
+    display: block !important;
+    width: 100% !important;
+    height: 100% !important;
+    height: 100dvh !important;
+    overflow: hidden !important;
   }
 
   #deviceFrame {
@@ -76,10 +91,12 @@ input, textarea {
     border-radius: 0 !important;
     box-shadow: none !important;
     ring: 0 !important;
-    padding-top: max(env(safe-area-inset-top, 0px), 8px) !important;
+    padding-top: max(env(safe-area-inset-top, 0px), 12px) !important;
     padding-bottom: max(env(safe-area-inset-bottom, 0px), 12px) !important;
     padding-left: env(safe-area-inset-left, 0px) !important;
     padding-right: env(safe-area-inset-right, 0px) !important;
+    display: flex !important;
+    flex-direction: column !important;
   }
 
   /* Real iPhone has hardware Dynamic Island / Notch and Home Indicator */

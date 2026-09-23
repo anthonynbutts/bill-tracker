@@ -270,36 +270,34 @@ function renderDays() {
         </div>
 
         <!-- Middle: Action Banner with Smart Current Dash Input & Add Button -->
-        <div class="flex items-center justify-between bg-black/60 rounded-xl p-2 border border-emerald-500/30 mb-2">
-          <div>
-            <span class="text-[8.5px] uppercase font-bold text-zinc-400 block mb-0.5">${actionLabel}</span>
+        <div class="flex items-center justify-between bg-black/60 rounded-xl p-2.5 border border-emerald-500/30 mb-2.5 gap-2">
+          <div class="min-w-0">
+            <span class="text-[9px] uppercase font-bold text-zinc-400 block mb-1 tracking-wider">${actionLabel}</span>
             <div class="flex items-center gap-1.5 font-mono">
-              <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-0.5 border border-emerald-500/40 focus-within:border-emerald-400 focus-within:ring-1 focus-within:ring-emerald-400/30">
+              <div class="flex items-center bg-zinc-900 rounded-lg px-2.5 py-1 border border-emerald-500/40 focus-within:border-emerald-400 focus-within:ring-1 focus-within:ring-emerald-400/30">
                 <span class="text-sm font-bold text-emerald-400 mr-0.5">$</span>
                 <input 
-                  type="number" 
+                  type="text" 
                   inputmode="decimal" 
                   id="actual-input-${day.id}" 
-                  step="0.01" 
-                  min="0" 
                   value="${day.actual.toFixed(2)}" 
                   placeholder="${day.actual.toFixed(2)}" 
                   class="smart-goal-input w-20 bg-transparent text-left text-sm font-bold text-emerald-400 focus:outline-none placeholder-zinc-500 font-mono" 
                   title="Click to edit current dash"
                 />
               </div>
-              <span class="text-[11px] text-zinc-500">/ $${day.planned.toFixed(2)} goal</span>
+              <span class="text-xs text-zinc-500 whitespace-nowrap">/ $${day.planned.toFixed(2)} goal</span>
             </div>
           </div>
           
-          <button type="button" class="tap-btn px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs flex items-center gap-1 shadow-md shadow-emerald-950/40 transition-colors" onclick="openAddModal('${day.id}')" title="Add to earnings">
+          <button type="button" class="tap-btn flex-shrink-0 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.97] text-white font-mono font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-950/40 transition-colors" onclick="openAddModal('${day.id}')" title="Add to earnings">
             <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
             <span>Add</span>
           </button>
         </div>
 
         <!-- Mini Progress Bar with Dynamic Transition -->
-        <div class="progress-track w-full rounded-full h-1.5 overflow-hidden relative">
+        <div class="progress-track w-full rounded-full h-2 overflow-hidden relative">
           <div class="h-full rounded-full transition-all duration-300" style="width: ${dayPct}%; opacity: ${dayPct > 0 ? '1' : '0'}; background: ${dayProgressStyle.background}; box-shadow: ${dayProgressStyle.boxShadow};"></div>
         </div>
       `;
@@ -321,20 +319,20 @@ function renderDays() {
 
       card.innerHTML = `
         <!-- Left: Day badge, title, and goal -->
-        <div class="flex items-center gap-2">
-          <div class="w-8 h-8 rounded-lg bg-black/60 border border-zinc-800 flex flex-col items-center justify-center font-mono">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-8 h-8 rounded-lg bg-black/60 border border-zinc-800 flex flex-col items-center justify-center font-mono flex-shrink-0">
             <span class="text-[8.5px] text-zinc-500 uppercase font-bold">${day.short}</span>
             <span class="text-[11px] font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-emerald-400' : (day.actual > 0 ? 'text-amber-400' : 'text-zinc-600')}">
               ${day.actual >= day.planned && day.planned > 0 ? '✓' : (day.actual > 0 ? '•' : '—')}
             </span>
           </div>
 
-          <div>
-            <div class="flex items-center gap-1.5">
+          <div class="min-w-0">
+            <div class="flex items-center gap-1.5 truncate">
               <span class="font-semibold text-white text-xs">${day.name}</span>
-              <span class="text-[9.5px] font-mono ${diffClass}">${diffText}</span>
+              <span class="text-[9.5px] font-mono ${diffClass} truncate">${diffText}</span>
             </div>
-            <div class="text-[10px] font-mono text-zinc-400 mt-0.5 flex items-center gap-1.5">
+            <div class="text-[10.5px] font-mono text-zinc-400 mt-0.5 flex items-center gap-1.5">
               <span>Goal: $${day.planned.toFixed(2)}</span>
               <div class="progress-track w-14 rounded-full h-1.5 overflow-hidden inline-block align-middle relative">
                 <div class="h-full rounded-full transition-all duration-300" style="width: ${dayPct}%; opacity: ${dayPct > 0 ? '1' : '0'}; background: ${dayProgressStyle.background}; box-shadow: ${dayProgressStyle.boxShadow};"></div>
@@ -343,23 +341,21 @@ function renderDays() {
           </div>
         </div>
 
-        <!-- Right: Smart Current Dash Input & + Add Button -->
-        <div class="flex items-center gap-1.5">
-          <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-0.5 border border-zinc-700/60 focus-within:border-emerald-500">
+        <!-- Right: Smart Current Dash Input & Add Button -->
+        <div class="flex items-center gap-2 flex-shrink-0">
+          <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
             <span class="text-xs font-bold text-emerald-400 mr-0.5 font-mono">$</span>
             <input 
-              type="number" 
+              type="text" 
               inputmode="decimal" 
               id="actual-input-${day.id}" 
-              step="0.01" 
-              min="0" 
               value="${day.actual.toFixed(2)}" 
               placeholder="${day.actual.toFixed(2)}" 
               class="smart-goal-input w-16 bg-transparent text-right font-mono text-xs font-bold text-white focus:outline-none placeholder-zinc-500" 
               title="Click to edit earnings"
             />
           </div>
-          <button type="button" onclick="openAddModal('${day.id}')" class="px-2.5 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/60 text-[11px] font-mono font-bold flex items-center gap-1 transition-colors" title="Add to ${day.name}">
+          <button type="button" onclick="openAddModal('${day.id}')" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/60 text-xs font-mono font-bold flex items-center gap-1 transition-colors active:scale-95" title="Add to ${day.name}">
             <svg class="w-2.5 h-2.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
             <span>Add</span>
           </button>
@@ -672,14 +668,12 @@ function renderGoalsModalList() {
         <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
           <span class="text-xs font-bold text-emerald-400 mr-1">$</span>
           <input 
-            type="number" 
+            type="text" 
             inputmode="decimal" 
             id="goal-input-${day.id}" 
-            step="0.01" 
-            min="0" 
             value="${day.planned.toFixed(2)}"
             placeholder="${day.planned.toFixed(2)}"
-            class="smart-goal-input w-16 bg-transparent text-right text-xs font-bold text-white focus:outline-none placeholder-zinc-500"
+            class="smart-goal-input w-20 bg-transparent text-right font-mono text-sm font-bold text-white focus:outline-none placeholder-zinc-500"
           />
         </div>
       `;
