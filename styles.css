@@ -107,11 +107,34 @@ input[type="number"]::-webkit-inner-spin-button {
   transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-/* Floating Bottom Bar */
+/* Floating Bottom Bar with Dark-Blurred Backdrop */
 .bottom-floating-bar {
-  background: rgba(10, 10, 12, 0.88);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  background: linear-gradient(to top, rgba(0, 0, 0, 0.95) 0%, rgba(10, 10, 12, 0.88) 60%, rgba(10, 10, 12, 0.4) 90%, transparent 100%);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border-top: 1px solid rgba(255, 255, 255, 0.06);
   padding-bottom: max(0.65rem, env(safe-area-inset-bottom));
 }
+
+/* Dark-Blurred Glass Dash Button */
+.dash-glass-btn {
+  background: rgba(24, 24, 27, 0.82);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: 0 12px 30px -4px rgba(0, 0, 0, 0.85), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+.dash-glass-btn:hover {
+  background: rgba(39, 39, 42, 0.92);
+  border-color: rgba(255, 255, 255, 0.24);
+  box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255, 255, 255, 0.16);
+}
+
+.dash-glass-btn:active {
+  transform: scale(0.96);
+  background: rgba(20, 20, 22, 0.95);
+  border-color: rgba(255, 255, 255, 0.18);
+}
+
