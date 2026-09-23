@@ -149,6 +149,40 @@ function getTodayId() {
   return match ? match.id : 'mon';
 }
 
+/**
+ * Dynamic color interpolation for progress bars:
+ * Starts off at electric sky blue / cyan (at 0-10%), smoothly transitions through
+ * oceanic teal and mint as earnings rise, and finishes in the signature filled emerald green at 100%.
+ */
+function getProgressGradient(pct) {
+  const p = Math.min(100, Math.max(0, pct)) / 100;
+
+  // Start (0%): rgb(14, 165, 233) -> rgb(56, 189, 248) [Sky Blue / Electric Cyan]
+  // Finish (100%): rgb(16, 185, 129) -> rgb(52, 211, 153) [Emerald Green]
+  const r1 = Math.round(14 + (16 - 14) * p);
+  const g1 = Math.round(165 + (185 - 165) * p);
+  const b1 = Math.round(233 + (129 - 233) * p);
+
+  const r2 = Math.round(56 + (52 - 56) * p);
+  const g2 = Math.round(189 + (211 - 189) * p);
+  const b2 = Math.round(248 + (153 - 248) * p);
+
+  const fromColor = `rgb(${r1}, ${g1}, ${b1})`;
+  const toColor = `rgb(${r2}, ${g2}, ${b2})`;
+
+  const glowR = Math.round(14 + (52 - 14) * p);
+  const glowG = Math.round(165 + (211 - 165) * p);
+  const glowB = Math.round(233 + (153 - 233) * p);
+  const glowAlpha = (0.2 + 0.3 * p).toFixed(2);
+
+  return {
+    background: `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 100%)`,
+    boxShadow: `0 0 8px rgba(${glowR}, ${glowG}, ${glowB}, ${glowAlpha})`,
+    fromColor,
+    toColor
+  };
+}
+
 let showOtherDays = false;
 
 // Render Daily Cards: Shows only the current day by default, other days revealed on toggle
@@ -169,23 +203,20 @@ function renderDays() {
     const isToday = day.id === activeSpotlightId;
     const dayDiff = day.actual - day.planned;
     const dayPct = day.planned > 0 ? Math.min(100, (day.actual / day.planned) * 100) : (day.actual > 0 ? 100 : 0);
+    const dayProgressStyle = getProgressGradient(dayPct);
 
     let diffText = '';
     let diffClass = '';
-    let barColor = 'bg-emerald-500';
 
     if (day.actual === 0) {
       diffText = '';
       diffClass = '';
-      barColor = 'bg-zinc-700';
     } else if (dayDiff >= 0) {
       diffText = dayDiff === 0 ? '✓ Hit Goal' : `+$${dayDiff.toFixed(2)} ahead`;
       diffClass = 'text-emerald-400 font-bold';
-      barColor = 'bg-emerald-400';
     } else {
-      diffText = '';
-      diffClass = '';
-      barColor = 'bg-amber-400';
+      diffText = `$${(day.planned - day.actual).toFixed(2)} left`;
+      diffClass = 'text-sky-400 font-medium';
     }
 
     const card = document.createElement('div');
@@ -212,32 +243,38 @@ function renderDays() {
           </span>
         </div>
 
-        <!-- Middle: Action Banner with Smart Current Dash Input -->
-        <div class="flex items-center justify-between bg-black/60 rounded-xl px-3 py-2 border border-emerald-500/30 mb-2">
+        <!-- Middle: Action Banner with Smart Current Dash Input & + Add Button -->
+        <div class="flex items-center justify-between bg-black/60 rounded-xl p-2 border border-emerald-500/30 mb-2">
           <div>
             <span class="text-[8.5px] uppercase font-bold text-zinc-400 block mb-0.5">${actionLabel}</span>
-            <span class="text-[11px] text-zinc-500 font-mono">Target: $${day.planned.toFixed(2)}</span>
+            <div class="flex items-center gap-1.5 font-mono">
+              <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-0.5 border border-emerald-500/40 focus-within:border-emerald-400 focus-within:ring-1 focus-within:ring-emerald-400/30">
+                <span class="text-sm font-bold text-emerald-400 mr-0.5">$</span>
+                <input 
+                  type="number" 
+                  inputmode="decimal" 
+                  id="actual-input-${day.id}" 
+                  step="0.01" 
+                  min="0" 
+                  value="${day.actual.toFixed(2)}" 
+                  placeholder="${day.actual.toFixed(2)}" 
+                  class="smart-goal-input w-20 bg-transparent text-left text-sm font-bold text-emerald-400 focus:outline-none placeholder-zinc-500 font-mono" 
+                  title="Click to edit current dash"
+                />
+              </div>
+              <span class="text-[11px] text-zinc-500">/ $${day.planned.toFixed(2)} goal</span>
+            </div>
           </div>
           
-          <div class="flex items-center bg-zinc-900 rounded-lg px-2.5 py-1 border border-emerald-500/40 focus-within:border-emerald-400 focus-within:ring-1 focus-within:ring-emerald-400/30">
-            <span class="text-base font-bold text-emerald-400 mr-1 font-mono">$</span>
-            <input 
-              type="number" 
-              inputmode="decimal" 
-              id="actual-input-${day.id}" 
-              step="0.01" 
-              min="0" 
-              value="${day.actual.toFixed(2)}" 
-              placeholder="${day.actual.toFixed(2)}" 
-              class="smart-goal-input w-24 bg-transparent text-right text-base font-bold text-emerald-400 focus:outline-none placeholder-zinc-500 font-mono" 
-              title="Click to edit earnings"
-            />
-          </div>
+          <button type="button" class="tap-btn px-3 py-1.5 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs flex items-center gap-1 shadow-md shadow-emerald-950/40 transition-colors" onclick="openAddModal('${day.id}')" title="Add to earnings">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            <span>+ Add</span>
+          </button>
         </div>
 
-        <!-- Mini Progress Bar -->
-        <div class="w-full bg-zinc-800/90 rounded-full h-1 overflow-hidden">
-          <div class="${barColor} h-1 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
+        <!-- Mini Progress Bar with Dynamic Transition -->
+        <div class="progress-track w-full rounded-full h-1.5 overflow-hidden relative">
+          <div class="h-full rounded-full transition-all duration-300" style="width: ${dayPct}%; opacity: ${dayPct > 0 ? '1' : '0'}; background: ${dayProgressStyle.background}; box-shadow: ${dayProgressStyle.boxShadow};"></div>
         </div>
       `;
       todayContainer.appendChild(card);
@@ -273,17 +310,17 @@ function renderDays() {
             </div>
             <div class="text-[10px] font-mono text-zinc-400 mt-0.5 flex items-center gap-1.5">
               <span>Goal: $${day.planned.toFixed(2)}</span>
-              <div class="w-12 bg-zinc-800 rounded-full h-1 overflow-hidden inline-block align-middle">
-                <div class="${barColor} h-1 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
+              <div class="progress-track w-14 rounded-full h-1.5 overflow-hidden inline-block align-middle relative">
+                <div class="h-full rounded-full transition-all duration-300" style="width: ${dayPct}%; opacity: ${dayPct > 0 ? '1' : '0'}; background: ${dayProgressStyle.background}; box-shadow: ${dayProgressStyle.boxShadow};"></div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Right: Smart Current Dash Input -->
-        <div class="flex items-center">
-          <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-1 border border-zinc-700/60 focus-within:border-emerald-500 focus-within:ring-1 focus-within:ring-emerald-500/30">
-            <span class="text-xs font-bold text-emerald-400 mr-1 font-mono">$</span>
+        <!-- Right: Smart Current Dash Input & + Add Button -->
+        <div class="flex items-center gap-1.5">
+          <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-0.5 border border-zinc-700/60 focus-within:border-emerald-500">
+            <span class="text-xs font-bold text-emerald-400 mr-0.5 font-mono">$</span>
             <input 
               type="number" 
               inputmode="decimal" 
@@ -296,6 +333,9 @@ function renderDays() {
               title="Click to edit earnings"
             />
           </div>
+          <button type="button" onclick="openAddModal('${day.id}')" class="px-2 py-1 rounded-md bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/60 text-[11px] font-mono font-bold flex items-center gap-0.5 transition-colors" title="Add to ${day.name}">
+            <span>+ Add</span>
+          </button>
         </div>
       `;
       otherDaysList.appendChild(card);
@@ -400,13 +440,16 @@ function updateCalculations() {
     }
   }
 
-  // Clean Progress Bar (Green fill on deep slate gray track)
+  // Dynamic Weekly Progress Bar (Transitions from sky blue/cyan into vibrant emerald green)
   const segDashBar = document.getElementById('segDashBar');
   const dashPct = totalBill > 0 ? Math.min(100, (actualEarnings / totalBill) * 100) : 0;
 
   if (segDashBar) {
     segDashBar.style.width = `${dashPct}%`;
     segDashBar.style.opacity = dashPct > 0 ? '1' : '0';
+    const weeklyStyle = getProgressGradient(dashPct);
+    segDashBar.style.background = weeklyStyle.background;
+    segDashBar.style.boxShadow = weeklyStyle.boxShadow;
   }
 
   // Summary Tiles
@@ -702,6 +745,106 @@ window.handleBackupFileSelect = function(event) {
 };
 
 // -------------------------------------------------------------
+// + ADD EARNINGS MODAL ENGINE
+// -------------------------------------------------------------
+
+let addTargetDayId = null;
+
+window.openAddModal = function(dayId) {
+  triggerHaptic();
+  addTargetDayId = dayId;
+  const day = state.days.find(d => d.id === dayId);
+  if (!day) return;
+
+  const modal = document.getElementById('addModal');
+  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
+  const dayBadge = document.getElementById('addModalDayBadge');
+  const currentDisplay = document.getElementById('addModalCurrentAmount');
+  const input = document.getElementById('addModalAmountInput');
+  const newTotalDisplay = document.getElementById('addModalNewTotalDisplay');
+  const confirmBtnText = document.getElementById('addModalConfirmBtnText');
+
+  if (dayBadge) dayBadge.textContent = day.name;
+  if (currentDisplay) currentDisplay.textContent = formatCurrency(day.actual);
+  if (input) {
+    input.value = '';
+    input.placeholder = '0.00';
+  }
+  if (newTotalDisplay) newTotalDisplay.textContent = formatCurrency(day.actual);
+  if (confirmBtnText) confirmBtnText.textContent = 'Add to Earnings';
+
+  if (modal && sheet) {
+    modal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modal.classList.add('opacity-100');
+      sheet.classList.remove('translate-y-full');
+      sheet.classList.add('translate-y-0');
+      setTimeout(() => {
+        if (input) input.focus();
+      }, 100);
+    });
+  }
+};
+
+window.closeAddModal = function() {
+  triggerHaptic();
+  const modal = document.getElementById('addModal');
+  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
+
+  if (modal && sheet) {
+    sheet.classList.remove('translate-y-0');
+    sheet.classList.add('translate-y-full');
+    modal.classList.remove('opacity-100');
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 220);
+  }
+};
+
+window.quickAddPreset = function(amount) {
+  triggerHaptic();
+  const input = document.getElementById('addModalAmountInput');
+  if (!input) return;
+  const current = parseFloat(input.value) || 0;
+  const next = Math.round((current + amount) * 100) / 100;
+  input.value = next.toFixed(2);
+  updateAddModalPreview();
+};
+
+function updateAddModalPreview() {
+  const day = state.days.find(d => d.id === addTargetDayId);
+  if (!day) return;
+  const input = document.getElementById('addModalAmountInput');
+  const newTotalDisplay = document.getElementById('addModalNewTotalDisplay');
+  const confirmBtnText = document.getElementById('addModalConfirmBtnText');
+  const val = input ? parseFloat(input.value) || 0 : 0;
+  const newTotal = Math.max(0, Math.round((day.actual + val) * 100) / 100);
+
+  if (newTotalDisplay) {
+    newTotalDisplay.textContent = formatCurrency(newTotal);
+  }
+  if (confirmBtnText) {
+    confirmBtnText.textContent = val > 0 ? `Add +$${val.toFixed(2)}` : 'Add to Earnings';
+  }
+}
+
+window.confirmAddEarnings = function() {
+  triggerHaptic();
+  const day = state.days.find(d => d.id === addTargetDayId);
+  if (!day) return;
+  const input = document.getElementById('addModalAmountInput');
+  const val = input ? parseFloat(input.value) || 0 : 0;
+  if (val > 0) {
+    day.actual = Math.round((day.actual + val) * 100) / 100;
+    saveState();
+    updateCalculations();
+  }
+  closeAddModal();
+};
+
+// -------------------------------------------------------------
 // TOOLBAR ACTIONS & SETUP
 // -------------------------------------------------------------
 
@@ -811,6 +954,21 @@ document.addEventListener('DOMContentLoaded', () => {
     deviceFrame.addEventListener('wheel', (e) => {
       scrollContent.scrollTop += e.deltaY;
     }, { passive: true });
+  }
+
+  // + Add Earnings Modal live input & keyboard submit
+  const addInput = document.getElementById('addModalAmountInput');
+  if (addInput) {
+    addInput.addEventListener('input', updateAddModalPreview);
+    addInput.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') {
+        e.preventDefault();
+        confirmAddEarnings();
+      } else if (e.key === 'Escape') {
+        e.preventDefault();
+        closeAddModal();
+      }
+    });
   }
 
   // iOS Standalone Web App: Stay within standalone frame on link navigation

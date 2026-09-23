@@ -222,10 +222,10 @@ input, textarea {
 }
 
 .progress-fill {
-  background: linear-gradient(90deg, #10b981 0%, #34d399 100%);
-  box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);
+  background: linear-gradient(90deg, #0ea5e9 0%, #38bdf8 100%);
+  box-shadow: 0 0 8px rgba(14, 165, 233, 0.35);
   border-radius: 9999px;
-  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease;
+  transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1), opacity 0.2s ease, background 0.3s ease, box-shadow 0.3s ease;
 }
 
 /* Segmented Bar Segments (Legacy Alias) */
