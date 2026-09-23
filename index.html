@@ -66,12 +66,13 @@
       <!-- HERO SEGMENTED SPLIT-THE-BILL DASHBOARD -->
       <section class="glass-card rounded-3xl p-4 mb-4 relative overflow-hidden">
         
-        <!-- Total Bill Target Header (Tap to edit in Goals) -->
+        <!-- Total Bill Target Header (Plain text) -->
         <div class="flex items-center justify-between text-[11px] font-mono mb-2">
           <span class="text-zinc-400 uppercase tracking-wider text-[10px] font-bold">Total Bill Target</span>
-          <button type="button" onclick="openGoalsModal('total-bill')" title="Customize in Goals" class="tap-btn flex items-center gap-1 bg-black/60 px-2.5 py-0.5 rounded-lg border border-zinc-800/80 hover:border-zinc-700 transition-colors cursor-pointer group">
-            <span class="text-xs font-bold text-zinc-200 group-hover:text-white" id="totalBillGoalDisplay">$215.00</span>
-          </button>
+          <div class="flex items-center gap-1 bg-black/60 px-2.5 py-0.5 rounded-lg border border-zinc-800/80">
+            <span class="text-zinc-500 font-bold">$</span>
+            <span class="text-xs font-bold text-zinc-200" id="totalBillGoalDisplay">215.00</span>
+          </div>
         </div>
 
         <!-- Primary Hero Focal Stat: Current Paycheck Needed -->
@@ -84,7 +85,7 @@
           </div>
           
           <!-- Contextual Goal Badge -->
-          <div class="inline-flex items-center gap-1 mt-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400 cursor-pointer hover:border-zinc-700 transition-colors" onclick="openGoalsModal()" title="View daily goals">
+          <div class="inline-flex items-center gap-1 mt-1.5 px-2.5 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[11px] font-mono text-zinc-400">
             <span id="paycheckGoalDisplay" class="text-emerald-400 font-bold">$53.75</span>
             <span>goal</span>
           </div>
@@ -106,7 +107,7 @@
               <span>DoorDash Earnings</span>
             </div>
             <div class="text-[11px] font-mono text-zinc-500">
-              of <button type="button" class="text-zinc-300 font-semibold hover:text-white underline decoration-dotted underline-offset-2 transition-colors cursor-pointer" onclick="openGoalsModal()" title="Customize goals"><span id="estimatedEarningsDisplay">$161.25</span></button>
+              of <span id="estimatedEarningsDisplay" class="text-zinc-300 font-semibold">$161.25</span>
             </div>
           </div>
           <div class="text-2xl font-black font-mono text-white tracking-tight" id="actualEarningsDisplay">

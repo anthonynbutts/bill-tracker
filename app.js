@@ -215,7 +215,7 @@ function renderDays() {
             <span class="text-[9px] uppercase font-bold text-zinc-400 block mb-0.5">Today's Earnings</span>
             <div class="flex items-baseline gap-1 font-mono">
               <span class="text-2xl font-black text-emerald-400">$${day.actual.toFixed(2)}</span>
-              <button type="button" class="text-xs text-zinc-400 hover:text-white underline decoration-dotted underline-offset-2 transition-colors cursor-pointer" onclick="event.stopPropagation(); openGoalsModal('${day.id}')" title="Tap to change goal">/ $${day.planned.toFixed(2)} goal</button>
+              <span class="text-xs text-zinc-500">/ $${day.planned.toFixed(2)} goal</span>
             </div>
           </div>
           
@@ -253,7 +253,7 @@ function renderDays() {
               <span class="text-[10px] font-mono ${diffClass}">${diffText}</span>
             </div>
             <div class="text-[11px] font-mono text-zinc-400 mt-0.5 flex items-center gap-1.5">
-              <button type="button" class="hover:text-white underline decoration-dotted underline-offset-2 text-left cursor-pointer transition-colors" onclick="event.stopPropagation(); openGoalsModal('${day.id}')" title="Tap to change goal">Goal: $${day.planned.toFixed(2)}</button>
+              <span>Goal: $${day.planned.toFixed(2)}</span>
               <div class="w-14 bg-zinc-800 rounded-full h-1 overflow-hidden inline-block align-middle">
                 <div class="${barColor} h-1 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
               </div>
@@ -363,7 +363,7 @@ function updateCalculations() {
   // Update total bill goal display on main screen
   const totalBillGoalDisplay = document.getElementById('totalBillGoalDisplay');
   if (totalBillGoalDisplay) {
-    totalBillGoalDisplay.textContent = formatCurrency(totalBill);
+    totalBillGoalDisplay.textContent = totalBill.toFixed(2);
   }
 
   // Update total bill goal input in modal if not focused
