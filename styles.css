@@ -61,6 +61,25 @@ input[type="number"]::-webkit-inner-spin-button {
   display: none !important;
 }
 
+/* PC & Responsive Desktop Scrolling */
+html, body {
+  overflow-x: hidden;
+  overflow-y: auto;
+}
+
+#scrollContent {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
+}
+
+@media (min-width: 640px) {
+  #deviceFrame {
+    height: 852px;
+    max-height: calc(100vh - 4rem) !important;
+  }
+}
+
 /* Card aesthetics: Frosted dark surface with subtle depth */
 .glass-card {
   background: rgba(24, 24, 27, 0.75);

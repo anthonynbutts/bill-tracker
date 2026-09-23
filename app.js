@@ -369,10 +369,13 @@ window.openDashSheet = function() {
   }
 
   if (modal && sheet) {
-    modal.classList.remove('opacity-0', 'pointer-events-none');
-    modal.classList.add('opacity-100');
-    sheet.classList.remove('translate-y-full');
-    sheet.classList.add('translate-y-0');
+    modal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modal.classList.add('opacity-100');
+      sheet.classList.remove('translate-y-full');
+      sheet.classList.add('translate-y-0');
+    });
   }
 
   // Focus order input if on desktop/ready
@@ -390,6 +393,9 @@ window.closeDashSheet = function() {
     sheet.classList.add('translate-y-full');
     modal.classList.remove('opacity-100');
     modal.classList.add('opacity-0', 'pointer-events-none');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 220);
   }
 };
 
@@ -736,6 +742,18 @@ document.addEventListener('DOMContentLoaded', () => {
   renderDays();
   setupToolbarActions();
   updateCalculations();
+
+  // Ensure PC mousewheel scrolls the inner content naturally
+  const deviceFrame = document.getElementById('deviceFrame');
+  const scrollContent = document.getElementById('scrollContent');
+  if (deviceFrame && scrollContent) {
+    deviceFrame.addEventListener('wheel', (e) => {
+      const modal = document.getElementById('dashModal');
+      if (modal && modal.classList.contains('hidden')) {
+        scrollContent.scrollTop += e.deltaY;
+      }
+    }, { passive: true });
+  }
 
   // Resume active dash session if page was reloaded during a dash
   if (dashSession.active) {

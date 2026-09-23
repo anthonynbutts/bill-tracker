@@ -184,12 +184,12 @@
     </div>
 
     <!-- DASH SESSION MODAL / BOTTOM SHEET -->
-    <div id="dashModal" class="fixed inset-0 z-50 pointer-events-none opacity-0 transition-opacity duration-200 flex flex-col justify-end">
+    <div id="dashModal" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-200 flex flex-col justify-end pointer-events-none">
       <!-- Backdrop -->
-      <div id="dashModalBackdrop" class="absolute inset-0 bg-black/75 backdrop-blur-sm pointer-events-auto" onclick="closeDashSheet()"></div>
+      <div id="dashModalBackdrop" class="absolute inset-0 bg-black/75 backdrop-blur-sm cursor-pointer" onclick="closeDashSheet()"></div>
       
       <!-- Sheet Content -->
-      <div class="dash-modal-sheet relative z-10 bg-zinc-900 border-t border-zinc-700/80 rounded-t-[32px] p-5 pb-8 max-h-[85vh] overflow-y-auto flex flex-col pointer-events-auto transform translate-y-full">
+      <div class="dash-modal-sheet relative z-10 bg-zinc-900 border-t border-zinc-700/80 rounded-t-[32px] p-5 pb-8 max-h-[85vh] overflow-y-auto flex flex-col transform translate-y-full">
         
         <!-- Sheet Handle -->
         <div class="w-12 h-1 bg-zinc-700 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeDashSheet()"></div>
