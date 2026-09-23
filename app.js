@@ -276,15 +276,24 @@ function updateCalculations() {
 
   const actualEarnings = state.days.reduce((sum, d) => sum + d.actual, 0);
   const estimatedEarnings = state.days.reduce((sum, d) => sum + d.planned, 0);
+  
+  // Current Paycheck Needed (based on actual earnings so far)
   const paycheckNeeded = Math.max(0, totalBill - actualEarnings);
+
+  // Goal Paycheck Needed (based on current planned goal)
+  const paycheckGoal = Math.max(0, totalBill - estimatedEarnings);
 
   // Dynamic Island
   const islandPaycheck = document.getElementById('islandPaycheck');
   if (islandPaycheck) islandPaycheck.textContent = formatCurrency(paycheckNeeded);
 
-  // Main Display
+  // Current Paycheck Needed Display
   const paycheckNeededDisplay = document.getElementById('paycheckNeededDisplay');
   if (paycheckNeededDisplay) paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
+
+  // Goal Paycheck Needed Display (updates dynamically with current goal!)
+  const paycheckGoalDisplay = document.getElementById('paycheckGoalDisplay');
+  if (paycheckGoalDisplay) paycheckGoalDisplay.textContent = formatCurrency(paycheckGoal);
 
   // Separate Top Tiles
   const actualEarningsDisplay = document.getElementById('actualEarningsDisplay');
@@ -657,11 +666,11 @@ function setupToolbarActions() {
       const actualEarnings = state.days.reduce((sum, d) => sum + d.actual, 0);
       const estimatedEarnings = state.days.reduce((sum, d) => sum + d.planned, 0);
       const paycheckNeeded = Math.max(0, state.totalBillGoal - actualEarnings);
+      const paycheckGoal = Math.max(0, state.totalBillGoal - estimatedEarnings);
 
-      let text = `Needed: ${formatCurrency(state.totalBillGoal)}\n`;
-      text += `Actual Earnings: ${formatCurrency(actualEarnings)}\n`;
-      text += `Estimated Earnings: ${formatCurrency(estimatedEarnings)}\n`;
-      text += `Paycheck Needed: ${formatCurrency(paycheckNeeded)}\n\n`;
+      let text = `Total Bill: ${formatCurrency(state.totalBillGoal)}\n`;
+      text += `Paycheck Current: ${formatCurrency(paycheckNeeded)} | Goal: ${formatCurrency(paycheckGoal)}\n`;
+      text += `Actual Earnings: ${formatCurrency(actualEarnings)} | Estimated: ${formatCurrency(estimatedEarnings)}\n\n`;
       state.days.forEach(d => {
         text += `${d.short}: Actual ${formatCurrency(d.actual)} / Planned ${formatCurrency(d.planned)}\n`;
       });
