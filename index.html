@@ -26,22 +26,13 @@
   </script>
   <link rel="stylesheet" href="styles.css">
 </head>
-<body class="bg-black text-zinc-100 min-h-screen flex flex-col items-center justify-start sm:py-6 overflow-x-hidden selection:bg-emerald-500 selection:text-black">
+<body class="bg-zinc-950 text-zinc-100 min-h-screen flex items-center justify-center p-0 sm:p-4 selection:bg-emerald-500 selection:text-black">
 
-  <!-- Desktop Toggle (iPhone 15 Frame / Full Width) -->
-  <aside aria-label="Desktop View Switcher" class="hidden sm:flex items-center gap-2.5 mb-3 px-3.5 py-1.5 rounded-full bg-zinc-900/90 border border-zinc-800 text-[11px] text-zinc-400">
-    <span class="text-zinc-200 font-medium">iPhone 15 View</span>
-    <span class="text-zinc-600">•</span>
-    <button id="toggleFrameBtn" class="hover:text-white transition-colors underline decoration-zinc-700 underline-offset-4">
-      Full Width
-    </button>
-  </aside>
-
-  <!-- iPhone 15 Shell -->
-  <main id="deviceFrame" class="w-full sm:max-w-[412px] bg-black text-zinc-100 relative min-h-screen sm:min-h-[852px] sm:max-h-[900px] sm:rounded-[52px] sm:border-[9px] sm:border-zinc-800 sm:ring-1 sm:ring-zinc-700/60 sm:shadow-[0_25px_60px_rgba(0,0,0,0.9)] flex flex-col overflow-hidden">
+  <!-- iPhone 15 Phone Chassis (Strictly Phone Only) -->
+  <main id="deviceFrame" class="w-full sm:w-[393px] bg-black text-zinc-100 relative min-h-screen sm:min-h-0 sm:h-[852px] sm:rounded-[52px] sm:border-[9px] sm:border-zinc-800 sm:ring-1 sm:ring-zinc-700/60 sm:shadow-[0_25px_70px_rgba(0,0,0,0.95)] flex flex-col overflow-hidden select-none">
     
     <!-- Dynamic Island (Mockup) -->
-    <div id="dynamicIslandContainer" class="hidden sm:flex items-center justify-center pt-2.5 pb-1 select-none pointer-events-none sticky top-0 bg-black/80 backdrop-blur-md z-50">
+    <div id="dynamicIslandContainer" class="hidden sm:flex items-center justify-center pt-2.5 pb-1 select-none pointer-events-none sticky top-0 bg-black/80 backdrop-blur-md z-40">
       <div id="dynamicIsland" class="h-7 w-28 bg-black rounded-full flex items-center justify-between px-3 text-white border border-zinc-800 transition-transform">
         <span class="text-[10px] font-mono font-medium text-emerald-400" id="islandPaycheck">$215.00</span>
         <div class="w-2 h-2 rounded-full bg-blue-500/80"></div>
@@ -71,7 +62,7 @@
       </header>
 
       <!-- HERO OVERVIEW CARD: GOAL VS ACTUAL -->
-      <section class="glass-card rounded-3xl p-4 sm:p-5 mb-4 relative overflow-hidden">
+      <section class="glass-card rounded-3xl p-4 mb-4 relative overflow-hidden">
         
         <!-- Paycheck Needed: Current vs Goal -->
         <div class="mb-2">
@@ -87,13 +78,13 @@
           <div class="grid grid-cols-2 gap-2 bg-black/60 rounded-2xl p-2.5 border border-zinc-800/80">
             <div>
               <span class="text-[9px] uppercase font-bold text-zinc-400 block mb-0.5">Current Needed</span>
-              <div class="text-2xl sm:text-3xl font-extrabold font-mono text-white tracking-tight" id="paycheckNeededDisplay">
+              <div class="text-2xl font-extrabold font-mono text-white tracking-tight" id="paycheckNeededDisplay">
                 $215.00
               </div>
             </div>
             <div class="text-right border-l border-zinc-800/80 pl-2">
               <span class="text-[9px] uppercase font-bold text-indigo-400 block mb-0.5">Goal Needed</span>
-              <div class="text-2xl sm:text-3xl font-extrabold font-mono text-indigo-300 tracking-tight" id="paycheckGoalDisplay">
+              <div class="text-2xl font-extrabold font-mono text-indigo-300 tracking-tight" id="paycheckGoalDisplay">
                 $53.75
               </div>
             </div>
@@ -143,29 +134,29 @@
       </div>
 
       <div class="text-center text-[10px] text-zinc-600 font-mono pb-2">
-        Tap "Actual" on any day to add or subtract earnings • School Bill Tracker
+        Tap "Actual" on any day to add or subtract earnings
       </div>
 
     </div>
 
-    <!-- YNAB-STYLE CALCULATOR MODAL SHEET -->
-    <div id="calcModal" class="fixed inset-0 z-50 hidden opacity-0 transition-opacity duration-200 flex flex-col justify-end pointer-events-none">
+    <!-- YNAB-STYLE CALCULATOR MODAL SHEET (LOCKED INSIDE PHONE FRAME) -->
+    <div id="calcModal" class="absolute inset-0 z-50 hidden opacity-0 transition-opacity duration-200 flex flex-col justify-end pointer-events-none">
       <!-- Backdrop -->
       <div id="calcModalBackdrop" class="absolute inset-0 bg-black/80 backdrop-blur-md cursor-pointer" onclick="closeCalcModal()"></div>
       
       <!-- Sheet Content -->
-      <div class="ynab-modal-sheet relative z-10 bg-zinc-900 border-t border-zinc-700/80 rounded-t-[32px] p-5 pb-8 max-h-[90vh] overflow-y-auto flex flex-col transform translate-y-full">
+      <div class="ynab-modal-sheet relative z-10 bg-zinc-900 border-t border-zinc-700/80 rounded-t-[32px] p-5 pb-8 max-h-[88%] overflow-y-auto flex flex-col transform translate-y-full">
         
         <!-- Sheet Handle -->
         <div class="w-12 h-1 bg-zinc-700 rounded-full mx-auto mb-4 cursor-pointer" onclick="closeCalcModal()"></div>
 
         <!-- Header Row -->
-        <div class="flex items-center justify-between mb-4">
+        <div class="flex items-center justify-between mb-3.5">
           <div>
             <h3 class="font-bold text-base text-white flex items-center gap-2">
               <span id="calcDayTitle">Wednesday</span> Earnings
             </h3>
-            <p class="text-[11px] text-zinc-400 font-mono">Add or subtract to adjust your saved total</p>
+            <p class="text-[10px] text-zinc-400 font-mono">Add or subtract to adjust your saved total</p>
           </div>
           <button onclick="closeCalcModal()" class="w-8 h-8 rounded-full bg-zinc-800 flex items-center justify-center text-zinc-400 hover:text-white" title="Close">
             ✕
@@ -173,7 +164,7 @@
         </div>
 
         <!-- Locked Current Amount Card -->
-        <div class="bg-black/60 rounded-2xl p-3.5 border border-zinc-800 mb-4 flex items-center justify-between">
+        <div class="bg-black/60 rounded-2xl p-3 border border-zinc-800 mb-3 flex items-center justify-between">
           <div>
             <span class="text-[9px] uppercase font-bold tracking-wider text-zinc-500 block">Current Recorded</span>
             <div class="text-2xl font-extrabold font-mono text-zinc-200 mt-0.5" id="calcCurrentAmount">
@@ -200,7 +191,7 @@
 
         <!-- Adjustment Input -->
         <div class="mb-3">
-          <div class="flex items-center bg-black rounded-2xl px-4 py-3 border border-zinc-800 focus-within:border-emerald-500 font-mono transition-colors">
+          <div class="flex items-center bg-black rounded-2xl px-4 py-2.5 border border-zinc-800 focus-within:border-emerald-500 font-mono transition-colors">
             <span id="calcOperatorSymbol" class="text-xl font-bold text-emerald-400 mr-2">+ $</span>
             <input type="number" id="calcInputAmount" inputmode="decimal" step="0.01" min="0" placeholder="0.00"
               class="w-full bg-transparent text-2xl font-extrabold text-white focus:outline-none placeholder-zinc-700">
@@ -217,14 +208,14 @@
         </div>
 
         <!-- Live Math Equation Preview -->
-        <div class="bg-black/40 rounded-2xl p-3 border border-zinc-800/80 mb-5 text-center font-mono">
-          <div class="text-[10px] uppercase font-bold text-zinc-500 mb-0.5">Calculation Preview</div>
-          <div class="text-sm text-zinc-300 flex items-center justify-center gap-1.5">
+        <div class="bg-black/40 rounded-2xl p-2.5 border border-zinc-800/80 mb-4 text-center font-mono">
+          <div class="text-[9px] uppercase font-bold text-zinc-500 mb-0.5">Calculation Preview</div>
+          <div class="text-xs text-zinc-300 flex items-center justify-center gap-1.5">
             <span id="previewCurrent">$0.00</span>
             <span id="previewOperator" class="text-emerald-400 font-bold">+</span>
             <span id="previewAdjustment" class="text-white font-bold">$0.00</span>
             <span class="text-zinc-600">=</span>
-            <span id="previewResult" class="text-base font-extrabold text-emerald-400">$0.00</span>
+            <span id="previewResult" class="text-sm font-extrabold text-emerald-400">$0.00</span>
           </div>
         </div>
 
@@ -234,7 +225,7 @@
             <span id="calcApplyBtnText">Apply Changes</span>
           </button>
           
-          <button id="calcResetDayBtn" class="tap-btn py-2 text-xs font-mono text-zinc-500 hover:text-red-400 text-center" onclick="resetCurrentDayEarnings()">
+          <button id="calcResetDayBtn" class="tap-btn py-1.5 text-xs font-mono text-zinc-500 hover:text-red-400 text-center" onclick="resetCurrentDayEarnings()">
             Reset Day to $0.00
           </button>
         </div>
@@ -242,15 +233,15 @@
       </div>
     </div>
 
+    <!-- Toast (Anchored Inside Phone) -->
+    <div id="toast" class="absolute top-4 left-1/2 -translate-x-1/2 z-50 transform -translate-y-16 opacity-0 pointer-events-none transition-all duration-300 bg-zinc-900/95 border border-zinc-700 text-white px-3.5 py-1.5 rounded-full text-xs font-medium shadow-xl">
+      <span id="toastMessage">Saved</span>
+    </div>
+
     <!-- iPhone 15 Home Indicator Bar (Mockup) -->
-    <div class="hidden sm:block absolute bottom-1 left-1/2 -translate-x-1/2 w-28 h-1 bg-zinc-700/60 rounded-full pointer-events-none z-50"></div>
+    <div class="hidden sm:block absolute bottom-1 left-1/2 -translate-x-1/2 w-28 h-1 bg-zinc-700/60 rounded-full pointer-events-none z-40"></div>
 
   </main>
-
-  <!-- iOS Toast -->
-  <div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-50 transform -translate-y-16 opacity-0 pointer-events-none transition-all duration-300 bg-zinc-900/95 border border-zinc-700 text-white px-3.5 py-1.5 rounded-full text-xs font-medium shadow-xl">
-    <span id="toastMessage">Saved</span>
-  </div>
 
   <script src="app.js"></script>
 </body>

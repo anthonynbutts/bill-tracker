@@ -1,4 +1,4 @@
-/* School Bill Tracker - YNAB-style Calculator Design */
+/* School Bill Tracker - Strictly Mobile / Phone-Only Design */
 
 :root {
   --sat: env(safe-area-inset-top, 0px);
@@ -12,12 +12,18 @@
 
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "Inter", -system-ui, sans-serif;
-  background-color: #000000;
+  background-color: #09090b;
   color: #ffffff;
   margin: 0;
   padding: 0;
+  min-height: 100vh;
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  overflow: hidden;
 }
 
 .font-mono {
@@ -37,25 +43,18 @@ input[type="number"]::-webkit-inner-spin-button {
   margin: 0;
 }
 
-/* PC & Responsive Scrolling */
-html, body {
-  overflow-x: hidden;
-  overflow-y: auto;
-}
-
-#scrollContent {
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior: contain;
-}
-
-/* iPhone 15 Chassis */
+/* On actual phone: Edge-to-edge native full screen */
 @media (max-width: 639px) {
+  body {
+    background-color: #000000;
+  }
+
   #deviceFrame {
-    max-width: 100% !important;
     width: 100% !important;
-    min-height: 100dvh !important;
+    max-width: 100% !important;
     height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
     border: none !important;
     border-radius: 0 !important;
     padding-top: var(--sat);
@@ -63,21 +62,20 @@ html, body {
   }
 }
 
+/* On PC / Desktop: Strictly locked iPhone 15 frame */
 @media (min-width: 640px) {
   #deviceFrame {
-    height: 852px;
-    max-height: calc(100vh - 3.5rem) !important;
+    width: 393px !important;
+    max-width: 393px !important;
+    height: min(852px, calc(100vh - 2.5rem)) !important;
+    max-height: 852px !important;
   }
 }
 
-#deviceFrame.expanded-frame {
-  max-width: 580px !important;
-  min-height: auto !important;
-  border-radius: 32px !important;
-}
-
-#deviceFrame.expanded-frame #dynamicIslandContainer {
-  display: none !important;
+#scrollContent {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior: contain;
 }
 
 /* Frosted glass card */
@@ -121,7 +119,7 @@ html, body {
   border-radius: 99px;
 }
 
-/* YNAB Modal Sheet Animation */
+/* YNAB Modal Sheet Animation (Slides up inside the phone) */
 .ynab-modal-sheet {
   transition: transform 0.28s cubic-bezier(0.16, 1, 0.3, 1);
 }

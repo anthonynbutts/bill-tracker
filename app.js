@@ -566,22 +566,6 @@ function setupToolbarActions() {
     });
   }
 
-  // Desktop Frame Toggle
-  const toggleFrameBtn = document.getElementById('toggleFrameBtn');
-  const deviceFrame = document.getElementById('deviceFrame');
-  if (toggleFrameBtn && deviceFrame) {
-    const savedFrame = localStorage.getItem(FRAME_KEY);
-    if (savedFrame === 'expanded') {
-      deviceFrame.classList.add('expanded-frame');
-      toggleFrameBtn.textContent = 'iPhone 15 View';
-    }
-
-    toggleFrameBtn.addEventListener('click', () => {
-      const isExpanded = deviceFrame.classList.toggle('expanded-frame');
-      toggleFrameBtn.textContent = isExpanded ? 'iPhone 15 View' : 'Full Width';
-      localStorage.setItem(FRAME_KEY, isExpanded ? 'expanded' : 'iphone');
-    });
-  }
 
   // Header Date
   const headerDate = document.getElementById('headerDate');
