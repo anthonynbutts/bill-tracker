@@ -103,7 +103,7 @@ function getTodayId() {
   return match ? match.id : 'mon';
 }
 
-// Render Daily Cards
+// // Render Daily Cards (Smart "Today" Card + Streamlined Minimal Rows)
 function renderDays() {
   const container = document.getElementById('daysList');
   if (!container) return;
@@ -113,111 +113,123 @@ function renderDays() {
 
   state.days.forEach(day => {
     const isToday = day.dayIndex === todayIndex;
-    const isActive = day.id === activeDayId;
+    const dayDiff = day.actual - day.planned;
+    const dayPct = day.planned > 0 ? Math.min(100, (day.actual / day.planned) * 100) : (day.actual > 0 ? 100 : 0);
+
+    let diffText = '';
+    let diffClass = '';
+    let barColor = 'bg-emerald-500';
+
+    if (day.actual === 0) {
+      diffText = `-$${day.planned.toFixed(2)} to go`;
+      diffClass = 'text-zinc-500 font-medium';
+      barColor = 'bg-zinc-700';
+    } else if (dayDiff >= 0) {
+      diffText = dayDiff === 0 ? '✓ Hit Goal' : `+$${dayDiff.toFixed(2)} ahead`;
+      diffClass = 'text-emerald-400 font-bold';
+      barColor = 'bg-emerald-400';
+    } else {
+      diffText = `-$${Math.abs(dayDiff).toFixed(2)} to go`;
+      diffClass = 'text-amber-400 font-medium';
+      barColor = 'bg-amber-400';
+    }
 
     const card = document.createElement('div');
     card.id = `card-${day.id}`;
-    card.className = `glass-card rounded-2xl p-3.5 transition-all ${isActive ? 'is-active ring-1 ring-emerald-500/40' : ''}`;
 
-    card.innerHTML = `
-      <!-- Card Top: Day & Status -->
-      <div class="flex items-center justify-between mb-2.5">
-        <div class="flex items-center gap-1.5 cursor-pointer" onclick="selectDay('${day.id}')">
-          <span class="w-2 h-2 rounded-full ${isToday ? 'bg-emerald-400 animate-pulse' : 'bg-zinc-600'}"></span>
-          <span class="font-bold text-white text-sm">${day.name}</span>
-          ${isToday ? '<span class="text-[9px] font-bold text-emerald-400 bg-emerald-500/15 border border-emerald-500/30 px-1.5 py-0.2 rounded-full">TODAY</span>' : ''}
-        </div>
-        <span id="diff-${day.id}" class="text-xs font-mono font-medium text-zinc-400 cursor-pointer" onclick="selectDay('${day.id}')">
-          -$${day.planned.toFixed(2)}
-        </span>
-      </div>
-
-      <!-- Card Middle: Actual (Protected YNAB Tap) vs Planned (Editable Goal) -->
-      <div class="grid grid-cols-2 gap-2 mb-2.5">
-        <!-- Actual Earned: Taps to open YNAB math sheet -->
-        <div class="bg-black/60 rounded-xl px-3 py-2 border border-zinc-800 hover:border-emerald-500/60 cursor-pointer tap-btn transition-colors group" onclick="openCalcModal('${day.id}')" title="Tap to add or subtract earnings">
-          <div class="flex items-center justify-between mb-0.5">
-            <span class="text-[9px] font-bold uppercase tracking-wider text-emerald-400">Actual</span>
-            <span class="text-[9px] text-zinc-500 font-mono group-hover:text-emerald-400 transition-colors">Tap +/−</span>
+    if (isToday) {
+      // TODAY: Smart Prominent Card
+      card.className = 'today-card rounded-2xl p-3.5 transition-all select-none';
+      card.innerHTML = `
+        <!-- Top: Live Pulse + Today Badge -->
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-2">
+            <span class="relative flex h-2.5 w-2.5">
+              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
+              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
+            </span>
+            <span class="font-bold text-white text-base">${day.name}</span>
+            <span class="text-[9px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 rounded-full uppercase tracking-wider">Today</span>
           </div>
-          <div class="flex items-center font-mono">
-            <span class="text-sm font-bold text-emerald-400 mr-0.5">$</span>
-            <span class="text-base font-extrabold text-white" id="actual-display-${day.id}">
-              ${day.actual > 0 ? day.actual.toFixed(2) : '0.00'}
+          <span class="text-xs font-mono ${diffClass}">
+            ${diffText}
+          </span>
+        </div>
+
+        <!-- Middle: Action Banner -->
+        <div class="flex items-center justify-between bg-black/60 rounded-xl p-2.5 border border-emerald-500/30 mb-2.5 cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="openCalcModal('${day.id}')" title="Tap to enter earnings">
+          <div>
+            <span class="text-[9px] uppercase font-bold text-zinc-400 block mb-0.5">Today's Earnings</span>
+            <div class="flex items-baseline gap-1 font-mono">
+              <span class="text-2xl font-black text-emerald-400">$${day.actual.toFixed(2)}</span>
+              <span class="text-xs text-zinc-500">/ $${day.planned.toFixed(2)} goal</span>
+            </div>
+          </div>
+          
+          <button type="button" class="tap-btn px-3 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white font-mono font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-950/40" onclick="event.stopPropagation(); openCalcModal('${day.id}')">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+            <span>Log Dash</span>
+          </button>
+        </div>
+
+        <!-- Mini Progress Bar -->
+        <div class="w-full bg-zinc-800/90 rounded-full h-1.5 overflow-hidden">
+          <div class="${barColor} h-1.5 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
+        </div>
+      `;
+    } else {
+      // OTHER DAYS: Sleek Minimal Row
+      card.className = 'glass-card rounded-2xl p-3 flex items-center justify-between cursor-pointer hover:border-zinc-700 transition-colors select-none';
+      card.setAttribute('onclick', `openCalcModal('${day.id}')`);
+      card.setAttribute('title', 'Tap to enter earnings');
+
+      card.innerHTML = `
+        <!-- Left: Day badge, title, and goal -->
+        <div class="flex items-center gap-2.5">
+          <div class="w-9 h-9 rounded-xl bg-black/60 border border-zinc-800 flex flex-col items-center justify-center font-mono">
+            <span class="text-[9px] text-zinc-500 uppercase font-bold">${day.short}</span>
+            <span class="text-xs font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-emerald-400' : (day.actual > 0 ? 'text-amber-400' : 'text-zinc-600')}">
+              ${day.actual >= day.planned && day.planned > 0 ? '✓' : (day.actual > 0 ? '•' : '—')}
             </span>
           </div>
-        </div>
 
-        <!-- Planned Input -->
-        <div class="bg-black/60 rounded-xl px-3 py-2 border border-zinc-800 focus-within:border-orange-500 transition-colors">
-          <div class="text-[9px] font-bold uppercase tracking-wider text-orange-400 mb-0.5">
-            Planned Goal
-          </div>
-          <div class="flex items-center font-mono">
-            <span class="text-sm font-bold text-orange-400 mr-0.5">$</span>
-            <input 
-              type="number" 
-              inputmode="decimal"
-              id="planned-${day.id}" 
-              step="0.01" 
-              min="0"
-              value="${day.planned.toFixed(2)}"
-              onfocus="selectDay('${day.id}')"
-              class="w-full bg-transparent text-base font-bold text-zinc-200 focus:outline-none"
-            />
+          <div>
+            <div class="flex items-center gap-2">
+              <span class="font-bold text-white text-sm">${day.name}</span>
+              <span class="text-[10px] font-mono ${diffClass}">${diffText}</span>
+            </div>
+            <div class="text-[11px] font-mono text-zinc-400 mt-0.5 flex items-center gap-1.5">
+              <span>Goal: $${day.planned.toFixed(2)}</span>
+              <div class="w-14 bg-zinc-800 rounded-full h-1 overflow-hidden inline-block align-middle">
+                <div class="${barColor} h-1 rounded-full transition-all duration-300" style="width: ${dayPct}%"></div>
+              </div>
+            </div>
           </div>
         </div>
-      </div>
 
-      <!-- Day Progress Bar -->
-      <div class="w-full bg-zinc-800/80 rounded-full h-1.5 overflow-hidden">
-        <div id="bar-${day.id}" class="bg-emerald-500 h-1.5 rounded-full transition-all duration-200" style="width: 0%"></div>
-      </div>
-    `;
+        <!-- Right: Actual Amount + Tap Icon -->
+        <div class="flex items-center gap-2">
+          <div class="text-right font-mono">
+            <div class="text-base font-black ${day.actual > 0 ? 'text-white' : 'text-zinc-500'}">
+              $${day.actual.toFixed(2)}
+            </div>
+            <span class="text-[9px] text-zinc-500 block">Tap +/−</span>
+          </div>
+          <div class="w-7 h-7 rounded-lg bg-zinc-800/80 border border-zinc-700/50 flex items-center justify-center text-zinc-400">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          </div>
+        </div>
+      `;
+    }
 
     container.appendChild(card);
   });
-
-  attachInputListeners();
 }
 
 window.selectDay = function(dayId) {
   triggerHaptic();
   activeDayId = dayId;
-  state.days.forEach(d => {
-    const card = document.getElementById(`card-${d.id}`);
-    if (card) {
-      if (d.id === activeDayId) {
-        card.classList.add('is-active', 'ring-1', 'ring-emerald-500/40');
-      } else {
-        card.classList.remove('is-active', 'ring-1', 'ring-emerald-500/40');
-      }
-    }
-  });
 };
-
-function attachInputListeners() {
-  state.days.forEach(day => {
-    const plannedInput = document.getElementById(`planned-${day.id}`);
-    if (plannedInput) {
-      plannedInput.addEventListener('input', (e) => {
-        day.planned = parseVal(e.target.value);
-        saveState();
-        updateCalculations();
-      });
-    }
-  });
-
-  const totalBillGoalInput = document.getElementById('totalBillGoalInput');
-  if (totalBillGoalInput) {
-    totalBillGoalInput.value = state.totalBillGoal.toFixed(2);
-    totalBillGoalInput.addEventListener('input', (e) => {
-      state.totalBillGoal = parseVal(e.target.value);
-      saveState();
-      updateCalculations();
-    });
-  }
-}
 
 // Master calculation update
 function updateCalculations() {
@@ -240,60 +252,158 @@ function updateCalculations() {
   const paycheckNeededDisplay = document.getElementById('paycheckNeededDisplay');
   if (paycheckNeededDisplay) paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
 
-  // Goal Paycheck Needed Display
+  // Goal Paycheck Needed Badge
   const paycheckGoalDisplay = document.getElementById('paycheckGoalDisplay');
   if (paycheckGoalDisplay) paycheckGoalDisplay.textContent = formatCurrency(paycheckGoal);
 
-  // Separate Top Tiles
+  // 2-Tone Segmented Progress Bar
+  const segDashBar = document.getElementById('segDashBar');
+  const segPaycheckBar = document.getElementById('segPaycheckBar');
+  const dashPctLabel = document.getElementById('dashPctLabel');
+  const paycheckPctLabel = document.getElementById('paycheckPctLabel');
+
+  const dashPct = totalBill > 0 ? Math.min(100, (actualEarnings / totalBill) * 100) : 0;
+  const paycheckPct = Math.max(0, 100 - dashPct);
+
+  if (segDashBar) segDashBar.style.width = `${dashPct}%`;
+  if (segPaycheckBar) segPaycheckBar.style.width = `${paycheckPct}%`;
+  if (dashPctLabel) dashPctLabel.textContent = `${Math.round(dashPct)}%`;
+  if (paycheckPctLabel) paycheckPctLabel.textContent = `${Math.round(paycheckPct)}%`;
+
+  // Summary Tiles
   const actualEarningsDisplay = document.getElementById('actualEarningsDisplay');
   if (actualEarningsDisplay) actualEarningsDisplay.textContent = formatCurrency(actualEarnings);
 
   const estimatedEarningsDisplay = document.getElementById('estimatedEarningsDisplay');
   if (estimatedEarningsDisplay) estimatedEarningsDisplay.textContent = formatCurrency(estimatedEarnings);
 
-  // Overall Bill Progress Bar
-  const billProgressBar = document.getElementById('billProgressBar');
-  if (billProgressBar) {
-    const pct = totalBill > 0 ? Math.min(100, (actualEarnings / totalBill) * 100) : 0;
-    billProgressBar.style.width = `${pct}%`;
+  const targetPaycheckTile = document.getElementById('targetPaycheckTile');
+  if (targetPaycheckTile) targetPaycheckTile.textContent = formatCurrency(paycheckGoal);
+
+  const savingsAmountTile = document.getElementById('savingsAmountTile');
+  if (savingsAmountTile) savingsAmountTile.textContent = formatCurrency(estimatedEarnings);
+
+  // Update total bill goal input if not focused
+  const totalBillGoalInput = document.getElementById('totalBillGoalInput');
+  if (totalBillGoalInput && document.activeElement !== totalBillGoalInput) {
+    totalBillGoalInput.value = totalBill.toFixed(2);
   }
 
-  // Per-Day Progress & Variances
+  // Update day cards
+  renderDays();
+}
+
+// -------------------------------------------------------------
+// GOALS CUSTOMIZATION MODAL ENGINE
+// -------------------------------------------------------------
+
+window.openGoalsModal = function() {
+  triggerHaptic();
+  const modal = document.getElementById('goalsModal');
+  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
+  const list = document.getElementById('goalsModalList');
+
+  if (list) {
+    list.innerHTML = '';
+    state.days.forEach(day => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center justify-between bg-black/60 rounded-xl px-3.5 py-2.5 border border-zinc-800 font-mono';
+      row.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span class="w-8 text-[10px] uppercase font-bold text-zinc-400">${day.short}</span>
+          <span class="text-xs font-semibold text-white">${day.name}</span>
+        </div>
+        <div class="flex items-center bg-zinc-900 rounded-lg px-2.5 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
+          <span class="text-xs font-bold text-emerald-400 mr-1">$</span>
+          <input 
+            type="number" 
+            inputmode="decimal" 
+            id="goal-input-${day.id}" 
+            step="0.01" 
+            min="0" 
+            value="${day.planned.toFixed(2)}"
+            oninput="updateGoalsModalTotal()"
+            class="w-16 bg-transparent text-right text-xs font-bold text-white focus:outline-none"
+          />
+        </div>
+      `;
+      list.appendChild(row);
+    });
+  }
+
+  updateGoalsModalTotal();
+
+  if (modal && sheet) {
+    modal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modal.classList.add('opacity-100');
+      sheet.classList.remove('translate-y-full');
+      sheet.classList.add('translate-y-0');
+    });
+  }
+};
+
+window.closeGoalsModal = function() {
+  triggerHaptic();
+  // Read values from modal inputs
   state.days.forEach(day => {
-    const diffEl = document.getElementById(`diff-${day.id}`);
-    const barEl = document.getElementById(`bar-${day.id}`);
-    const actualDisplay = document.getElementById(`actual-display-${day.id}`);
-
-    if (actualDisplay) {
-      actualDisplay.textContent = day.actual > 0 ? day.actual.toFixed(2) : '0.00';
-    }
-
-    const dayDiff = day.actual - day.planned;
-    const dayPct = day.planned > 0 ? (day.actual / day.planned) * 100 : 100;
-
-    if (diffEl) {
-      if (day.actual === 0) {
-        diffEl.textContent = `-$${day.planned.toFixed(2)}`;
-        diffEl.className = 'text-xs font-mono font-medium text-zinc-500';
-      } else if (dayDiff >= 0) {
-        diffEl.textContent = dayDiff === 0 ? '✓ Hit Goal' : `+$${dayDiff.toFixed(2)} ahead`;
-        diffEl.className = 'text-xs font-mono font-bold text-emerald-400';
-      } else {
-        diffEl.textContent = `-$${Math.abs(dayDiff).toFixed(2)} to go`;
-        diffEl.className = 'text-xs font-mono font-medium text-amber-400';
-      }
-    }
-
-    if (barEl) {
-      barEl.style.width = `${Math.min(100, dayPct)}%`;
-      if (day.actual >= day.planned && day.planned > 0) {
-        barEl.className = 'bg-emerald-400 h-1.5 rounded-full transition-all duration-200';
-      } else {
-        barEl.className = 'bg-orange-500 h-1.5 rounded-full transition-all duration-200';
-      }
+    const input = document.getElementById(`goal-input-${day.id}`);
+    if (input) {
+      day.planned = parseVal(input.value);
     }
   });
-}
+
+  saveState();
+  updateCalculations();
+
+  const modal = document.getElementById('goalsModal');
+  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
+
+  if (modal && sheet) {
+    sheet.classList.remove('translate-y-0');
+    sheet.classList.add('translate-y-full');
+    modal.classList.remove('opacity-100');
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 220);
+  }
+
+  showToast('Goals updated');
+};
+
+window.updateGoalsModalTotal = function() {
+  const totalDisplay = document.getElementById('goalsModalTotal');
+  if (!totalDisplay) return;
+
+  let sum = 0;
+  state.days.forEach(day => {
+    const input = document.getElementById(`goal-input-${day.id}`);
+    if (input) {
+      sum += parseVal(input.value);
+    } else {
+      sum += day.planned;
+    }
+  });
+  totalDisplay.textContent = formatCurrency(sum);
+};
+
+window.splitGoalsEvenlyModal = function() {
+  triggerHaptic();
+  const targetBase = 161.25;
+  const perDay = Math.floor((targetBase / 6) * 100) / 100;
+  const remainder = Math.round((targetBase - perDay * 6) * 100) / 100;
+  
+  state.days.forEach((day, i) => {
+    const extraCent = i < Math.round(remainder * 100) ? 0.01 : 0;
+    const val = Math.round((perDay + extraCent) * 100) / 100;
+    const input = document.getElementById(`goal-input-${day.id}`);
+    if (input) input.value = val.toFixed(2);
+  });
+
+  updateGoalsModalTotal();
+};
 
 // -------------------------------------------------------------
 // YNAB-STYLE PROTECTED CALCULATOR MODAL ENGINE
@@ -530,6 +640,16 @@ window.resetCurrentDayEarnings = function() {
 // -------------------------------------------------------------
 
 function setupToolbarActions() {
+  // Total Bill Goal Input listener
+  const totalBillGoalInput = document.getElementById('totalBillGoalInput');
+  if (totalBillGoalInput) {
+    totalBillGoalInput.value = state.totalBillGoal.toFixed(2);
+    totalBillGoalInput.addEventListener('input', (e) => {
+      state.totalBillGoal = parseVal(e.target.value);
+      saveState();
+      updateCalculations();
+    });
+  }
 
   // Split Goal Evenly
   const distributeEvenlyBtn = document.getElementById('distributeEvenlyBtn');
@@ -543,8 +663,6 @@ function setupToolbarActions() {
       state.days.forEach((day, i) => {
         const extraCent = i < Math.round(remainder * 100) ? 0.01 : 0;
         day.planned = Math.round((perDay + extraCent) * 100) / 100;
-        const input = document.getElementById(`planned-${day.id}`);
-        if (input) input.value = day.planned.toFixed(2);
       });
 
       saveState();
