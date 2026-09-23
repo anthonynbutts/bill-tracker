@@ -146,13 +146,9 @@ function renderDays() {
       // TODAY: Smart Prominent Card (Always Visible on Launch)
       card.className = 'today-card rounded-2xl p-3.5 transition-all select-none';
       card.innerHTML = `
-        <!-- Top: Live Pulse + Today Badge -->
+        <!-- Top: Day Name + Today Badge -->
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
-            <span class="relative flex h-2.5 w-2.5">
-              <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-emerald-400 opacity-75"></span>
-              <span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-emerald-500"></span>
-            </span>
             <span class="font-bold text-white text-base">${day.name}</span>
             <span class="text-[9px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 px-2 py-0.5 rounded-full uppercase tracking-wider">Today</span>
           </div>
