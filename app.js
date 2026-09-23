@@ -339,19 +339,14 @@ function updateCalculations() {
   const paycheckGoalDisplay = document.getElementById('paycheckGoalDisplay');
   if (paycheckGoalDisplay) paycheckGoalDisplay.textContent = formatCurrency(paycheckGoal);
 
-  // 2-Tone Segmented Progress Bar
+  // Clean Progress Bar (Green fill on deep slate gray track)
   const segDashBar = document.getElementById('segDashBar');
-  const segPaycheckBar = document.getElementById('segPaycheckBar');
-  const dashPctLabel = document.getElementById('dashPctLabel');
-  const paycheckPctLabel = document.getElementById('paycheckPctLabel');
-
   const dashPct = totalBill > 0 ? Math.min(100, (actualEarnings / totalBill) * 100) : 0;
-  const paycheckPct = Math.max(0, 100 - dashPct);
 
-  if (segDashBar) segDashBar.style.width = `${dashPct}%`;
-  if (segPaycheckBar) segPaycheckBar.style.width = `${paycheckPct}%`;
-  if (dashPctLabel) dashPctLabel.textContent = `${Math.round(dashPct)}%`;
-  if (paycheckPctLabel) paycheckPctLabel.textContent = `${Math.round(paycheckPct)}%`;
+  if (segDashBar) {
+    segDashBar.style.width = `${dashPct}%`;
+    segDashBar.style.opacity = dashPct > 0 ? '1' : '0';
+  }
 
   // Summary Tiles
   const actualEarningsDisplay = document.getElementById('actualEarningsDisplay');
