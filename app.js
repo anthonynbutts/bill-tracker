@@ -167,9 +167,12 @@ function renderDays() {
   otherDaysList.innerHTML = '';
 
   const todayIndex = getTodayIndex();
+  const isSunday = todayIndex === 0;
+  // On Sunday, spotlight Monday (the start of the upcoming tracking week)
+  const activeSpotlightId = isSunday ? 'mon' : getTodayId();
 
   state.days.forEach(day => {
-    const isToday = day.dayIndex === todayIndex;
+    const isToday = day.id === activeSpotlightId;
     const dayDiff = day.actual - day.planned;
     const dayPct = day.planned > 0 ? Math.min(100, (day.actual / day.planned) * 100) : (day.actual > 0 ? 100 : 0);
 
@@ -195,14 +198,20 @@ function renderDays() {
     card.id = `card-${day.id}`;
 
     if (isToday) {
-      // TODAY: Smart Prominent Card (Always Visible on Launch)
+      // TODAY / SPOTLIGHT: Smart Prominent Card (Always Visible on Launch)
+      const badgeText = isSunday ? 'Sunday • Next: Mon' : 'Today';
+      const badgeClass = isSunday
+        ? 'text-amber-300 bg-amber-500/20 border border-amber-500/40'
+        : 'text-emerald-300 bg-emerald-500/20 border border-emerald-500/40';
+      const actionLabel = isSunday ? "Monday's Target Goal" : "Today's Earnings";
+
       card.className = 'today-card rounded-2xl p-3 transition-all select-none';
       card.innerHTML = `
         <!-- Top: Day Name + Today Badge -->
         <div class="flex items-center justify-between mb-1.5">
           <div class="flex items-center gap-1.5">
             <span class="font-bold text-white text-sm">${day.name}</span>
-            <span class="text-[8.5px] font-bold text-emerald-300 bg-emerald-500/20 border border-emerald-500/40 px-1.5 py-0.5 rounded-full uppercase tracking-wider">Today</span>
+            <span class="text-[8.5px] font-bold ${badgeClass} px-1.5 py-0.5 rounded-full uppercase tracking-wider">${badgeText}</span>
           </div>
           <span class="text-[11px] font-mono ${diffClass}">
             ${diffText}
@@ -212,7 +221,7 @@ function renderDays() {
         <!-- Middle: Action Banner -->
         <div class="flex items-center justify-between bg-black/60 rounded-xl p-2 border border-emerald-500/30 mb-2 cursor-pointer hover:border-emerald-500/50 transition-colors" onclick="openCalcModal('${day.id}')" title="Tap to enter earnings">
           <div>
-            <span class="text-[8.5px] uppercase font-bold text-zinc-400 block mb-0.5">Today's Earnings</span>
+            <span class="text-[8.5px] uppercase font-bold text-zinc-400 block mb-0.5">${actionLabel}</span>
             <div class="flex items-baseline gap-1 font-mono">
               <span class="text-xl font-bold text-emerald-400">$${day.actual.toFixed(2)}</span>
               <span class="text-[11px] text-zinc-500">/ $${day.planned.toFixed(2)} goal</span>
@@ -327,17 +336,48 @@ function updateCalculations() {
   // Goal Paycheck Needed: based on current planned goal
   const paycheckGoal = Math.max(0, totalBill - estimatedEarnings);
 
+  // Milestone Celebratory State Check
+  const isCovered = totalBill > 0 && actualEarnings >= totalBill;
+  const surplus = actualEarnings - totalBill;
+
   // Dynamic Island
   const islandPaycheck = document.getElementById('islandPaycheck');
-  if (islandPaycheck) islandPaycheck.textContent = formatCurrency(paycheckNeeded);
+  if (islandPaycheck) islandPaycheck.textContent = isCovered ? 'Covered!' : formatCurrency(paycheckNeeded);
 
   // Current Paycheck Needed Display
   const paycheckNeededDisplay = document.getElementById('paycheckNeededDisplay');
-  if (paycheckNeededDisplay) paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
+  if (paycheckNeededDisplay) {
+    paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
+    if (isCovered) {
+      paycheckNeededDisplay.className = 'text-2xl font-black font-mono text-emerald-400 tracking-tight drop-shadow-[0_0_12px_rgba(16,185,129,0.45)]';
+    } else {
+      paycheckNeededDisplay.className = 'text-2xl font-black font-mono text-white tracking-tight';
+    }
+  }
 
-  // Goal Paycheck Needed Badge
+  // Goal Paycheck Needed Badge (Milestone celebratory styling)
+  const paycheckGoalBadge = document.getElementById('paycheckGoalBadge');
   const paycheckGoalDisplay = document.getElementById('paycheckGoalDisplay');
-  if (paycheckGoalDisplay) paycheckGoalDisplay.textContent = formatCurrency(paycheckGoal);
+  const paycheckGoalSuffix = document.getElementById('paycheckGoalSuffix');
+
+  if (paycheckGoalBadge && paycheckGoalDisplay) {
+    if (isCovered) {
+      paycheckGoalBadge.className = 'inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-[10px] font-mono text-emerald-300 transition-all';
+      if (surplus > 0) {
+        paycheckGoalDisplay.textContent = `✓ Covered! +$${surplus.toFixed(2)} Surplus`;
+      } else {
+        paycheckGoalDisplay.textContent = '✓ Bill Fully Covered!';
+      }
+      if (paycheckGoalSuffix) paycheckGoalSuffix.style.display = 'none';
+    } else {
+      paycheckGoalBadge.className = 'inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-400 transition-all';
+      paycheckGoalDisplay.textContent = formatCurrency(paycheckGoal);
+      if (paycheckGoalSuffix) {
+        paycheckGoalSuffix.style.display = 'inline';
+        paycheckGoalSuffix.textContent = 'goal';
+      }
+    }
+  }
 
   // Clean Progress Bar (Green fill on deep slate gray track)
   const segDashBar = document.getElementById('segDashBar');
@@ -391,55 +431,7 @@ window.openGoalsModal = function(focusDayId) {
   const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
   const list = document.getElementById('goalsModalList');
 
-  // Total Bill Target input in Goals modal
-  const totalBillInput = document.getElementById('goalsModalTotalBillInput');
-  if (totalBillInput) {
-    totalBillInput.value = state.totalBillGoal.toFixed(2);
-    totalBillInput.placeholder = state.totalBillGoal.toFixed(2);
-    setupSmartGoalInput(totalBillInput);
-  }
-
-  if (list) {
-    list.innerHTML = '';
-    state.days.forEach(day => {
-      const row = document.createElement('div');
-      row.className = 'flex items-center justify-between bg-black/60 rounded-lg px-3 py-1.5 border border-zinc-800 font-mono';
-      row.innerHTML = `
-        <div class="flex items-center gap-2">
-          <span class="w-8 text-[9.5px] uppercase font-bold text-zinc-400">${day.short}</span>
-          <span class="text-xs font-semibold text-white">${day.name}</span>
-        </div>
-        <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
-          <span class="text-xs font-bold text-emerald-400 mr-1">$</span>
-          <input 
-            type="number" 
-            inputmode="decimal" 
-            id="goal-input-${day.id}" 
-            step="0.01" 
-            min="0" 
-            value="${day.planned.toFixed(2)}"
-            placeholder="${day.planned.toFixed(2)}"
-            class="smart-goal-input w-16 bg-transparent text-right text-xs font-bold text-white focus:outline-none placeholder-zinc-500"
-          />
-        </div>
-      `;
-      list.appendChild(row);
-
-      const input = row.querySelector(`#goal-input-${day.id}`);
-      if (input) {
-        setupSmartGoalInput(input, (newVal, changed) => {
-          if (changed) {
-            day.planned = newVal;
-          }
-          updateGoalsModalTotal();
-        }, () => {
-          updateGoalsModalTotal();
-        });
-      }
-    });
-  }
-
-  updateGoalsModalTotal();
+  renderGoalsModalList();
 
   if (modal && sheet) {
     modal.classList.remove('hidden');
@@ -567,6 +559,127 @@ window.splitGoalsEvenlyModal = function() {
   updateGoalsModalTotal();
 };
 
+function renderGoalsModalList() {
+  const totalBillInput = document.getElementById('goalsModalTotalBillInput');
+  if (totalBillInput) {
+    totalBillInput.value = state.totalBillGoal.toFixed(2);
+    totalBillInput.placeholder = state.totalBillGoal.toFixed(2);
+    setupSmartGoalInput(totalBillInput);
+  }
+
+  const list = document.getElementById('goalsModalList');
+  if (list) {
+    list.innerHTML = '';
+    state.days.forEach(day => {
+      const row = document.createElement('div');
+      row.className = 'flex items-center justify-between bg-black/60 rounded-lg px-3 py-1.5 border border-zinc-800 font-mono';
+      row.innerHTML = `
+        <div class="flex items-center gap-2">
+          <span class="w-8 text-[9.5px] uppercase font-bold text-zinc-400">${day.short}</span>
+          <span class="text-xs font-semibold text-white">${day.name}</span>
+        </div>
+        <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
+          <span class="text-xs font-bold text-emerald-400 mr-1">$</span>
+          <input 
+            type="number" 
+            inputmode="decimal" 
+            id="goal-input-${day.id}" 
+            step="0.01" 
+            min="0" 
+            value="${day.planned.toFixed(2)}"
+            placeholder="${day.planned.toFixed(2)}"
+            class="smart-goal-input w-16 bg-transparent text-right text-xs font-bold text-white focus:outline-none placeholder-zinc-500"
+          />
+        </div>
+      `;
+      list.appendChild(row);
+
+      const input = row.querySelector(`#goal-input-${day.id}`);
+      if (input) {
+        setupSmartGoalInput(input, (newVal, changed) => {
+          if (changed) {
+            day.planned = newVal;
+          }
+          updateGoalsModalTotal();
+        }, () => {
+          updateGoalsModalTotal();
+        });
+      }
+    });
+  }
+
+  updateGoalsModalTotal();
+}
+
+window.exportBackupData = function() {
+  triggerHaptic();
+  try {
+    const backup = {
+      app: 'School Bill Tracker',
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      state: state
+    };
+    const jsonStr = JSON.stringify(backup, null, 2);
+    const blob = new Blob([jsonStr], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    const dateStr = new Date().toISOString().split('T')[0];
+    a.href = url;
+    a.download = `bill-tracker-backup-${dateStr}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    showToast('Backup saved to downloads');
+  } catch (err) {
+    alert('Failed to export backup: ' + err.message);
+  }
+};
+
+window.importBackupData = function() {
+  triggerHaptic();
+  const fileInput = document.getElementById('backupFileInput');
+  if (fileInput) {
+    fileInput.value = '';
+    fileInput.click();
+  }
+};
+
+window.handleBackupFileSelect = function(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const data = JSON.parse(e.target.result);
+      const importedState = data.state || data;
+      if (importedState && Array.isArray(importedState.days)) {
+        if (typeof importedState.totalBillGoal === 'number' && !isNaN(importedState.totalBillGoal)) {
+          state.totalBillGoal = importedState.totalBillGoal;
+        }
+        importedState.days.forEach(impDay => {
+          const target = state.days.find(d => d.id === impDay.id);
+          if (target) {
+            if (typeof impDay.planned === 'number' && !isNaN(impDay.planned)) target.planned = impDay.planned;
+            if (typeof impDay.actual === 'number' && !isNaN(impDay.actual)) target.actual = impDay.actual;
+          }
+        });
+        saveState();
+        updateCalculations();
+        renderGoalsModalList();
+        showToast('Backup restored successfully!');
+      } else {
+        alert('Invalid backup file format.');
+      }
+    } catch (err) {
+      alert('Error reading backup file: ' + err.message);
+    }
+  };
+  reader.readAsText(file);
+};
+
 // -------------------------------------------------------------
 // YNAB-STYLE PROTECTED CALCULATOR MODAL ENGINE
 // -------------------------------------------------------------
@@ -636,6 +749,32 @@ window.closeCalcModal = function() {
       modal.classList.add('hidden');
     }, 220);
   }
+};
+
+window.switchCalcDay = function(direction) {
+  triggerHaptic();
+  if (!calcDayId) return;
+  const currentIndex = state.days.findIndex(d => d.id === calcDayId);
+  if (currentIndex === -1) return;
+
+  let newIndex = currentIndex + direction;
+  if (newIndex < 0) newIndex = state.days.length - 1;
+  else if (newIndex >= state.days.length) newIndex = 0;
+
+  const newDay = state.days[newIndex];
+  calcDayId = newDay.id;
+  selectDay(newDay.id);
+
+  calcBase = newDay.actual;
+  calcExpr = calcBase > 0 ? calcBase.toFixed(2) : '0';
+
+  const dayTitle = document.getElementById('calcDayTitle');
+  const currentAmount = document.getElementById('calcCurrentAmount');
+
+  if (dayTitle) dayTitle.textContent = newDay.name;
+  if (currentAmount) currentAmount.textContent = formatCurrency(calcBase);
+
+  updateCalcDisplay();
 };
 
 window.calcInputKey = function(key) {
