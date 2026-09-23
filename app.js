@@ -312,12 +312,6 @@ function updateCalculations() {
   const estimatedEarningsDisplay = document.getElementById('estimatedEarningsDisplay');
   if (estimatedEarningsDisplay) estimatedEarningsDisplay.textContent = formatCurrency(estimatedEarnings);
 
-  const targetPaycheckTile = document.getElementById('targetPaycheckTile');
-  if (targetPaycheckTile) targetPaycheckTile.textContent = formatCurrency(paycheckGoal);
-
-  const savingsAmountTile = document.getElementById('savingsAmountTile');
-  if (savingsAmountTile) savingsAmountTile.textContent = formatCurrency(estimatedEarnings);
-
   // Update total bill goal input if not focused
   const totalBillGoalInput = document.getElementById('totalBillGoalInput');
   if (totalBillGoalInput && document.activeElement !== totalBillGoalInput) {

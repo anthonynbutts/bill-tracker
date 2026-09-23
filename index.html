@@ -118,34 +118,19 @@
           </div>
         </div>
 
-        <!-- 2-Column Summary Breakdown -->
-        <div class="grid grid-cols-2 gap-2 pt-2.5 border-t border-zinc-800/80">
-          <!-- Column 1: DoorDash So Far -->
-          <div class="bg-black/50 rounded-2xl p-2.5 border border-zinc-800/70">
-            <div class="flex items-center justify-between text-[9px] uppercase font-bold text-emerald-400 mb-0.5">
-              <span>DoorDash Logged</span>
+        <!-- DoorDash Logged Summary -->
+        <div class="bg-black/50 rounded-2xl p-3 border border-zinc-800/70 pt-2.5 border-t border-zinc-800/80 flex items-center justify-between">
+          <div>
+            <div class="flex items-center gap-1.5 text-[10px] uppercase font-bold text-emerald-400 mb-0.5">
               <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span>DoorDash Logged</span>
             </div>
-            <div class="text-lg font-black font-mono text-white" id="actualEarningsDisplay">
-              $0.00
-            </div>
-            <div class="text-[10px] font-mono text-zinc-500">
-              of <span id="estimatedEarningsDisplay" class="text-zinc-300 font-semibold">$161.25</span> goal
+            <div class="text-[11px] font-mono text-zinc-500">
+              of <span id="estimatedEarningsDisplay" class="text-zinc-300 font-semibold">$161.25</span> week goal
             </div>
           </div>
-
-          <!-- Column 2: Target Paycheck (when goal hit) -->
-          <div class="bg-black/50 rounded-2xl p-2.5 border border-zinc-800/70">
-            <div class="flex items-center justify-between text-[9px] uppercase font-bold text-zinc-400 mb-0.5">
-              <span>Target Paycheck</span>
-              <span class="text-[9px] font-mono text-zinc-500">Goal</span>
-            </div>
-            <div class="text-lg font-black font-mono text-emerald-400" id="targetPaycheckTile">
-              $53.75
-            </div>
-            <div class="text-[10px] font-mono text-zinc-500">
-              saves <span id="savingsAmountTile" class="text-emerald-400 font-semibold">$161.25</span>
-            </div>
+          <div class="text-2xl font-black font-mono text-white tracking-tight" id="actualEarningsDisplay">
+            $0.00
           </div>
         </div>
 
