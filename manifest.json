@@ -1,5 +1,5 @@
 {
-  "name": "School Bill Tracker",
+  "name": "Bill Tracker",
   "short_name": "Bill Tracker",
   "description": "Weekly school bill and DoorDash earnings tracker",
   "start_url": "./index.html",
