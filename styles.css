@@ -61,6 +61,14 @@ html.dark {
 }
 
 /* Typography & Viewport Setup */
+html {
+  background-color: var(--bg-primary);
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "SF Pro Display", "SF Pro", system-ui, -apple-system-body, sans-serif;
   letter-spacing: -0.015em;
@@ -68,8 +76,8 @@ body {
   color: var(--text-primary);
   margin: 0;
   padding: 0;
-  min-height: 100vh;
-  min-height: 100dvh;
+  width: 100%;
+  min-height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -135,19 +143,18 @@ input, textarea {
     margin: 0 !important;
     width: 100% !important;
     height: 100% !important;
-    height: 100dvh !important;
+    min-height: 100% !important;
     overflow: hidden !important;
-    position: fixed !important;
-    inset: 0 !important;
   }
 
   #deviceFrame {
+    position: fixed !important;
+    inset: 0 !important;
     width: 100% !important;
     max-width: 100% !important;
     height: 100% !important;
-    height: 100dvh !important;
-    min-height: 100dvh !important;
-    max-height: 100dvh !important;
+    min-height: 100% !important;
+    max-height: 100% !important;
     border: none !important;
     border-radius: 0 !important;
     box-shadow: none !important;

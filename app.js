@@ -61,7 +61,7 @@ window.setTheme = function(theme) {
 
   const metaStatusBarStyle = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
   if (metaStatusBarStyle) {
-    metaStatusBarStyle.setAttribute('content', theme === 'dark' ? 'black-translucent' : 'default');
+    metaStatusBarStyle.setAttribute('content', 'black-translucent');
   }
 
   updateThemeControls(theme);
