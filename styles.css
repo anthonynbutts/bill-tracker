@@ -68,8 +68,8 @@ input, textarea, select {
 }
 
 #addModalAmountInput {
-  font-size: 2.5rem !important; /* 40px */
-  line-height: 2.75rem !important;
+  font-size: 2.125rem !important; /* 34px - sleeker, not oversized */
+  line-height: 2.5rem !important;
 }
 
 input[type="number"]::-webkit-outer-spin-button,
@@ -122,63 +122,57 @@ input, textarea {
     border-radius: 0 !important;
     box-shadow: none !important;
     outline: none !important;
-    padding: 0 !important; /* No chassis padding: content and modals bleed cleanly to glass edges */
+    padding: 0 !important; /* No chassis padding: content bleeds cleanly to glass edges */
     display: flex !important;
     flex-direction: column !important;
   }
 
-  /* Real iPhone 15 has hardware Dynamic Island / Notch and Home Indicator */
+  /* Real iPhone 15 has hardware Dynamic Island and Home Indicator */
   #dynamicIslandContainer,
   #homeIndicatorMockup {
     display: none !important;
   }
 
   /* TOP SAFE ZONE:
-   * Dynamic Island on iPhone 15 extends to 59px.
-   * max(calc(env(safe-area-inset-top, 0px) + 8px), 64px) ensures a comfortable
-   * 8px breathing margin below the 59px status bar/island, with a 64px guaranteed fallback.
+   * Dynamic Island and OS-level status bar blur on iPhone 15 extends down to ~72px.
+   * We set padding-top to max(calc(env(safe-area-inset-top, 0px) + 26px), 86px) to position
+   * all header text and buttons completely below the OS-level blur.
    */
   #navHeader {
-    padding-top: max(calc(env(safe-area-inset-top, 0px) + 8px), 64px) !important;
-    padding-left: max(env(safe-area-inset-left, 0px), 20px) !important;
-    padding-right: max(env(safe-area-inset-right, 0px), 20px) !important;
-    padding-bottom: 12px !important;
+    padding-top: max(calc(env(safe-area-inset-top, 0px) + 26px), 86px) !important;
+    padding-left: max(env(safe-area-inset-left, 0px), 24px) !important;
+    padding-right: max(env(safe-area-inset-right, 0px), 24px) !important;
+    padding-bottom: 8px !important;
   }
 
   /* SIDES & BOTTOM SAFE ZONE:
-   * Left/Right: 20px (20pt) standard Apple Inset Grouped margins to clear the 55px curved corners.
-   * Bottom: max(calc(env(safe-area-inset-bottom, 0px) + 36px), 56px) provides 36px of buffer above the
-   * 34px Home Indicator bar (70px total clearance) so all scrolled content is 100% accessible.
+   * Left/Right: 24px margins give cards a skinnier, sleek, proportioned silhouette.
+   * Bottom: max(calc(env(safe-area-inset-bottom, 0px) + 36px), 56px) provides 36px of buffer above the Home bar.
    */
   #scrollContent {
-    padding-left: max(env(safe-area-inset-left, 0px), 20px) !important;
-    padding-right: max(env(safe-area-inset-right, 0px), 20px) !important;
-    padding-top: 10px !important;
+    padding-left: max(env(safe-area-inset-left, 0px), 24px) !important;
+    padding-right: max(env(safe-area-inset-right, 0px), 24px) !important;
+    padding-top: 6px !important;
     padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 36px), 56px) !important;
   }
 
   /* MODAL SHEETS SAFE ZONE:
-   * Bottom: max(calc(env(safe-area-inset-bottom, 0px) + 26px), 48px) ensures the primary action buttons
-   * sit 60px above the bottom of the iPhone 15 screen, preventing accidental Home Indicator gestures.
-   * Sides: 20px margins.
-   * Top: max-height ensures the sheet never extends within 24px of the Dynamic Island.
+   * Skinnier padding and safe bottom clearance.
    */
   .apple-sheet {
     padding-left: max(env(safe-area-inset-left, 0px), 20px) !important;
     padding-right: max(env(safe-area-inset-right, 0px), 20px) !important;
-    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 26px), 48px) !important;
-    max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 59px) - 24px) !important;
+    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 24px), 44px) !important;
+    max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 59px) - 28px) !important;
   }
 
-  /* DYNAMIC ISLAND CAPSULE NOTIFICATION (HUD):
-   * Placed right beneath the Dynamic Island with 12px of margin (71px from top on iPhone 15).
-   */
+  /* DYNAMIC ISLAND CAPSULE NOTIFICATION (HUD) */
   #toast {
-    top: max(calc(env(safe-area-inset-top, 0px) + 12px), 66px) !important;
+    top: max(calc(env(safe-area-inset-top, 0px) + 16px), 76px) !important;
   }
 }
 
-/* On Desktop / Laptop browser: Pixel-perfect iPhone 15 Pro chassis */
+/* On Desktop / Laptop browser: Pixel-perfect iPhone 15 chassis */
 @media (min-width: 640px) and (display-mode: browser) {
   #deviceFrame {
     width: 393px !important;
@@ -191,15 +185,15 @@ input, textarea {
   }
 
   #navHeader {
-    padding-top: 12px !important;
-    padding-left: 20px !important;
-    padding-right: 20px !important;
-    padding-bottom: 10px !important;
+    padding-top: 14px !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
+    padding-bottom: 8px !important;
   }
 
   #scrollContent {
-    padding-left: 20px !important;
-    padding-right: 20px !important;
+    padding-left: 24px !important;
+    padding-right: 24px !important;
     padding-top: 6px !important;
     padding-bottom: 48px !important;
   }
@@ -207,7 +201,7 @@ input, textarea {
   .apple-sheet {
     padding-left: 20px !important;
     padding-right: 20px !important;
-    padding-bottom: 32px !important;
+    padding-bottom: 28px !important;
     max-height: calc(852px - 96px) !important;
   }
 
@@ -224,55 +218,53 @@ input, textarea {
 }
 
 /* -------------------------------------------------------------
- * APPLE 1:1 UI/UX COMPONENTS & MATERIALS
+ * APPLE 1:1 UI/UX COMPONENTS & SLIM MATERIALS
  * ------------------------------------------------------------- */
 
-/* Apple Frosted Navigation Bar */
+/* Apple Navigation Bar */
 .apple-nav-blur {
-  background: rgba(0, 0, 0, 0.78);
-  backdrop-filter: blur(25px) saturate(190%);
-  -webkit-backdrop-filter: blur(25px) saturate(190%);
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.1);
-  transition: border-color 0.2s ease, background 0.2s ease;
+  background: #000000;
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.08);
+  transition: border-color 0.2s ease;
 }
 
-/* Apple Inset Grouped Card */
+/* Apple Inset Grouped Card (Slimmer continuous curve) */
 .apple-card {
   background: #1C1C1E;
-  border-radius: 22px;
+  border-radius: 18px;
   border: 1px solid rgba(255, 255, 255, 0.08);
-  box-shadow: 0 4px 20px -2px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 2px 14px -2px rgba(0, 0, 0, 0.45);
   transition: border-color 0.2s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.2s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
-/* Apple Highlighted Today Card */
+/* Apple Highlighted Today Card (Slimmer continuous curve) */
 .apple-today-card {
   background: #1C1C1E;
-  border-radius: 22px;
+  border-radius: 18px;
   border: 1px solid rgba(48, 209, 88, 0.35);
-  box-shadow: 0 4px 24px -4px rgba(0, 0, 0, 0.6), 0 0 16px -4px rgba(48, 209, 88, 0.14);
+  box-shadow: 0 3px 18px -4px rgba(0, 0, 0, 0.5), 0 0 12px -4px rgba(48, 209, 88, 0.12);
 }
 
 /* Apple Inset Grouped Table Container */
 .apple-grouped-table {
   background: #1C1C1E;
-  border-radius: 20px;
+  border-radius: 16px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   overflow: hidden;
 }
 
 /* Hairline Separators between rows */
 .apple-row-separator {
-  border-bottom: 0.5px solid rgba(255, 255, 255, 0.07);
+  border-bottom: 0.5px solid rgba(255, 255, 255, 0.06);
 }
 .apple-row-separator:last-child {
   border-bottom: none;
 }
 
-/* Apple Circular Navigation Bar Buttons */
+/* Apple Circular Navigation Bar Buttons (Slimmer 32px) */
 .apple-nav-btn {
-  width: 36px;
-  height: 36px;
+  width: 32px;
+  height: 32px;
   border-radius: 9999px;
   background: #1C1C1E;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -302,7 +294,7 @@ input, textarea {
   font-weight: 700;
   border-radius: 9999px;
   transition: transform 0.1s ease, background-color 0.15s ease, box-shadow 0.15s ease;
-  box-shadow: 0 2px 10px rgba(48, 209, 88, 0.25);
+  box-shadow: 0 2px 8px rgba(48, 209, 88, 0.22);
   touch-action: manipulation;
 }
 
@@ -312,7 +304,7 @@ input, textarea {
 
 .apple-primary-btn:active {
   transform: scale(0.96);
-  box-shadow: 0 1px 4px rgba(48, 209, 88, 0.15);
+  box-shadow: 0 1px 3px rgba(48, 209, 88, 0.15);
 }
 
 /* Apple Secondary Pill Button */
@@ -367,10 +359,10 @@ input, textarea {
   transform: scale(0.96);
 }
 
-/* Apple Activity / Fitness Capsule Progress Bar */
+/* Apple Activity / Fitness Capsule Progress Bar (Slim 6px track) */
 .progress-track {
   background-color: #2C2C2E;
-  border: 1px solid rgba(255, 255, 255, 0.06);
+  border: 1px solid rgba(255, 255, 255, 0.05);
   border-radius: 9999px;
 }
 
@@ -388,17 +380,17 @@ input, textarea {
 .apple-sheet {
   background: #1C1C1E;
   border-top: 0.5px solid rgba(255, 255, 255, 0.14);
-  border-top-left-radius: 32px;
-  border-top-right-radius: 32px;
-  box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.75);
+  border-top-left-radius: 28px;
+  border-top-right-radius: 28px;
+  box-shadow: 0 -8px 35px rgba(0, 0, 0, 0.75);
   transition: transform 0.32s cubic-bezier(0.32, 0.72, 0, 1);
   will-change: transform;
 }
 
 /* Apple Sheet Top Grabber Handle */
 .apple-sheet-grabber {
-  width: 36px;
-  height: 5px;
+  width: 34px;
+  height: 4.5px;
   border-radius: 2.5px;
   background-color: rgba(255, 255, 255, 0.25);
   margin-left: auto;
@@ -483,7 +475,7 @@ input, textarea {
 
 /* Scrollbar styling */
 .smooth-scroll::-webkit-scrollbar {
-  width: 4px;
+  width: 3px;
 }
 .smooth-scroll::-webkit-scrollbar-track {
   background: transparent;

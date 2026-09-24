@@ -248,13 +248,13 @@ function renderDays() {
 
       const card = document.createElement('div');
       card.id = `card-${day.id}`;
-      card.className = 'apple-today-card p-4 transition-all select-none';
+      card.className = 'apple-today-card p-3.5 mb-2.5 transition-all select-none';
       card.innerHTML = `
         <!-- Top: Day Name + Today Capsule Badge -->
-        <div class="flex items-center justify-between mb-2.5">
-          <div class="flex items-center gap-2">
-            <span class="font-bold text-white text-base">${day.name}</span>
-            <span class="text-[10px] font-bold ${badgeClass} px-2 py-0.5 rounded-full uppercase tracking-wider">${badgeText}</span>
+        <div class="flex items-center justify-between mb-2">
+          <div class="flex items-center gap-1.5">
+            <span class="font-bold text-white text-[15px]">${day.name}</span>
+            <span class="text-[9.5px] font-bold ${badgeClass} px-2 py-0.5 rounded-full uppercase tracking-wider">${badgeText}</span>
           </div>
           <span class="text-xs font-mono ${diffClass}">
             ${diffText}
@@ -262,28 +262,28 @@ function renderDays() {
         </div>
 
         <!-- Middle: Action Row with Smart Input & Apple Green Add Button -->
-        <div class="flex items-center justify-between bg-black/60 rounded-[18px] p-3 border border-white/[0.08] mb-3 gap-2">
+        <div class="flex items-center justify-between bg-black/60 rounded-[14px] p-2.5 px-3 border border-white/[0.08] mb-2.5 gap-2">
           <div class="min-w-0">
-            <span class="text-[10px] uppercase font-semibold text-[#8E8E93] block mb-1 tracking-wider">${actionLabel}</span>
+            <span class="text-[9.5px] uppercase font-semibold text-[#8E8E93] block mb-0.5 tracking-wider">${actionLabel}</span>
             <div class="flex items-center gap-1.5 font-mono">
-              <div class="flex items-center bg-[#1C1C1E] rounded-xl px-2.5 py-1.5 border border-white/[0.1] focus-within:border-[#30D158] focus-within:ring-1 focus-within:ring-[#30D158]/30">
-                <span class="text-sm font-bold text-[#30D158] mr-0.5">$</span>
+              <div class="flex items-center bg-[#1C1C1E] rounded-lg px-2 py-1 border border-white/[0.1] focus-within:border-[#30D158] focus-within:ring-1 focus-within:ring-[#30D158]/30">
+                <span class="text-xs font-bold text-[#30D158] mr-0.5">$</span>
                 <input 
                   type="text" 
                   inputmode="decimal" 
                   id="actual-input-${day.id}" 
                   value="${day.actual.toFixed(2)}" 
                   placeholder="${day.actual.toFixed(2)}" 
-                  class="smart-goal-input w-20 bg-transparent text-left text-sm font-bold text-[#30D158] focus:outline-none placeholder-[#636366] font-mono" 
+                  class="smart-goal-input w-16 bg-transparent text-left text-xs font-bold text-[#30D158] focus:outline-none placeholder-[#636366] font-mono" 
                   title="Click to edit current dash"
                 />
               </div>
-              <span class="text-xs text-[#8E8E93] whitespace-nowrap">/ $${day.planned.toFixed(2)} goal</span>
+              <span class="text-[11px] text-[#8E8E93] whitespace-nowrap">/ $${day.planned.toFixed(2)} goal</span>
             </div>
           </div>
           
-          <button type="button" class="apple-primary-btn flex-shrink-0 px-4 py-2 text-xs font-bold flex items-center gap-1.5 tap-btn" onclick="openAddModal('${day.id}')" title="Add to earnings">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <button type="button" class="apple-primary-btn flex-shrink-0 px-3.5 py-1.5 text-xs font-bold flex items-center gap-1 tap-btn" onclick="openAddModal('${day.id}')" title="Add to earnings">
+            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
@@ -291,8 +291,8 @@ function renderDays() {
           </button>
         </div>
 
-        <!-- Apple Capsule Progress Bar -->
-        <div class="progress-track w-full rounded-full h-2.5 overflow-hidden relative">
+        <!-- Apple Capsule Progress Bar (Slim 6px track) -->
+        <div class="progress-track w-full rounded-full h-1.5 overflow-hidden relative">
           <div class="h-full rounded-full transition-all duration-300" style="width: ${dayPct}%; opacity: ${dayPct > 0 ? '1' : '0'}; background: ${dayProgressStyle.background}; box-shadow: ${dayProgressStyle.boxShadow};"></div>
         </div>
       `;
@@ -309,28 +309,28 @@ function renderDays() {
         });
       }
     } else {
-      // OTHER DAYS: Apple Inset Grouped Table Row
+      // OTHER DAYS: Apple Inset Grouped Table Row (Slim 36px)
       const row = document.createElement('div');
       row.id = `card-${day.id}`;
-      row.className = 'apple-row-separator px-3.5 py-2.5 flex items-center justify-between select-none hover:bg-white/[0.02] transition-colors';
+      row.className = 'apple-row-separator px-3 py-2 flex items-center justify-between select-none hover:bg-white/[0.02] transition-colors';
 
       row.innerHTML = `
         <!-- Left: Day badge, title, and goal -->
-        <div class="flex items-center gap-3 min-w-0">
-          <div class="w-8 h-8 rounded-full bg-[#2C2C2E] border border-white/[0.08] flex items-center justify-center font-mono flex-shrink-0">
-            <span class="text-[10px] font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-[#30D158]' : (day.actual > 0 ? 'text-[#FF9F0A]' : 'text-[#8E8E93]')}">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-6 h-6 rounded-full bg-[#2C2C2E] border border-white/[0.08] flex items-center justify-center font-mono flex-shrink-0">
+            <span class="text-[9px] font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-[#30D158]' : (day.actual > 0 ? 'text-[#FF9F0A]' : 'text-[#8E8E93]')}">
               ${day.actual >= day.planned && day.planned > 0 ? '✓' : day.short}
             </span>
           </div>
 
           <div class="min-w-0">
             <div class="flex items-center gap-1.5 truncate">
-              <span class="font-semibold text-white text-[13px]">${day.name}</span>
-              <span class="text-[10px] font-mono ${diffClass} truncate">${diffText}</span>
+              <span class="font-semibold text-white text-xs">${day.name}</span>
+              <span class="text-[9.5px] font-mono ${diffClass} truncate">${diffText}</span>
             </div>
-            <div class="text-[11px] font-mono text-[#8E8E93] mt-0.5 flex items-center gap-2">
+            <div class="text-[10px] font-mono text-[#8E8E93] mt-0.5 flex items-center gap-1.5">
               <span>Goal: $${day.planned.toFixed(2)}</span>
-              <div class="progress-track w-12 rounded-full h-1.5 overflow-hidden inline-block align-middle relative">
+              <div class="progress-track w-10 rounded-full h-1 overflow-hidden inline-block align-middle relative">
                 <div class="h-full rounded-full transition-all duration-300" style="width: ${dayPct}%; opacity: ${dayPct > 0 ? '1' : '0'}; background: ${dayProgressStyle.background}; box-shadow: ${dayProgressStyle.boxShadow};"></div>
               </div>
             </div>
@@ -338,21 +338,21 @@ function renderDays() {
         </div>
 
         <!-- Right: Current Dash Input & Compact Add Button -->
-        <div class="flex items-center gap-2 flex-shrink-0">
-          <div class="flex items-center bg-[#2C2C2E] rounded-xl px-2 py-1 border border-white/[0.08] focus-within:border-[#30D158]">
-            <span class="text-xs font-bold text-[#30D158] mr-0.5 font-mono">$</span>
+        <div class="flex items-center gap-1.5 flex-shrink-0">
+          <div class="flex items-center bg-[#2C2C2E] rounded-lg px-1.5 py-0.5 border border-white/[0.08] focus-within:border-[#30D158]">
+            <span class="text-[11px] font-bold text-[#30D158] mr-0.5 font-mono">$</span>
             <input 
               type="text" 
               inputmode="decimal" 
               id="actual-input-${day.id}" 
               value="${day.actual.toFixed(2)}" 
               placeholder="${day.actual.toFixed(2)}" 
-              class="smart-goal-input w-16 bg-transparent text-right font-mono text-xs font-bold text-white focus:outline-none placeholder-[#636366]" 
+              class="smart-goal-input w-14 bg-transparent text-right font-mono text-[11px] font-bold text-white focus:outline-none placeholder-[#636366]" 
               title="Click to edit earnings"
             />
           </div>
-          <button type="button" onclick="openAddModal('${day.id}')" class="apple-secondary-btn px-2.5 py-1 text-xs font-semibold flex items-center gap-1 tap-btn" title="Add to ${day.name}">
-            <svg class="w-3 h-3 text-[#30D158]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <button type="button" onclick="openAddModal('${day.id}')" class="apple-secondary-btn px-2 py-0.5 text-[11px] font-semibold flex items-center gap-1 tap-btn" title="Add to ${day.name}">
+            <svg class="w-2.5 h-2.5 text-[#30D158]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
@@ -431,9 +431,9 @@ function updateCalculations() {
   if (paycheckNeededDisplay) {
     paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
     if (isCovered) {
-      paycheckNeededDisplay.className = 'text-[36px] font-extrabold font-mono text-[#30D158] tracking-tight leading-tight drop-shadow-[0_0_15px_rgba(48,209,88,0.45)]';
+      paycheckNeededDisplay.className = 'text-[28px] sm:text-[30px] font-extrabold font-mono text-[#30D158] tracking-tight leading-tight drop-shadow-[0_0_12px_rgba(48,209,88,0.45)]';
     } else {
-      paycheckNeededDisplay.className = 'text-[38px] font-extrabold font-mono text-white tracking-tight leading-tight';
+      paycheckNeededDisplay.className = 'text-[28px] sm:text-[30px] font-extrabold font-mono text-white tracking-tight leading-tight';
     }
   }
 
