@@ -1,4 +1,4 @@
-/* School Bill Tracker - Apple iOS 1:1 Design & Precise iPhone Safe Zone Specs */
+/* School Bill Tracker - Apple iOS 1:1 Design & Precise iPhone 15 Safe Zone Specs */
 
 :root {
   --sat: env(safe-area-inset-top, 0px);
@@ -94,10 +94,10 @@ input, textarea {
 }
 
 /* -------------------------------------------------------------
- * SAFE ZONE SPECIFICATIONS FOR IPHONE
+ * SAFE ZONE SPECIFICATIONS FOR IPHONE 15
  * ------------------------------------------------------------- */
 
-/* On real iPhone, mobile browser, or iOS standalone PWA */
+/* On real iPhone 15, mobile browser, or iOS standalone PWA */
 @media (max-width: 639px), (display-mode: standalone) {
   html, body {
     background-color: #000000 !important;
@@ -127,37 +127,54 @@ input, textarea {
     flex-direction: column !important;
   }
 
-  /* Real iPhone has hardware Dynamic Island / Notch and Home Indicator */
+  /* Real iPhone 15 has hardware Dynamic Island / Notch and Home Indicator */
   #dynamicIslandContainer,
   #homeIndicatorMockup {
     display: none !important;
   }
 
-  /* Safe Area Navigation Header */
+  /* TOP SAFE ZONE:
+   * Dynamic Island on iPhone 15 extends to 59px.
+   * max(calc(env(safe-area-inset-top, 0px) + 8px), 64px) ensures a comfortable
+   * 8px breathing margin below the 59px status bar/island, with a 64px guaranteed fallback.
+   */
   #navHeader {
-    padding-top: max(env(safe-area-inset-top, 0px), 16px) !important;
-    padding-left: max(env(safe-area-inset-left, 0px), 16px) !important;
-    padding-right: max(env(safe-area-inset-right, 0px), 16px) !important;
+    padding-top: max(calc(env(safe-area-inset-top, 0px) + 8px), 64px) !important;
+    padding-left: max(env(safe-area-inset-left, 0px), 20px) !important;
+    padding-right: max(env(safe-area-inset-right, 0px), 20px) !important;
+    padding-bottom: 12px !important;
   }
 
-  /* Safe Area Content Container */
+  /* SIDES & BOTTOM SAFE ZONE:
+   * Left/Right: 20px (20pt) standard Apple Inset Grouped margins to clear the 55px curved corners.
+   * Bottom: max(calc(env(safe-area-inset-bottom, 0px) + 36px), 56px) provides 36px of buffer above the
+   * 34px Home Indicator bar (70px total clearance) so all scrolled content is 100% accessible.
+   */
   #scrollContent {
-    padding-left: max(env(safe-area-inset-left, 0px), 16px) !important;
-    padding-right: max(env(safe-area-inset-right, 0px), 16px) !important;
-    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 24px), 36px) !important;
+    padding-left: max(env(safe-area-inset-left, 0px), 20px) !important;
+    padding-right: max(env(safe-area-inset-right, 0px), 20px) !important;
+    padding-top: 10px !important;
+    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 36px), 56px) !important;
   }
 
-  /* Safe Area Modal Sheets */
+  /* MODAL SHEETS SAFE ZONE:
+   * Bottom: max(calc(env(safe-area-inset-bottom, 0px) + 26px), 48px) ensures the primary action buttons
+   * sit 60px above the bottom of the iPhone 15 screen, preventing accidental Home Indicator gestures.
+   * Sides: 20px margins.
+   * Top: max-height ensures the sheet never extends within 24px of the Dynamic Island.
+   */
   .apple-sheet {
-    padding-left: max(env(safe-area-inset-left, 0px), 16px) !important;
-    padding-right: max(env(safe-area-inset-right, 0px), 16px) !important;
-    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 16px), 24px) !important;
-    max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 44px) - 14px) !important;
+    padding-left: max(env(safe-area-inset-left, 0px), 20px) !important;
+    padding-right: max(env(safe-area-inset-right, 0px), 20px) !important;
+    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 26px), 48px) !important;
+    max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 59px) - 24px) !important;
   }
 
-  /* Safe Area Dynamic Island Capsule Notification (HUD) */
+  /* DYNAMIC ISLAND CAPSULE NOTIFICATION (HUD):
+   * Placed right beneath the Dynamic Island with 12px of margin (71px from top on iPhone 15).
+   */
   #toast {
-    top: max(calc(env(safe-area-inset-top, 0px) + 8px), 14px) !important;
+    top: max(calc(env(safe-area-inset-top, 0px) + 12px), 66px) !important;
   }
 }
 
@@ -174,24 +191,28 @@ input, textarea {
   }
 
   #navHeader {
-    padding-top: 10px !important;
-    padding-left: 16px !important;
-    padding-right: 16px !important;
+    padding-top: 12px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-bottom: 10px !important;
   }
 
   #scrollContent {
-    padding-left: 16px !important;
-    padding-right: 16px !important;
-    padding-bottom: 40px !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-top: 6px !important;
+    padding-bottom: 48px !important;
   }
 
   .apple-sheet {
-    padding-bottom: 24px !important;
-    max-height: 82% !important;
+    padding-left: 20px !important;
+    padding-right: 20px !important;
+    padding-bottom: 32px !important;
+    max-height: calc(852px - 96px) !important;
   }
 
   #toast {
-    top: 50px !important;
+    top: 54px !important;
   }
 }
 
@@ -396,7 +417,7 @@ input, textarea {
 #toast {
   background: rgba(28, 28, 30, 0.94);
   backdrop-filter: blur(25px) saturate(180%);
-  -webkit-backdrop-filter: blur(25px) saturate(180%);
+  -webkit-backdrop-filter: blur(25px) saturate(190%);
   border: 1px solid rgba(255, 255, 255, 0.12);
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.75);
   transition: transform 0.36s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.25s ease;
