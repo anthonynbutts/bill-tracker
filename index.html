@@ -68,7 +68,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=17">
+  <link rel="stylesheet" href="styles.css?v=18">
 </head>
 <body class="selection:bg-teal-500 selection:text-white">
 
@@ -115,19 +115,11 @@
         </p>
       </div>
 
-      <!-- Action Buttons (Quick Theme Toggle & Quick Add) -->
+      <!-- Action Buttons (Quick Theme Toggle) -->
       <div class="flex items-center gap-1.5">
         <!-- Quick Theme Toggle Button -->
         <button id="themeToggleBtn" onclick="toggleTheme()" title="Switch Light/Dark Theme" class="apple-nav-btn tap-btn" aria-label="Toggle Theme">
           <span id="themeToggleIcon" class="text-xs">🌙</span>
-        </button>
-
-        <!-- Quick Add Earnings Button in Header -->
-        <button id="headerAddBtn" onclick="openAddModalForToday()" title="Quick Add Shift Earnings" class="apple-nav-btn tap-btn text-teal-600 dark:text-[#30D158]" aria-label="Add Earnings">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19"></line>
-            <line x1="5" y1="12" x2="19" y2="12"></line>
-          </svg>
         </button>
       </div>
     </header>
@@ -494,45 +486,52 @@
       </div>
     </div>
 
+    <!-- FLOATING ACTION BUTTON: Circle with + symbol to add a dash -->
+    <div id="floatingAddContainer" class="absolute z-40 pointer-events-auto">
+      <button 
+        type="button" 
+        id="floatingAddBtn" 
+        onclick="openAddModalForToday()" 
+        class="floating-add-btn tap-btn" 
+        title="Add DoorDash Shift Earnings" 
+        aria-label="Add Dash Earnings"
+      >
+        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"></line>
+          <line x1="5" y1="12" x2="19" y2="12"></line>
+        </svg>
+      </button>
+    </div>
+
     <!-- FLOATING BOTTOM NAVIGATION DOCK (Source: design_template.webp) -->
-    <div id="bottomFloatingDock" class="absolute left-1/2 -translate-x-1/2 z-40 w-auto max-w-[340px] pointer-events-auto">
-      <nav class="floating-dock">
+    <div id="bottomFloatingDock" class="absolute left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
+      <nav class="floating-dock" aria-label="Main Navigation">
         <!-- Home Tab Button -->
-        <button type="button" id="dockBtnHome" onclick="switchTab(0)" class="dock-item-active px-3 py-1.5 text-xs flex items-center gap-1.5 tap-btn" title="Home Dashboard">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+        <button type="button" id="dockBtnHome" onclick="switchTab(0)" class="dock-item-active tap-btn" title="Home Dashboard">
+          <svg class="w-4.5 h-4.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9.5l9-7 9 7V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.5z"></path>
             <polyline points="9 22 9 12 15 12 15 22"></polyline>
           </svg>
-          <span>Home</span>
+          <span class="dock-label">Home</span>
         </button>
 
         <!-- Goals Tab Button -->
-        <button type="button" id="dockBtnGoals" onclick="switchTab(1)" class="dock-item-inactive px-3 py-1.5 text-xs flex items-center gap-1.5 tap-btn" title="Goals & Targets">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <button type="button" id="dockBtnGoals" onclick="switchTab(1)" class="dock-item-inactive tap-btn" title="Goals & Targets">
+          <svg class="w-4.5 h-4.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="10"></circle>
             <circle cx="12" cy="12" r="6"></circle>
             <circle cx="12" cy="12" r="2"></circle>
           </svg>
-          <span>Goals</span>
+          <span class="dock-label hidden">Goals</span>
         </button>
 
         <!-- Settings Tab Button -->
-        <button type="button" id="dockBtnSettings" onclick="switchTab(2)" class="dock-item-inactive px-3 py-1.5 text-xs flex items-center gap-1.5 tap-btn" title="Settings & Appearance">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <button type="button" id="dockBtnSettings" onclick="switchTab(2)" class="dock-item-inactive tap-btn" title="Settings & Preferences">
+          <svg class="w-4.5 h-4.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
             <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
           </svg>
-          <span>Settings</span>
-        </button>
-
-        <!-- Quick Add Action Button -->
-        <button type="button" onclick="openAddModalForToday()" class="dock-item-inactive px-2.5 py-1.5 text-xs flex items-center gap-1 text-teal-400 hover:text-white tap-btn" title="Add Shift Earnings">
-          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <line x1="12" y1="8" x2="12" y2="16"></line>
-            <line x1="8" y1="12" x2="16" y2="12"></line>
-          </svg>
-          <span>+ Add</span>
+          <span class="dock-label hidden">Settings</span>
         </button>
       </nav>
     </div>
@@ -624,6 +623,6 @@
 
   </main>
 
-  <script src="app.js?v=17"></script>
+  <script src="app.js?v=18"></script>
 </body>
 </html>

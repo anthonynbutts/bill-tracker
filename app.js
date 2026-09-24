@@ -40,17 +40,20 @@ window.switchTab = function(tabIndex) {
     track.style.transform = `translateX(-${currentTab * (100 / 3)}%)`;
   }
 
-  // Update floating dock active indicators
+  // Update floating dock active indicators (1:1 with Apple design template)
   const dockHome = document.getElementById('dockBtnHome');
   const dockGoals = document.getElementById('dockBtnGoals');
   const dockSettings = document.getElementById('dockBtnSettings');
 
   [dockHome, dockGoals, dockSettings].forEach((btn, idx) => {
     if (!btn) return;
+    const label = btn.querySelector('.dock-label');
     if (idx === currentTab) {
-      btn.className = 'dock-item-active px-3 py-1.5 text-xs flex items-center gap-1.5 tap-btn';
+      btn.className = 'dock-item-active tap-btn';
+      if (label) label.classList.remove('hidden');
     } else {
-      btn.className = 'dock-item-inactive px-3 py-1.5 text-xs flex items-center gap-1.5 tap-btn';
+      btn.className = 'dock-item-inactive tap-btn';
+      if (label) label.classList.add('hidden');
     }
   });
 
@@ -481,34 +484,24 @@ function renderDays() {
           </span>
         </div>
 
-        <!-- Middle: Action Row with Smart Input & Teal/Emerald Add Button -->
-        <div class="flex items-center justify-between bg-gray-50/90 dark:bg-black/60 rounded-[14px] p-2.5 px-3 border border-gray-200/70 dark:border-white/[0.08] mb-2.5 gap-2">
-          <div class="min-w-0">
-            <span class="text-[9.5px] uppercase font-semibold text-gray-500 dark:text-[#8E8E93] block mb-0.5 tracking-wider">${actionLabel}</span>
-            <div class="flex items-center gap-1.5 font-mono">
-              <div class="flex items-center bg-white dark:bg-[#1C1C1E] rounded-lg px-2 py-1 border border-gray-200 dark:border-white/[0.1] focus-within:border-teal-500 dark:focus-within:border-[#30D158] focus-within:ring-1 focus-within:ring-teal-500/30 dark:focus-within:ring-[#30D158]/30">
-                <span class="text-xs font-bold text-teal-600 dark:text-[#30D158] mr-0.5">$</span>
-                <input 
-                  type="text" 
-                  inputmode="decimal" 
-                  id="actual-input-${day.id}" 
-                  value="${day.actual.toFixed(2)}" 
-                  placeholder="${day.actual.toFixed(2)}" 
-                  class="smart-goal-input w-16 bg-transparent text-left text-xs font-bold text-gray-900 dark:text-[#30D158] focus:outline-none placeholder-gray-400 dark:placeholder-[#636366] font-mono" 
-                  title="Click to edit current dash"
-                />
-              </div>
-              <span class="text-[11px] text-gray-500 dark:text-[#8E8E93] whitespace-nowrap">/ $${day.planned.toFixed(2)} goal</span>
+        <!-- Middle: Action Row with Smart Input -->
+        <div class="flex items-center justify-between bg-gray-50/90 dark:bg-black/60 rounded-[14px] p-2.5 px-3 border border-gray-200/70 dark:border-white/[0.08] mb-2.5">
+          <span class="text-[10px] uppercase font-semibold text-gray-500 dark:text-[#8E8E93] tracking-wider">${actionLabel}</span>
+          <div class="flex items-center gap-1.5 font-mono">
+            <div class="flex items-center bg-white dark:bg-[#1C1C1E] rounded-lg px-2.5 py-1 border border-gray-200 dark:border-white/[0.1] focus-within:border-teal-500 dark:focus-within:border-[#30D158] focus-within:ring-1 focus-within:ring-teal-500/30 dark:focus-within:ring-[#30D158]/30">
+              <span class="text-xs font-bold text-teal-600 dark:text-[#30D158] mr-0.5">$</span>
+              <input 
+                type="text" 
+                inputmode="decimal" 
+                id="actual-input-${day.id}" 
+                value="${day.actual.toFixed(2)}" 
+                placeholder="${day.actual.toFixed(2)}" 
+                class="smart-goal-input w-20 bg-transparent text-right text-xs font-bold text-gray-900 dark:text-[#30D158] focus:outline-none placeholder-gray-400 dark:placeholder-[#636366] font-mono" 
+                title="Click to edit current dash"
+              />
             </div>
+            <span class="text-[11px] text-gray-500 dark:text-[#8E8E93] whitespace-nowrap">/ $${day.planned.toFixed(2)} goal</span>
           </div>
-          
-          <button type="button" class="apple-primary-btn flex-shrink-0 px-3.5 py-1.5 text-xs font-bold flex items-center gap-1 tap-btn" onclick="openAddModal('${day.id}')" title="Add to earnings">
-            <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>Add</span>
-          </button>
         </div>
 
         <!-- Activity Capsule Progress Bar (Slim 6px track) -->
@@ -557,27 +550,20 @@ function renderDays() {
           </div>
         </div>
 
-        <!-- Right: Current Dash Input & Compact Add Button -->
-        <div class="flex items-center gap-1.5 flex-shrink-0">
-          <div class="flex items-center bg-gray-100 dark:bg-[#2C2C2E] rounded-lg px-1.5 py-0.5 border border-gray-200 dark:border-white/[0.08] focus-within:border-teal-500 dark:focus-within:border-[#30D158]">
-            <span class="text-[11px] font-bold text-teal-600 dark:text-[#30D158] mr-0.5 font-mono">$</span>
+        <!-- Right: Current Dash Input -->
+        <div class="flex items-center flex-shrink-0">
+          <div class="flex items-center bg-gray-100 dark:bg-[#2C2C2E] rounded-lg px-2 py-1 border border-gray-200 dark:border-white/[0.08] focus-within:border-teal-500 dark:focus-within:border-[#30D158]">
+            <span class="text-xs font-bold text-teal-600 dark:text-[#30D158] mr-0.5 font-mono">$</span>
             <input 
               type="text" 
               inputmode="decimal" 
               id="actual-input-${day.id}" 
               value="${day.actual.toFixed(2)}" 
               placeholder="${day.actual.toFixed(2)}" 
-              class="smart-goal-input w-14 bg-transparent text-right font-mono text-[11px] font-bold text-gray-900 dark:text-white focus:outline-none placeholder-gray-400 dark:placeholder-[#636366]" 
+              class="smart-goal-input w-16 bg-transparent text-right font-mono text-xs font-bold text-gray-900 dark:text-white focus:outline-none placeholder-gray-400 dark:placeholder-[#636366]" 
               title="Click to edit earnings"
             />
           </div>
-          <button type="button" onclick="openAddModal('${day.id}')" class="apple-secondary-btn px-2 py-0.5 text-[11px] font-semibold flex items-center gap-1 tap-btn" title="Add to ${day.name}">
-            <svg class="w-2.5 h-2.5 text-teal-600 dark:text-[#30D158]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19"></line>
-              <line x1="5" y1="12" x2="19" y2="12"></line>
-            </svg>
-            <span>Add</span>
-          </button>
         </div>
       `;
       otherDaysList.appendChild(row);

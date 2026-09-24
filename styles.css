@@ -23,9 +23,9 @@
   --accent-teal-hover: #0F766E;
   --accent-emerald: #10B981;
   --accent-emerald-light: rgba(16, 185, 129, 0.12);
-  --dock-bg: #18181B;
+  --dock-bg: #16171A;
   --dock-border: rgba(255, 255, 255, 0.12);
-  --dock-text: #94A3B8;
+  --dock-text: rgba(255, 255, 255, 0.6);
   --dock-active: #FFFFFF;
   --dock-active-text: #111827;
 }
@@ -48,11 +48,11 @@ html.dark {
   --accent-teal-hover: #2DD4BF;
   --accent-emerald: #30D158;
   --accent-emerald-light: rgba(48, 209, 88, 0.15);
-  --dock-bg: #1C1C1E;
+  --dock-bg: #1F2024;
   --dock-border: rgba(255, 255, 255, 0.14);
-  --dock-text: #8E8E93;
-  --dock-active: #30D158;
-  --dock-active-text: #000000;
+  --dock-text: rgba(255, 255, 255, 0.6);
+  --dock-active: #FFFFFF;
+  --dock-active-text: #111827;
 }
 
 * {
@@ -201,6 +201,12 @@ input, textarea {
     bottom: max(calc(env(safe-area-inset-bottom, 0px) + 12px), 22px) !important;
   }
 
+  /* Floating Add Button right above navbar */
+  #floatingAddContainer {
+    right: max(calc(env(safe-area-inset-right, 0px) + 20px), 20px) !important;
+    bottom: max(calc(env(safe-area-inset-bottom, 0px) + 76px), 86px) !important;
+  }
+
   /* MODAL SHEETS SAFE ZONE */
   .apple-sheet {
     padding-left: max(env(safe-area-inset-left, 0px), 20px) !important;
@@ -257,6 +263,11 @@ input, textarea {
 
   #bottomFloatingDock {
     bottom: 22px !important;
+  }
+
+  #floatingAddContainer {
+    right: 20px !important;
+    bottom: 84px !important;
   }
 
   .apple-sheet {
@@ -481,36 +492,100 @@ html.dark .progress-fill {
 }
 
 /* -------------------------------------------------------------
- * FLOATING BOTTOM DOCK (Source: design_template.webp)
+ * FLOATING BOTTOM DOCK (1:1 with design_template.webp)
  * ------------------------------------------------------------- */
 .floating-dock {
   background: var(--dock-bg);
   border: 1px solid var(--dock-border);
-  box-shadow: 0 8px 30px rgba(0, 0, 0, 0.28);
+  box-shadow: 0 12px 36px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.18);
   border-radius: 9999px;
-  padding: 5px;
-  display: flex;
+  padding: 4px 5px;
+  display: inline-flex;
   align-items: center;
-  justify-content: space-between;
-  gap: 4px;
-  transition: all 0.25s cubic-bezier(0.32, 0.72, 0, 1);
+  justify-content: center;
+  gap: 3px;
+  backdrop-filter: blur(20px) saturate(180%);
+  -webkit-backdrop-filter: blur(20px) saturate(180%);
+  transition: all 0.28s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .dock-item-active {
   background: var(--dock-active);
   color: var(--dock-active-text);
   font-weight: 700;
+  font-size: 13px;
   border-radius: 9999px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
+  padding: 7px 16px;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.28s cubic-bezier(0.32, 0.72, 0, 1);
 }
 
 .dock-item-inactive {
   color: var(--dock-text);
   border-radius: 9999px;
-  transition: color 0.15s ease, background-color 0.15s ease;
+  padding: 8px 14px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: color 0.15s ease, background-color 0.15s ease, transform 0.15s ease;
 }
+
 .dock-item-inactive:hover {
   color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.1);
+}
+
+.dock-item-inactive:active {
+  transform: scale(0.92);
+}
+
+/* -------------------------------------------------------------
+ * FLOATING CIRCULAR ADD BUTTON (+ TO ADD A DASH)
+ * ------------------------------------------------------------- */
+.floating-add-btn {
+  width: 50px;
+  height: 50px;
+  border-radius: 9999px;
+  background: linear-gradient(135deg, #0D9488 0%, #0F766E 100%);
+  color: #FFFFFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 10px 28px rgba(13, 148, 136, 0.42), 0 2px 8px rgba(0, 0, 0, 0.18);
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  transition: transform 0.15s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.15s ease, filter 0.15s ease;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.floating-add-btn:hover {
+  filter: brightness(1.06);
+  box-shadow: 0 12px 34px rgba(13, 148, 136, 0.48), 0 3px 10px rgba(0, 0, 0, 0.2);
+}
+
+.floating-add-btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 4px 14px rgba(13, 148, 136, 0.35);
+}
+
+html.dark .floating-add-btn {
+  background: linear-gradient(135deg, #30D158 0%, #28CD41 100%);
+  color: #000000;
+  box-shadow: 0 10px 28px rgba(48, 209, 88, 0.4), 0 2px 8px rgba(0, 0, 0, 0.35);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+html.dark .floating-add-btn:hover {
+  filter: brightness(1.08);
+  box-shadow: 0 12px 34px rgba(48, 209, 88, 0.48);
+}
+
+html.dark .floating-add-btn:active {
+  transform: scale(0.9);
+  box-shadow: 0 4px 14px rgba(48, 209, 88, 0.3);
 }
 
 /* -------------------------------------------------------------
