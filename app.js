@@ -52,7 +52,7 @@ window.switchTab = function(tabIndex) {
 
   const track = document.getElementById('pagesTrack');
   if (track) {
-    track.style.transition = 'transform 0.34s cubic-bezier(0.32, 0.72, 0, 1)';
+    track.style.transition = 'transform 0.24s cubic-bezier(0.25, 1, 0.5, 1)';
     track.style.transform = `translateX(-${currentTab * (100 / 3)}%)`;
   }
 
@@ -60,14 +60,14 @@ window.switchTab = function(tabIndex) {
   const dockBubble = document.getElementById('dockBubble');
   if (dockBubble) {
     const spacing = getDockTabSpacing();
-    dockBubble.style.transition = 'transform 0.38s cubic-bezier(0.34, 1.35, 0.64, 1)';
+    dockBubble.style.transition = 'transform 0.26s cubic-bezier(0.34, 1.35, 0.64, 1)';
     dockBubble.style.transform = `translateX(${currentTab * spacing}px) scale(1, 1)`;
   }
 
   // Clear transition lock after animation completes to enforce 1 tab at a time
   setTimeout(() => {
     isTabTransitioning = false;
-  }, 360);
+  }, 240);
 
   // Update floating dock active indicators (0: Goals, 1: Home, 2: Settings)
   const dockGoals = document.getElementById('dockBtnGoals');
@@ -167,9 +167,6 @@ function initSwipeGestures() {
   }
 
   function handleStart(e) {
-    // If a tab switch transition is in progress, do not allow starting a new swipe
-    if (isTabTransitioning) return;
-
     // If modal is active, do not allow page swiping
     const addModal = document.getElementById('addModal');
     if (addModal && !addModal.classList.contains('hidden')) return;
@@ -178,6 +175,12 @@ function initSwipeGestures() {
     if (e.target.closest('input, textarea, select, .overflow-x-auto, #bottomNavWrapper, #addModal')) {
       return;
     }
+
+    // Cancel in-flight transitions immediately so consecutive swipes register instantly with zero latency
+    isTabTransitioning = false;
+    track.style.transition = 'none';
+    const dockBubble = document.getElementById('dockBubble');
+    if (dockBubble) dockBubble.style.transition = 'none';
 
     if (e.type.startsWith('touch')) {
       lastTouchTime = Date.now();
@@ -210,7 +213,7 @@ function initSwipeGestures() {
       const absX = Math.abs(deltaX);
       const absY = Math.abs(deltaY);
 
-      if (absX < 8 && absY < 8) {
+      if (absX < 5 && absY < 5) {
         return; // Movement below detection threshold
       }
 
@@ -309,14 +312,14 @@ function initSwipeGestures() {
         targetTab = Math.max(0, currentTab - 1);
       }
 
-      // Smoothly animate to target tab
-      track.style.transition = 'transform 0.34s cubic-bezier(0.32, 0.72, 0, 1)';
+      // Smoothly animate to target tab with native iOS spring curve
+      track.style.transition = 'transform 0.24s cubic-bezier(0.25, 1, 0.5, 1)';
       switchTab(targetTab);
 
       // Keep suppressClick active momentarily to prevent ghost click on underlying card/button
       setTimeout(() => {
         suppressClick = false;
-      }, 250);
+      }, 100);
     }
 
     isHorizontalDrag = false;
@@ -331,13 +334,13 @@ function initSwipeGestures() {
     isVerticalDrag = false;
     currentDeltaX = 0;
 
-    track.style.transition = 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)';
+    track.style.transition = 'transform 0.22s cubic-bezier(0.25, 1, 0.5, 1)';
     track.style.transform = `translateX(-${currentTab * (100 / 3)}%)`;
 
     const dockBubble = document.getElementById('dockBubble');
     if (dockBubble) {
       const spacing = getDockTabSpacing();
-      dockBubble.style.transition = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)';
+      dockBubble.style.transition = 'transform 0.24s cubic-bezier(0.25, 1, 0.5, 1)';
       dockBubble.style.transform = `translateX(${currentTab * spacing}px) scale(1, 1)`;
     }
   }
@@ -394,7 +397,7 @@ window.setTheme = function(theme) {
 
   const metaStatusBarStyle = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
   if (metaStatusBarStyle) {
-    metaStatusBarStyle.setAttribute('content', 'black-translucent');
+    metaStatusBarStyle.setAttribute('content', theme === 'dark' ? 'black-translucent' : 'default');
   }
 
   updateThemeControls(theme);

@@ -5,7 +5,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <!-- iOS PWA & Standalone Meta -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Bill Tracker">
   <meta name="mobile-web-app-capable" content="yes">
   <meta name="theme-color" content="#F8F9FA">
@@ -36,9 +36,17 @@
       if (savedTheme === 'dark') {
         document.documentElement.classList.remove('light');
         document.documentElement.classList.add('dark');
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute('content', '#000000');
+        const metaStatus = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (metaStatus) metaStatus.setAttribute('content', 'black-translucent');
       } else {
         document.documentElement.classList.remove('dark');
         document.documentElement.classList.add('light');
+        const metaTheme = document.querySelector('meta[name="theme-color"]');
+        if (metaTheme) metaTheme.setAttribute('content', '#F8F9FA');
+        const metaStatus = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+        if (metaStatus) metaStatus.setAttribute('content', 'default');
       }
     } catch (e) {}
   </script>
@@ -68,7 +76,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=31">
+  <link rel="stylesheet" href="styles.css?v=32">
 </head>
 <body class="selection:bg-teal-500 selection:text-white">
 
@@ -624,6 +632,6 @@
 
   </main>
 
-  <script src="app.js?v=31"></script>
+  <script src="app.js?v=32"></script>
 </body>
 </html>
