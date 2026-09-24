@@ -29,7 +29,7 @@ function triggerHaptic() {
 // TAB & SWIPE NAVIGATION (Home, Goals, Settings)
 // -------------------------------------------------------------
 
-let currentTab = 0; // 0: Home, 1: Goals, 2: Settings
+let currentTab = 1; // 0: Goals, 1: Home, 2: Settings
 
 window.switchTab = function(tabIndex) {
   triggerHaptic();
@@ -40,22 +40,22 @@ window.switchTab = function(tabIndex) {
     track.style.transform = `translateX(-${currentTab * (100 / 3)}%)`;
   }
 
-  // Update floating dock active indicators (1:1 with Apple design template)
-  const dockHome = document.getElementById('dockBtnHome');
+  // Update floating dock active indicators (0: Goals, 1: Home, 2: Settings)
   const dockGoals = document.getElementById('dockBtnGoals');
+  const dockHome = document.getElementById('dockBtnHome');
   const dockSettings = document.getElementById('dockBtnSettings');
 
-  [dockHome, dockGoals, dockSettings].forEach((btn, idx) => {
+  [dockGoals, dockHome, dockSettings].forEach((btn, idx) => {
     if (!btn) return;
     const isActive = idx === currentTab;
     btn.classList.toggle('active', isActive);
     btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
 
-  // Floating circular plus button only appears when on the Home screen
+  // Floating circular plus button only appears when on the Home screen (currentTab === 1)
   const dockAddRow = document.getElementById('dockAddRow');
   if (dockAddRow) {
-    if (currentTab === 0) {
+    if (currentTab === 1) {
       dockAddRow.classList.remove('dock-add-hidden');
     } else {
       dockAddRow.classList.add('dock-add-hidden');
@@ -70,18 +70,18 @@ function updateNavHeaderForTab(tabIndex) {
   const headerIcon = document.getElementById('headerIcon');
   const headerDateText = document.getElementById('headerDateText');
 
-  if (tabIndex === 0) {
+  if (tabIndex === 1) { // Home
     if (headerTitle) headerTitle.textContent = 'Hello, Anthony';
     if (headerIcon) headerIcon.textContent = '📍';
     if (headerDateText) {
       const now = new Date();
       headerDateText.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     }
-  } else if (tabIndex === 1) {
+  } else if (tabIndex === 0) { // Goals
     if (headerTitle) headerTitle.textContent = 'Goals & Targets';
     if (headerIcon) headerIcon.textContent = '🎯';
     if (headerDateText) headerDateText.textContent = 'WEEKLY PLAN';
-  } else if (tabIndex === 2) {
+  } else if (tabIndex === 2) { // Settings
     if (headerTitle) headerTitle.textContent = 'Settings';
     if (headerIcon) headerIcon.textContent = '⚙️';
     if (headerDateText) headerDateText.textContent = 'PREFERENCES';
@@ -869,11 +869,11 @@ window.applyGoalPreset = function(preset) {
 };
 
 window.openGoalsModal = function() {
-  switchTab(1);
+  switchTab(0);
 };
 
 window.closeGoalsModal = function() {
-  switchTab(0);
+  switchTab(1);
 };
 
 // -------------------------------------------------------------
@@ -1188,7 +1188,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderSettingsPage();
   setupToolbarActions();
   updateCalculations();
-  switchTab(0);
+  switchTab(1);
   initLaunchTransition();
 
   // Desktop mousewheel forward to active tab container
@@ -1196,8 +1196,8 @@ document.addEventListener('DOMContentLoaded', () => {
   if (deviceFrame) {
     deviceFrame.addEventListener('wheel', (e) => {
       const activeContainer = [
-        document.getElementById('pageHome'),
         document.getElementById('pageGoals'),
+        document.getElementById('pageHome'),
         document.getElementById('pageSettings')
       ][currentTab];
       if (activeContainer) {

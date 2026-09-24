@@ -497,15 +497,14 @@ html.dark .progress-fill {
 .dock-container {
   display: inline-flex;
   flex-direction: column;
-  align-items: flex-end;
+  align-items: center;
   pointer-events: none;
 }
 
 .dock-add-row {
   display: flex;
-  justify-content: flex-end;
+  justify-content: center;
   width: 100%;
-  padding-right: 2px;
   margin-bottom: 8px;
   transition: opacity 0.24s cubic-bezier(0.32, 0.72, 0, 1), transform 0.24s cubic-bezier(0.32, 0.72, 0, 1), visibility 0.24s;
   will-change: opacity, transform;
