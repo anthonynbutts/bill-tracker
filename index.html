@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en" class="light">
+<html lang="en" class="light" style="background-color: #F8F9FA;">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
@@ -8,8 +8,37 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
   <meta name="apple-mobile-web-app-title" content="Bill Tracker">
   <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#F8F9FA" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
   <meta name="theme-color" content="#F8F9FA">
   <meta name="format-detection" content="telephone=no">
+
+  <!-- Critical Synchronous iOS Root Styling (Edge-to-edge, zero canvas letterbox) -->
+  <style>
+    :root {
+      --bg-primary: #F8F9FA;
+    }
+    html.dark {
+      --bg-primary: #000000;
+    }
+    html, body {
+      background-color: #F8F9FA !important;
+      margin: 0 !important;
+      padding: 0 !important;
+      width: 100% !important;
+      height: 100% !important;
+      min-height: 100% !important;
+    }
+    html.dark, html.dark body {
+      background-color: #000000 !important;
+    }
+    #deviceFrame {
+      background-color: #F8F9FA !important;
+    }
+    html.dark #deviceFrame {
+      background-color: #000000 !important;
+    }
+  </style>
 
   <title>Bill Tracker</title>
 
@@ -36,13 +65,17 @@
       if (savedTheme === 'dark') {
         document.documentElement.classList.remove('light');
         document.documentElement.classList.add('dark');
-        const metaTheme = document.querySelector('meta[name="theme-color"]');
-        if (metaTheme) metaTheme.setAttribute('content', '#000000');
+        document.documentElement.style.backgroundColor = '#000000';
+        if (document.body) document.body.style.backgroundColor = '#000000';
+        const metaThemes = document.querySelectorAll('meta[name="theme-color"]');
+        metaThemes.forEach(m => m.setAttribute('content', '#000000'));
       } else {
         document.documentElement.classList.remove('dark');
         document.documentElement.classList.add('light');
-        const metaTheme = document.querySelector('meta[name="theme-color"]');
-        if (metaTheme) metaTheme.setAttribute('content', '#F8F9FA');
+        document.documentElement.style.backgroundColor = '#F8F9FA';
+        if (document.body) document.body.style.backgroundColor = '#F8F9FA';
+        const metaThemes = document.querySelectorAll('meta[name="theme-color"]');
+        metaThemes.forEach(m => m.setAttribute('content', '#F8F9FA'));
       }
     } catch (e) {}
   </script>
@@ -72,9 +105,9 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=34">
+  <link rel="stylesheet" href="styles.css?v=35">
 </head>
-<body class="selection:bg-teal-500 selection:text-white">
+<body class="selection:bg-teal-500 selection:text-white" style="background-color: #F8F9FA;">
 
   <!-- iPhone Chassis (Desktop preview) / Edge-to-edge full screen on device -->
   <main id="deviceFrame" class="w-full sm:w-[393px] relative min-h-screen sm:min-h-0 sm:h-[852px] sm:rounded-[54px] flex flex-col overflow-hidden select-none">
@@ -625,8 +658,11 @@
     <!-- iPhone 15 Home Indicator Bar (Desktop Mockup Only) -->
     <div id="homeIndicatorMockup" class="hidden sm:block absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-black/25 dark:bg-white/30 rounded-full pointer-events-none z-40"></div>
 
+    <!-- iOS Full-Bleed Safe Area Bottom Anchor (Eliminates bottom canvas gap) -->
+    <div id="iosBottomBleed" class="ios-bottom-bleed" aria-hidden="true"></div>
+
   </main>
 
-  <script src="app.js?v=34"></script>
+  <script src="app.js?v=35"></script>
 </body>
 </html>

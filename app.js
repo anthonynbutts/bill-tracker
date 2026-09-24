@@ -1645,4 +1645,24 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     }, false);
   }
+
+  // iOS Standalone Viewport & Keyboard Height Resilience:
+  // Prevents WebKit layout freeze or bottom chin black box when software keyboard closes
+  window.addEventListener('focusout', (e) => {
+    if (e.target && ['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+      window.scrollTo(0, 0);
+      document.body.style.transform = 'translateZ(0)';
+      requestAnimationFrame(() => {
+        document.body.style.transform = '';
+      });
+    }
+  });
+
+  if (window.visualViewport) {
+    window.visualViewport.addEventListener('resize', () => {
+      if (window.visualViewport.height >= window.innerHeight * 0.9) {
+        window.scrollTo(0, 0);
+      }
+    });
+  }
 });

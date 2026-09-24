@@ -139,6 +139,10 @@ input, textarea {
  * SAFE ZONE SPECIFICATIONS FOR IPHONE 15
  * ------------------------------------------------------------- */
 
+.ios-bottom-bleed {
+  display: none;
+}
+
 /* On real iPhone 15, mobile browser, or iOS standalone PWA */
 @media (max-width: 639px), (display-mode: standalone) {
   html, body {
@@ -146,26 +150,33 @@ input, textarea {
     padding: 0 !important;
     margin: 0 !important;
     width: 100% !important;
+    width: 100vw !important;
     height: 100% !important;
-    height: 100dvh !important;
+    height: 100vh !important;
+    height: 100lvh !important;
     min-height: 100% !important;
-    min-height: 100dvh !important;
+    min-height: 100vh !important;
+    min-height: 100lvh !important;
     overflow: hidden !important;
     display: block !important;
   }
 
   #deviceFrame {
     position: fixed !important;
+    inset: 0 !important;
     top: 0 !important;
     bottom: 0 !important;
     left: 0 !important;
     right: 0 !important;
     width: 100% !important;
+    width: 100vw !important;
     max-width: 100% !important;
     height: 100% !important;
-    height: 100dvh !important;
+    height: 100vh !important;
+    height: 100lvh !important;
     min-height: 100% !important;
-    min-height: 100dvh !important;
+    min-height: 100vh !important;
+    min-height: 100lvh !important;
     max-height: none !important;
     border: none !important;
     border-radius: 0 !important;
@@ -176,6 +187,23 @@ input, textarea {
     display: flex !important;
     flex-direction: column !important;
     background-color: var(--bg-primary) !important;
+  }
+
+  /* Full-bleed bottom safe-area background anchor to guarantee 0px gap under floating dock into home indicator */
+  #deviceFrame::after,
+  .ios-bottom-bleed {
+    content: '';
+    position: fixed !important;
+    bottom: -1px !important;
+    left: 0 !important;
+    right: 0 !important;
+    width: 100% !important;
+    width: 100vw !important;
+    height: max(env(safe-area-inset-bottom, 0px), 34px) !important;
+    background-color: var(--bg-primary) !important;
+    pointer-events: none !important;
+    z-index: 38 !important;
+    border: none !important;
   }
 
   /* Real iPhone 15 has hardware Dynamic Island and Home Indicator */
@@ -217,7 +245,7 @@ input, textarea {
     padding-left: max(env(safe-area-inset-left, 0px), 20px) !important;
     padding-right: max(env(safe-area-inset-right, 0px), 20px) !important;
     padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 24px), 44px) !important;
-    max-height: calc(100dvh - max(env(safe-area-inset-top, 0px), 59px) - 28px) !important;
+    max-height: calc(100vh - max(env(safe-area-inset-top, 0px), 59px) - 28px) !important;
   }
 
   /* DYNAMIC ISLAND CAPSULE NOTIFICATION (HUD) */
