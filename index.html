@@ -68,7 +68,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=30">
+  <link rel="stylesheet" href="styles.css?v=31">
 </head>
 <body class="selection:bg-teal-500 selection:text-white">
 
@@ -503,6 +503,9 @@
 
         <!-- Floating Tab Dock (Frosted Glass Icon-Only Apple Dock) -->
         <nav class="floating-dock pointer-events-auto" aria-label="Main Navigation">
+          <!-- Sliding Frosted Glass Liquid Bubble Indicator -->
+          <div id="dockBubble" class="dock-bubble" style="transform: translateX(70px) scale(1, 1);"></div>
+
           <!-- Goals Tab Button (Left) -->
           <button type="button" id="dockBtnGoals" onclick="switchTab(0)" class="dock-tab tap-btn" title="Goals & Targets" aria-label="Goals" aria-selected="false">
             <!-- Lucide Target Icon -->
@@ -621,6 +624,6 @@
 
   </main>
 
-  <script src="app.js?v=30"></script>
+  <script src="app.js?v=31"></script>
 </body>
 </html>

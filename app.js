@@ -32,6 +32,16 @@ function triggerHaptic() {
 let currentTab = 1; // 0: Goals, 1: Home, 2: Settings
 let isTabTransitioning = false;
 
+function getDockTabSpacing() {
+  const dockGoals = document.getElementById('dockBtnGoals');
+  const dockHome = document.getElementById('dockBtnHome');
+  if (dockGoals && dockHome) {
+    const spacing = dockHome.offsetLeft - dockGoals.offsetLeft;
+    if (spacing > 0) return spacing;
+  }
+  return 70;
+}
+
 window.switchTab = function(tabIndex) {
   const newTab = Math.max(0, Math.min(2, tabIndex));
   if (newTab !== currentTab) {
@@ -44,6 +54,14 @@ window.switchTab = function(tabIndex) {
   if (track) {
     track.style.transition = 'transform 0.34s cubic-bezier(0.32, 0.72, 0, 1)';
     track.style.transform = `translateX(-${currentTab * (100 / 3)}%)`;
+  }
+
+  // Animate the frosted glass bubble to active tab with liquid spring animation
+  const dockBubble = document.getElementById('dockBubble');
+  if (dockBubble) {
+    const spacing = getDockTabSpacing();
+    dockBubble.style.transition = 'transform 0.38s cubic-bezier(0.34, 1.35, 0.64, 1)';
+    dockBubble.style.transform = `translateX(${currentTab * spacing}px) scale(1, 1)`;
   }
 
   // Clear transition lock after animation completes to enforce 1 tab at a time
@@ -250,6 +268,22 @@ function initSwipeGestures() {
       const currentPx = (-currentTab * viewportWidth) + effectiveDelta;
       track.style.transition = 'none';
       track.style.transform = `translateX(${currentPx}px)`;
+
+      // Live fluid tracking of the frosted glass bubble during swipe
+      const dockBubble = document.getElementById('dockBubble');
+      if (dockBubble) {
+        const progress = -currentPx / viewportWidth;
+        const spacing = getDockTabSpacing();
+        const bubbleX = progress * spacing;
+
+        // Subtle liquid stretch along X axis proportional to swipe distance
+        const dragFraction = effectiveDelta / viewportWidth;
+        const stretchX = 1 + Math.min(0.12, Math.abs(dragFraction) * 0.28);
+        const squashY = 1 - (stretchX - 1) * 0.45; // volume preservation
+
+        dockBubble.style.transition = 'none';
+        dockBubble.style.transform = `translateX(${bubbleX}px) scale(${stretchX}, ${squashY})`;
+      }
     }
   }
 
@@ -299,6 +333,13 @@ function initSwipeGestures() {
 
     track.style.transition = 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)';
     track.style.transform = `translateX(-${currentTab * (100 / 3)}%)`;
+
+    const dockBubble = document.getElementById('dockBubble');
+    if (dockBubble) {
+      const spacing = getDockTabSpacing();
+      dockBubble.style.transition = 'transform 0.3s cubic-bezier(0.32, 0.72, 0, 1)';
+      dockBubble.style.transform = `translateX(${currentTab * spacing}px) scale(1, 1)`;
+    }
   }
 
   // Attach touch events to viewport and header

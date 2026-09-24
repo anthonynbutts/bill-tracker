@@ -603,6 +603,7 @@ html.dark .progress-fill {
 }
 
 .floating-dock {
+  position: relative;
   height: 54px;
   background: var(--dock-bg);
   border: 1px solid var(--dock-border);
@@ -619,36 +620,57 @@ html.dark .progress-fill {
   transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
+/* Sliding Frosted Glass Liquid Bubble Indicator */
+.dock-bubble {
+  position: absolute;
+  top: 5px;
+  left: 7px;
+  width: 62px;
+  height: 44px;
+  border-radius: 9999px;
+  background: var(--dock-active);
+  box-shadow: var(--dock-active-shadow);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
+  border: 1px solid rgba(255, 255, 255, 0.7);
+  pointer-events: none;
+  z-index: 1;
+  will-change: transform;
+  transform-origin: center center;
+  transition: transform 0.38s cubic-bezier(0.34, 1.35, 0.64, 1);
+}
+
+html.dark .dock-bubble {
+  border: 1px solid rgba(255, 255, 255, 0.18);
+}
+
 .dock-tab {
+  position: relative;
+  z-index: 2;
   width: 62px;
   height: 44px;
   border-radius: 9999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  background: transparent;
+  background: transparent !important;
   color: var(--dock-text);
   border: none;
   outline: none;
   cursor: pointer;
   margin: 0;
   padding: 0;
-  transition: background-color 0.22s cubic-bezier(0.32, 0.72, 0, 1),
-              color 0.18s ease,
-              transform 0.15s ease,
-              box-shadow 0.22s ease;
-  will-change: transform, background-color;
+  transition: color 0.22s ease, transform 0.15s ease;
+  will-change: transform, color;
   -webkit-tap-highlight-color: transparent;
 }
 
 .dock-tab:hover {
   color: var(--text-primary);
-  background-color: rgba(0, 0, 0, 0.05);
 }
 
 html.dark .dock-tab:hover {
   color: #FFFFFF;
-  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .dock-tab:active {
@@ -656,14 +678,14 @@ html.dark .dock-tab:hover {
 }
 
 .dock-tab.active {
-  background: var(--dock-active);
-  color: var(--dock-active-text);
-  box-shadow: var(--dock-active-shadow);
+  background: transparent !important;
+  color: var(--dock-active-text) !important;
+  box-shadow: none !important;
 }
 
 .dock-tab.active:hover {
-  background: var(--dock-active);
-  color: var(--dock-active-text);
+  background: transparent !important;
+  color: var(--dock-active-text) !important;
 }
 
 .dock-icon {
@@ -671,11 +693,12 @@ html.dark .dock-tab:hover {
   height: 20px;
   flex-shrink: 0;
   display: block;
-  transition: transform 0.22s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: transform 0.3s cubic-bezier(0.34, 1.35, 0.64, 1), color 0.22s ease;
 }
 
 .dock-tab.active .dock-icon {
-  transform: scale(1.08);
+  transform: scale(1.12);
+  color: var(--dock-active-text);
 }
 
 /* -------------------------------------------------------------
