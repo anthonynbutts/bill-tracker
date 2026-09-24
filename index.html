@@ -68,7 +68,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=28">
+  <link rel="stylesheet" href="styles.css?v=29">
 </head>
 <body class="selection:bg-teal-500 selection:text-white">
 
@@ -126,93 +126,95 @@
         <div id="pageGoals" class="w-1/3 h-full overflow-y-auto page-scroll-container smooth-scroll select-none">
           <div class="page-content px-4 pt-2 pb-28 w-full max-w-[420px] mx-auto">
 
-            <!-- Total Bill Target Card (Editable Hero) -->
+            <!-- UNIFIED TUITION & ALLOCATION HERO CARD -->
             <div class="apple-card p-3.5 mb-3">
+              <!-- Top Row: Weekly Tuition Target & Edit Input -->
               <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] uppercase font-semibold text-gray-500 dark:text-[#8E8E93] tracking-wider">Tuition Bill Target</span>
-                <span class="text-[10px] font-mono px-2 py-0.5 rounded-full bg-teal-50 dark:bg-teal-950/40 text-teal-700 dark:text-teal-400 border border-teal-200/60 dark:border-teal-700/30">Weekly Due</span>
-              </div>
-              <div class="flex items-baseline justify-between">
-                <div class="flex items-center">
-                  <span class="text-2xl font-bold font-mono text-teal-600 dark:text-[#30D158] mr-1">$</span>
-                  <input 
-                    type="text" 
-                    inputmode="decimal" 
-                    id="goalsPageTotalBillInput" 
-                    value="215.00" 
-                    placeholder="215.00" 
-                    class="smart-goal-input w-28 bg-transparent font-mono text-3xl font-extrabold text-gray-900 dark:text-white focus:outline-none placeholder-gray-400"
-                    title="Tap to edit total bill"
-                  />
+                <div>
+                  <span class="text-[10px] uppercase font-bold text-gray-500 dark:text-[#8E8E93] tracking-wider block">Tuition Bill Target</span>
+                  <div class="flex items-baseline gap-1 mt-0.5">
+                    <span class="text-2xl font-bold font-mono text-teal-600 dark:text-[#30D158]">$</span>
+                    <input 
+                      type="text" 
+                      inputmode="decimal" 
+                      id="goalsPageTotalBillInput" 
+                      value="215.00" 
+                      placeholder="215.00" 
+                      class="smart-goal-input w-28 bg-transparent font-mono text-2xl font-black text-gray-900 dark:text-white focus:outline-none placeholder-gray-400"
+                      title="Tap to edit weekly tuition bill"
+                    />
+                    <span class="text-xs text-gray-400 dark:text-[#8E8E93] font-mono">/ week</span>
+                  </div>
                 </div>
-                <span class="text-xs text-gray-500 dark:text-[#8E8E93] font-mono">per week</span>
-              </div>
-              <p class="text-[11px] text-gray-500 dark:text-[#8E8E93] mt-1.5">
-                Split your weekly bill between DoorDash earnings and paycheck deductions.
-              </p>
-            </div>
-
-            <!-- 75/25 Split Allocation Card -->
-            <div class="apple-card p-3.5 mb-3">
-              <div class="flex items-center justify-between mb-2">
-                <span class="text-[10px] uppercase font-semibold text-gray-500 dark:text-[#8E8E93] tracking-wider">Allocation Strategy</span>
-                <span class="text-[10px] font-mono text-gray-500 dark:text-[#8E8E93]">75% Dash / 25% Paycheck</span>
+                <div class="text-right">
+                  <span class="text-[10px] font-mono font-semibold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-[#30D158]/15 text-teal-700 dark:text-[#30D158] border border-teal-200/80 dark:border-[#30D158]/30">
+                    75 / 25 Split
+                  </span>
+                </div>
               </div>
 
-              <!-- Split Ratio Bar -->
+              <!-- Dual Split Ratio Bar -->
               <div class="w-full h-2 rounded-full overflow-hidden flex mb-2.5 bg-gray-200 dark:bg-[#2C2C2E]">
                 <div class="bg-gradient-to-r from-teal-500 to-emerald-500 h-full w-[75%]" title="75% DoorDash"></div>
                 <div class="bg-blue-500/80 h-full w-[25%]" title="25% Paycheck"></div>
               </div>
 
-              <div class="grid grid-cols-2 gap-2">
-                <div class="bg-gray-50 dark:bg-[#252528] rounded-xl p-2 border border-gray-200/70 dark:border-white/[0.06]">
-                  <span class="text-[9.5px] uppercase font-semibold text-teal-700 dark:text-teal-400 block mb-0.5">DoorDash (75%)</span>
+              <!-- Two Target Pillars (DoorDash 75% vs Paycheck 25%) -->
+              <div class="grid grid-cols-2 gap-2 mb-2.5">
+                <div class="bg-gray-50/80 dark:bg-[#252528] rounded-xl p-2 border border-gray-200/70 dark:border-white/[0.06]">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-[9.5px] uppercase font-bold text-teal-700 dark:text-teal-400">DoorDash (75%)</span>
+                    <span class="text-[9px] font-mono text-gray-400 dark:text-[#8E8E93]">Shifts</span>
+                  </div>
                   <div class="text-base font-bold font-mono text-gray-900 dark:text-white" id="goalsPageDashTarget">$161.25</div>
-                  <span class="text-[9.5px] text-gray-400 dark:text-[#8E8E93]">Target shift sum</span>
                 </div>
-                <div class="bg-gray-50 dark:bg-[#252528] rounded-xl p-2 border border-gray-200/70 dark:border-white/[0.06]">
-                  <span class="text-[9.5px] uppercase font-semibold text-blue-600 dark:text-blue-400 block mb-0.5">Paycheck (25%)</span>
+                <div class="bg-gray-50/80 dark:bg-[#252528] rounded-xl p-2 border border-gray-200/70 dark:border-white/[0.06]">
+                  <div class="flex items-center justify-between mb-0.5">
+                    <span class="text-[9.5px] uppercase font-semibold text-blue-600 dark:text-blue-400">Paycheck (25%)</span>
+                    <span class="text-[9px] font-mono text-gray-400 dark:text-[#8E8E93]">Deduction</span>
+                  </div>
                   <div class="text-base font-bold font-mono text-gray-900 dark:text-white" id="goalsPagePaycheckTarget">$53.75</div>
-                  <span class="text-[9.5px] text-gray-400 dark:text-[#8E8E93]">Paycheck deduction</span>
                 </div>
               </div>
-            </div>
 
-            <!-- Quick Split Actions & Presets -->
-            <div class="apple-card p-3 mb-3">
-              <div class="flex items-center justify-between mb-2">
-                <div>
-                  <span class="text-[10px] uppercase font-semibold text-gray-500 dark:text-[#8E8E93] block">Planned Total Sum</span>
-                  <div class="text-lg font-bold font-mono text-teal-700 dark:text-[#30D158]" id="goalsPagePlannedTotal">$161.25</div>
+              <!-- Shift Allocation Status & Balance Indicator -->
+              <div class="flex items-center justify-between pt-2 border-t border-gray-100 dark:border-white/[0.06] mb-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="text-[10.5px] font-semibold text-gray-500 dark:text-[#8E8E93]">Planned Shifts:</span>
+                  <span class="text-sm font-bold font-mono text-teal-700 dark:text-[#30D158]" id="goalsPagePlannedTotal">$161.25</span>
                 </div>
-                <button type="button" onclick="splitGoalsEvenly()" class="apple-primary-btn px-3 py-1.5 text-xs font-bold flex items-center gap-1.5 shadow-sm tap-btn">
-                  <svg class="w-3 h-3" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <div id="goalsPageBalanceBadge" class="text-[10px] font-medium font-sans px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-700/30">
+                  ✓ Balanced
+                </div>
+              </div>
+
+              <!-- Quick Presets Segmented Buttons -->
+              <div class="grid grid-cols-3 gap-1.5 pt-0.5">
+                <button type="button" onclick="applyGoalPreset('even')" class="apple-secondary-btn py-1.5 px-1 text-[11px] font-semibold flex items-center justify-center gap-1 tap-btn" title="Split DoorDash goal evenly across 6 days">
+                  <svg class="w-3 h-3 text-teal-600 dark:text-[#30D158]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
                     <line x1="12" y1="5" x2="12" y2="19"></line>
                     <line x1="5" y1="12" x2="19" y2="12"></line>
                   </svg>
                   <span>Split Evenly</span>
                 </button>
-              </div>
-
-              <!-- Presets Chips -->
-              <div class="flex items-center gap-1.5 pt-1 border-t border-gray-100 dark:border-white/[0.06] overflow-x-auto no-scrollbar">
-                <span class="text-[10px] text-gray-400 dark:text-[#8E8E93] flex-shrink-0 font-sans">Presets:</span>
-                <button type="button" onclick="applyGoalPreset('even')" class="apple-chip px-2 py-0.5 text-[10.5px] whitespace-nowrap tap-btn">Even ($26.88)</button>
-                <button type="button" onclick="applyGoalPreset('weekend')" class="apple-chip px-2 py-0.5 text-[10.5px] whitespace-nowrap tap-btn">Weekend Heavy</button>
-                <button type="button" onclick="applyGoalPreset('weekday')" class="apple-chip px-2 py-0.5 text-[10.5px] whitespace-nowrap tap-btn">Weekday Heavy</button>
+                <button type="button" onclick="applyGoalPreset('weekend')" class="apple-secondary-btn py-1.5 px-1 text-[11px] font-semibold flex items-center justify-center gap-1 tap-btn" title="Lower Mon-Thu, heavy Fri-Sat">
+                  <span>Weekend Heavy</span>
+                </button>
+                <button type="button" onclick="applyGoalPreset('weekday')" class="apple-secondary-btn py-1.5 px-1 text-[11px] font-semibold flex items-center justify-center gap-1 tap-btn" title="Even Mon-Fri, lighter Sat">
+                  <span>Weekday Heavy</span>
+                </button>
               </div>
             </div>
 
             <!-- Daily Planned Target Goals Rows (Mon - Sat) -->
-            <div class="mb-3">
+            <div class="mb-4">
               <div class="flex items-center justify-between px-1 mb-1.5">
-                <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-[#8E8E93]">Daily Shift Targets</span>
-                <span class="text-[10px] font-mono text-gray-400 dark:text-[#8E8E93]">Mon – Sat</span>
+                <span class="text-[11px] font-bold uppercase tracking-wider text-gray-500 dark:text-[#8E8E93]">Daily Shift Targets</span>
+                <span class="text-[10px] font-mono text-gray-400 dark:text-[#8E8E93]">Tap + / − or amount</span>
               </div>
 
               <div class="apple-grouped-table" id="goalsPageDailyList">
-                <!-- Rendered dynamically by app.js -->
+                <!-- Rendered dynamically by app.js with stepper capsules -->
               </div>
             </div>
 
@@ -619,6 +621,6 @@
 
   </main>
 
-  <script src="app.js?v=28"></script>
+  <script src="app.js?v=29"></script>
 </body>
 </html>

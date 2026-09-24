@@ -874,6 +874,45 @@ function updateCalculations() {
 // GOALS PAGE (Full-Fledged Dedicated Page)
 // -------------------------------------------------------------
 
+window.adjustDayGoal = function(dayId, delta) {
+  triggerHaptic();
+  const day = state.days.find(d => d.id === dayId);
+  if (!day) return;
+
+  const current = typeof day.planned === 'number' ? day.planned : 0;
+  const next = Math.max(0, Math.round((current + delta) * 100) / 100);
+  day.planned = next;
+
+  saveState();
+  updateCalculations();
+
+  // Targeted DOM update for instant responsiveness without full re-render
+  const input = document.getElementById(`goal-input-${dayId}`);
+  if (input) {
+    input.value = next.toFixed(2);
+    input.placeholder = next.toFixed(2);
+  }
+
+  const bar = document.getElementById(`goal-bar-${dayId}`);
+  const pctEl = document.getElementById(`goal-pct-${dayId}`);
+  const restEl = document.getElementById(`goal-rest-${dayId}`);
+
+  const dashTarget = Math.round(state.totalBillGoal * 0.75 * 100) / 100;
+  const pctOfDash = dashTarget > 0 ? ((next / dashTarget) * 100).toFixed(1) : '0.0';
+
+  if (bar) {
+    const barPct = Math.min(100, Math.max(0, (next / (dashTarget / 3 || 1)) * 100));
+    bar.style.width = `${barPct}%`;
+  }
+  if (pctEl) pctEl.textContent = `${pctOfDash}% of goal`;
+  if (restEl) {
+    if (next === 0) restEl.classList.remove('hidden');
+    else restEl.classList.add('hidden');
+  }
+
+  updateGoalsPageSummary();
+};
+
 function renderGoalsPage() {
   const totalBillInput = document.getElementById('goalsPageTotalBillInput');
   if (totalBillInput) {
@@ -884,6 +923,7 @@ function renderGoalsPage() {
         state.totalBillGoal = newVal;
         saveState();
         updateCalculations();
+        renderGoalsPage();
       }
     }, (liveVal) => {
       const val = parseFloat(liveVal);
@@ -898,33 +938,77 @@ function renderGoalsPage() {
   if (list) {
     list.innerHTML = '';
     const totalBill = state.totalBillGoal;
+    const dashTarget = Math.round(totalBill * 0.75 * 100) / 100;
+    const todayId = getTodayId();
 
     state.days.forEach(day => {
       const row = document.createElement('div');
-      row.className = 'apple-row-separator px-3.5 py-2.5 flex items-center justify-between font-mono';
-      const pctOfBill = totalBill > 0 ? ((day.planned / totalBill) * 100).toFixed(1) : '0.0';
+      row.className = 'apple-row-separator px-3.5 py-3 flex items-center justify-between transition-colors';
+
+      const isToday = day.id === todayId;
+      const isWeekend = day.id === 'fri' || day.id === 'sat';
+      const pctOfDash = dashTarget > 0 ? ((day.planned / dashTarget) * 100).toFixed(1) : '0.0';
+      const barPct = Math.min(100, Math.max(0, (day.planned / (dashTarget / 3 || 1)) * 100));
+      const isOff = day.planned === 0;
 
       row.innerHTML = `
-        <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-7 h-7 rounded-full bg-gray-100 dark:bg-[#2C2C2E] border border-gray-200 dark:border-white/[0.08] flex items-center justify-center text-[10px] uppercase font-bold text-gray-500 dark:text-[#8E8E93] flex-shrink-0">
-            ${day.short}
+        <div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
+          <!-- Day Avatar Badge -->
+          <div class="w-9 h-9 rounded-2xl flex flex-col items-center justify-center flex-shrink-0 font-sans transition-all relative ${
+            isToday 
+              ? 'bg-teal-50 dark:bg-[#30D158]/15 border-1.5 border-teal-500 dark:border-[#30D158] text-teal-700 dark:text-[#30D158] font-bold shadow-sm' 
+              : isWeekend
+                ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-700/30 text-amber-700 dark:text-amber-400 font-semibold'
+                : 'bg-gray-100 dark:bg-[#2C2C2E] border border-gray-200/70 dark:border-white/[0.07] text-gray-700 dark:text-gray-300 font-semibold'
+          }">
+            <span class="text-[10px] uppercase tracking-tight leading-none">${day.short}</span>
+            ${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-teal-500 dark:bg-[#30D158] mt-0.5"></span>' : ''}
           </div>
-          <div class="min-w-0">
-            <span class="text-xs font-semibold text-gray-900 dark:text-white block">${day.name}</span>
-            <span class="text-[10px] text-gray-400 dark:text-[#8E8E93] font-mono">${pctOfBill}% of bill</span>
+
+          <!-- Day Name & Metrics -->
+          <div class="min-w-0 flex-1">
+            <div class="flex items-center gap-1.5">
+              <span class="text-[13px] font-semibold text-gray-900 dark:text-white leading-tight">${day.name}</span>
+              ${isToday ? '<span class="text-[9px] font-bold px-1.5 py-0.2 rounded-full bg-teal-500 text-white dark:bg-[#30D158] dark:text-black uppercase tracking-wider">Today</span>' : ''}
+              <span id="goal-rest-${day.id}" class="text-[9.5px] font-medium text-gray-400 dark:text-[#8E8E93] italic ${isOff ? '' : 'hidden'}">Rest Day</span>
+            </div>
+            <div class="text-[11px] text-gray-500 dark:text-[#8E8E93] font-mono flex items-center gap-1.5 mt-0.5">
+              <span id="goal-pct-${day.id}">${pctOfDash}% of goal</span>
+            </div>
+            <!-- Micro Contribution Bar -->
+            <div class="goal-day-bar">
+              <div id="goal-bar-${day.id}" class="goal-day-bar-fill" style="width: ${barPct}%;"></div>
+            </div>
           </div>
         </div>
-        <div class="flex items-center bg-gray-100 dark:bg-[#2C2C2E] rounded-xl px-2.5 py-1.5 border border-gray-200 dark:border-white/[0.08] focus-within:border-teal-500 dark:focus-within:border-[#30D158]">
-          <span class="text-xs font-bold text-teal-600 dark:text-[#30D158] mr-1 font-mono">$</span>
-          <input 
-            type="text" 
-            inputmode="decimal" 
-            id="goal-input-${day.id}" 
-            value="${day.planned.toFixed(2)}"
-            placeholder="${day.planned.toFixed(2)}"
-            class="smart-goal-input w-20 bg-transparent text-right font-mono text-sm font-bold text-gray-900 dark:text-white focus:outline-none placeholder-gray-400 dark:placeholder-[#636366]"
-            title="Edit planned target for ${day.name}"
-          />
+
+        <!-- Apple Stepper Pill Capsule -->
+        <div class="goal-stepper-pill flex-shrink-0">
+          <button type="button" onclick="adjustDayGoal('${day.id}', -5)" class="goal-stepper-btn tap-btn" title="Decrease target by $5" aria-label="Decrease target">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+
+          <div class="flex items-center px-1">
+            <span class="text-xs font-bold text-teal-600 dark:text-[#30D158] font-mono mr-0.5">$</span>
+            <input 
+              type="text" 
+              inputmode="decimal" 
+              id="goal-input-${day.id}" 
+              value="${day.planned.toFixed(2)}"
+              placeholder="${day.planned.toFixed(2)}"
+              class="smart-goal-input w-14 bg-transparent text-center font-mono text-[13px] font-bold text-gray-900 dark:text-white focus:outline-none"
+              title="Edit planned target for ${day.name}"
+            />
+          </div>
+
+          <button type="button" onclick="adjustDayGoal('${day.id}', 5)" class="goal-stepper-btn tap-btn" title="Increase target by $5" aria-label="Increase target">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
         </div>
       `;
       list.appendChild(row);
@@ -936,7 +1020,7 @@ function renderGoalsPage() {
             day.planned = newVal;
             saveState();
             updateCalculations();
-            updateGoalsPageSummary();
+            renderGoalsPage();
           }
         }, () => {
           updateGoalsPageSummary();
@@ -963,6 +1047,7 @@ function updateGoalsPageSummary() {
       plannedSum += d.planned;
     }
   });
+  plannedSum = Math.round(plannedSum * 100) / 100;
 
   const dashTargetEl = document.getElementById('goalsPageDashTarget');
   if (dashTargetEl) dashTargetEl.textContent = formatCurrency(dashTarget);
@@ -972,6 +1057,22 @@ function updateGoalsPageSummary() {
 
   const plannedTotalEl = document.getElementById('goalsPagePlannedTotal');
   if (plannedTotalEl) plannedTotalEl.textContent = formatCurrency(plannedSum);
+
+  // Dynamic balance badge
+  const balanceBadge = document.getElementById('goalsPageBalanceBadge');
+  if (balanceBadge) {
+    const diff = Math.round((plannedSum - dashTarget) * 100) / 100;
+    if (Math.abs(diff) < 0.05) {
+      balanceBadge.className = 'text-[10px] font-medium font-sans px-2 py-0.5 rounded-full bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-400 border border-emerald-200/80 dark:border-emerald-700/30';
+      balanceBadge.textContent = '✓ Balanced';
+    } else if (diff < 0) {
+      balanceBadge.className = 'text-[10px] font-medium font-sans px-2 py-0.5 rounded-full bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-400 border border-amber-200/80 dark:border-amber-700/30';
+      balanceBadge.textContent = `⚠️ Under by ${formatCurrency(Math.abs(diff))}`;
+    } else {
+      balanceBadge.className = 'text-[10px] font-medium font-sans px-2 py-0.5 rounded-full bg-blue-50 dark:bg-blue-950/40 text-blue-700 dark:text-blue-400 border border-blue-200/80 dark:border-blue-700/30';
+      balanceBadge.textContent = `+ ${formatCurrency(diff)} Over`;
+    }
+  }
 }
 
 window.splitGoalsEvenly = function() {
