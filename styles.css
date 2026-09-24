@@ -526,11 +526,11 @@ html.dark .progress-fill {
   border: 1px solid var(--dock-border);
   box-shadow: var(--dock-shadow);
   border-radius: 9999px;
-  padding: 5px;
+  padding: 5px 7px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
+  gap: 8px;
   backdrop-filter: blur(28px) saturate(190%);
   -webkit-backdrop-filter: blur(28px) saturate(190%);
   box-sizing: border-box;
@@ -538,7 +538,7 @@ html.dark .progress-fill {
 }
 
 .dock-tab {
-  width: 44px;
+  width: 62px;
   height: 44px;
   border-radius: 9999px;
   display: inline-flex;
