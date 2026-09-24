@@ -76,13 +76,26 @@ window.switchTab = function(tabIndex) {
   updateNavHeaderForTab(currentTab);
 };
 
+function getTimeGreeting() {
+  const hour = new Date().getHours();
+  if (hour >= 5 && hour < 12) {
+    return 'Good morning, Anthony';
+  } else if (hour >= 12 && hour < 17) {
+    return 'Good afternoon, Anthony';
+  } else if (hour >= 17 && hour < 21) {
+    return 'Good evening, Anthony';
+  } else {
+    return 'Good night, Anthony';
+  }
+}
+
 function updateNavHeaderForTab(tabIndex) {
   const headerTitle = document.getElementById('headerTitle');
   const headerIcon = document.getElementById('headerIcon');
   const headerDateText = document.getElementById('headerDateText');
 
   if (tabIndex === 1) { // Home
-    if (headerTitle) headerTitle.textContent = 'Hello, Anthony';
+    if (headerTitle) headerTitle.textContent = getTimeGreeting();
     if (headerIcon) headerIcon.textContent = '📍';
     if (headerDateText) {
       const now = new Date();
@@ -1457,6 +1470,13 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCalculations();
   switchTab(1);
   initLaunchTransition();
+
+  // Refresh dynamic time greeting when returning to the app
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') {
+      updateNavHeaderForTab(currentTab);
+    }
+  });
 
   // Desktop / Mac trackpad swipe & mousewheel forwarding
   const deviceFrame = document.getElementById('deviceFrame');
