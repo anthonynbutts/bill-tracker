@@ -1,6 +1,7 @@
-// School Bill Tracker - Apple iOS 1:1 Application Logic
+// School Bill Tracker - Template UI/UX & iPhone 15 Logic
 
 const STORAGE_KEY = 'school_bill_tracker_state_v2';
+const THEME_STORAGE_KEY = 'school_bill_tracker_theme';
 
 const DEFAULT_DAYS = [
   { id: 'mon', name: 'Monday', short: 'Mon', dayIndex: 1, planned: 26.88, actual: 0 },
@@ -23,6 +24,96 @@ function triggerHaptic() {
     try { navigator.vibrate(12); } catch (e) {}
   }
 }
+
+// -------------------------------------------------------------
+// THEME MANAGEMENT (Light by default, Dark option)
+// -------------------------------------------------------------
+
+function getTheme() {
+  try {
+    return localStorage.getItem(THEME_STORAGE_KEY) || 'light';
+  } catch (e) {
+    return 'light';
+  }
+}
+
+window.setTheme = function(theme) {
+  triggerHaptic();
+  const root = document.documentElement;
+  if (theme === 'dark') {
+    root.classList.remove('light');
+    root.classList.add('dark');
+  } else {
+    theme = 'light';
+    root.classList.remove('dark');
+    root.classList.add('light');
+  }
+
+  try {
+    localStorage.setItem(THEME_STORAGE_KEY, theme);
+  } catch (e) {}
+
+  // Update theme-color and apple-mobile-web-app-status-bar-style for iOS
+  const metaThemeColor = document.querySelector('meta[name="theme-color"]');
+  if (metaThemeColor) {
+    metaThemeColor.setAttribute('content', theme === 'dark' ? '#000000' : '#F8F9FA');
+  }
+
+  const metaStatusBarStyle = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
+  if (metaStatusBarStyle) {
+    metaStatusBarStyle.setAttribute('content', theme === 'dark' ? 'black-translucent' : 'default');
+  }
+
+  updateThemeControls(theme);
+  updateCalculations();
+};
+
+window.toggleTheme = function() {
+  const current = getTheme();
+  const next = current === 'dark' ? 'light' : 'dark';
+  setTheme(next);
+  showToast(next === 'dark' ? 'Dark theme enabled' : 'Light theme enabled');
+};
+
+function updateThemeControls(theme) {
+  if (!theme) theme = getTheme();
+
+  // Header quick toggle icon
+  const themeToggleIcon = document.getElementById('themeToggleIcon');
+  if (themeToggleIcon) {
+    themeToggleIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
+  }
+
+  // Settings modal segmented control
+  const lightBtn = document.getElementById('themeLightBtn');
+  const darkBtn = document.getElementById('themeDarkBtn');
+
+  if (lightBtn && darkBtn) {
+    if (theme === 'light') {
+      lightBtn.className = 'px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all bg-white text-gray-900 shadow-sm tap-btn';
+      darkBtn.className = 'px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition-all text-gray-500 hover:text-gray-900 tap-btn';
+    } else {
+      lightBtn.className = 'px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition-all text-gray-400 hover:text-white tap-btn';
+      darkBtn.className = 'px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all bg-[#2C2C2E] text-white shadow-sm tap-btn';
+    }
+  }
+}
+
+// Floating dock navigation helpers
+window.scrollToTop = function() {
+  triggerHaptic();
+  const scrollContent = document.getElementById('scrollContent');
+  if (scrollContent) {
+    scrollContent.scrollTo({ top: 0, behavior: 'smooth' });
+  }
+};
+
+window.openAddModalForToday = function() {
+  const todayIndex = getTodayIndex();
+  const isSunday = todayIndex === 0;
+  const activeSpotlightId = isSunday ? 'mon' : getTodayId();
+  openAddModal(activeSpotlightId);
+};
 
 function loadState() {
   try {
@@ -147,53 +238,79 @@ function getTodayId() {
 }
 
 /**
- * Apple Dynamic Progress Bar Gradient (Red -> Amber -> Apple System Green):
- * Starts at Apple System Red (#FF453A), transitions through Apple System Amber (#FF9F0A),
- * and finishes at vibrant Apple System Green (#30D158).
+ * Dynamic Progress Bar Gradient:
+ * In Light Mode (Template Style): Red/Rose (#F43F5E) -> Amber (#F59E0B) -> Teal/Emerald (#0D9488)
+ * In Dark Mode (Apple OLED Style): Apple Red (#FF453A) -> Apple Amber (#FF9F0A) -> Apple Green (#30D158)
  */
 function getProgressGradient(pct) {
   const p = Math.min(100, Math.max(0, pct)) / 100;
-
-  // Keyframes:
-  // 0.0 (Red):    #FF453A (255, 69, 58)
-  // 0.5 (Amber):  #FF9F0A (255, 159, 10)
-  // 1.0 (Green):  #30D158 (48, 209, 88)
+  const isDark = document.documentElement.classList.contains('dark');
 
   let r1, g1, b1;
   let r2, g2, b2;
   let glowR, glowG, glowB;
 
-  if (p <= 0.5) {
-    const t = p / 0.5;
-    r1 = Math.round(255 + (255 - 255) * t);
-    g1 = Math.round(69 + (159 - 69) * t);
-    b1 = Math.round(58 + (10 - 58) * t);
+  if (isDark) {
+    if (p <= 0.5) {
+      const t = p / 0.5;
+      r1 = 255;
+      g1 = Math.round(69 + (159 - 69) * t);
+      b1 = Math.round(58 + (10 - 58) * t);
 
-    r2 = Math.round(255 + (255 - 255) * t);
-    g2 = Math.round(100 + (190 - 100) * t);
-    b2 = Math.round(80 + (25 - 80) * t);
+      r2 = 255;
+      g2 = Math.round(100 + (190 - 100) * t);
+      b2 = Math.round(80 + (25 - 80) * t);
 
-    glowR = 255;
-    glowG = Math.round(69 + (159 - 69) * t);
-    glowB = Math.round(58 + (10 - 58) * t);
+      glowR = 255;
+      glowG = Math.round(69 + (159 - 69) * t);
+      glowB = Math.round(58 + (10 - 58) * t);
+    } else {
+      const t = (p - 0.5) / 0.5;
+      r1 = Math.round(255 + (48 - 255) * t);
+      g1 = Math.round(159 + (209 - 159) * t);
+      b1 = Math.round(10 + (88 - 10) * t);
+
+      r2 = Math.round(255 + (52 - 255) * t);
+      g2 = Math.round(190 + (225 - 190) * t);
+      b2 = Math.round(25 + (110 - 25) * t);
+
+      glowR = Math.round(255 + (48 - 255) * t);
+      glowG = Math.round(159 + (209 - 159) * t);
+      glowB = Math.round(10 + (88 - 10) * t);
+    }
   } else {
-    const t = (p - 0.5) / 0.5;
-    r1 = Math.round(255 + (48 - 255) * t);
-    g1 = Math.round(159 + (209 - 159) * t);
-    b1 = Math.round(10 + (88 - 10) * t);
+    if (p <= 0.5) {
+      const t = p / 0.5;
+      r1 = Math.round(244 + (245 - 244) * t);
+      g1 = Math.round(63 + (158 - 63) * t);
+      b1 = Math.round(94 + (11 - 94) * t);
 
-    r2 = Math.round(255 + (52 - 255) * t);
-    g2 = Math.round(190 + (225 - 190) * t);
-    b2 = Math.round(25 + (110 - 25) * t);
+      r2 = 245;
+      g2 = Math.round(100 + (170 - 100) * t);
+      b2 = Math.round(80 + (20 - 80) * t);
 
-    glowR = Math.round(255 + (48 - 255) * t);
-    glowG = Math.round(159 + (209 - 159) * t);
-    glowB = Math.round(10 + (88 - 10) * t);
+      glowR = 245;
+      glowG = Math.round(158 * t);
+      glowB = Math.round(11 * t);
+    } else {
+      const t = (p - 0.5) / 0.5;
+      r1 = Math.round(245 + (13 - 245) * t);
+      g1 = Math.round(158 + (148 - 158) * t);
+      b1 = Math.round(11 + (136 - 11) * t);
+
+      r2 = Math.round(245 + (16 - 245) * t);
+      g2 = Math.round(170 + (185 - 170) * t);
+      b2 = Math.round(20 + (129 - 20) * t);
+
+      glowR = Math.round(245 + (13 - 245) * t);
+      glowG = Math.round(158 + (148 - 158) * t);
+      glowB = Math.round(11 + (136 - 11) * t);
+    }
   }
 
   const fromColor = `rgb(${r1}, ${g1}, ${b1})`;
   const toColor = `rgb(${r2}, ${g2}, ${b2})`;
-  const glowAlpha = (0.2 + 0.25 * p).toFixed(2);
+  const glowAlpha = isDark ? (0.2 + 0.25 * p).toFixed(2) : (0.10 + 0.16 * p).toFixed(2);
 
   return {
     background: `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 100%)`,
@@ -205,7 +322,7 @@ function getProgressGradient(pct) {
 
 let showOtherDays = false;
 
-// Render Daily Cards: Active day highlighted card + Other days in an Apple Inset Grouped Table
+// Render Daily Cards: Active day highlighted card + Other days in an Inset Grouped Table
 function renderDays() {
   const todayContainer = document.getElementById('todayContainer');
   const otherDaysList = document.getElementById('otherDaysList');
@@ -232,18 +349,18 @@ function renderDays() {
       diffClass = '';
     } else if (dayDiff >= 0) {
       diffText = dayDiff === 0 ? '✓ Hit Goal' : `+$${dayDiff.toFixed(2)} ahead`;
-      diffClass = 'text-[#30D158] font-bold';
+      diffClass = 'text-teal-700 dark:text-[#30D158] font-bold';
     } else {
       diffText = `$${(day.planned - day.actual).toFixed(2)} left`;
-      diffClass = dayPct < 40 ? 'text-[#FF453A] font-semibold' : 'text-[#FF9F0A] font-semibold';
+      diffClass = dayPct < 40 ? 'text-rose-600 dark:text-[#FF453A] font-semibold' : 'text-amber-600 dark:text-[#FF9F0A] font-semibold';
     }
 
     if (isToday) {
-      // TODAY / SPOTLIGHT: Apple Highlighted Inset Card
+      // TODAY / SPOTLIGHT: Template Highlighted Inset Card
       const badgeText = isSunday ? 'Sunday • Next: Mon' : 'Today';
       const badgeClass = isSunday
-        ? 'text-[#FF9F0A] bg-[#FF9F0A]/15 border border-[#FF9F0A]/30'
-        : 'text-[#30D158] bg-[#30D158]/15 border border-[#30D158]/30';
+        ? 'text-amber-700 dark:text-[#FF9F0A] bg-amber-50 dark:bg-[#FF9F0A]/15 border border-amber-200 dark:border-[#FF9F0A]/30'
+        : 'text-teal-700 dark:text-[#30D158] bg-teal-50 dark:bg-[#30D158]/15 border border-teal-200 dark:border-[#30D158]/30';
       const actionLabel = isSunday ? "Monday's Target Goal" : "Today's Shift Earnings";
 
       const card = document.createElement('div');
@@ -253,7 +370,7 @@ function renderDays() {
         <!-- Top: Day Name + Today Capsule Badge -->
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-1.5">
-            <span class="font-bold text-white text-[15px]">${day.name}</span>
+            <span class="font-bold text-gray-900 dark:text-white text-[15px]">${day.name}</span>
             <span class="text-[9.5px] font-bold ${badgeClass} px-2 py-0.5 rounded-full uppercase tracking-wider">${badgeText}</span>
           </div>
           <span class="text-xs font-mono ${diffClass}">
@@ -261,24 +378,24 @@ function renderDays() {
           </span>
         </div>
 
-        <!-- Middle: Action Row with Smart Input & Apple Green Add Button -->
-        <div class="flex items-center justify-between bg-black/60 rounded-[14px] p-2.5 px-3 border border-white/[0.08] mb-2.5 gap-2">
+        <!-- Middle: Action Row with Smart Input & Teal/Emerald Add Button -->
+        <div class="flex items-center justify-between bg-gray-50/90 dark:bg-black/60 rounded-[14px] p-2.5 px-3 border border-gray-200/70 dark:border-white/[0.08] mb-2.5 gap-2">
           <div class="min-w-0">
-            <span class="text-[9.5px] uppercase font-semibold text-[#8E8E93] block mb-0.5 tracking-wider">${actionLabel}</span>
+            <span class="text-[9.5px] uppercase font-semibold text-gray-500 dark:text-[#8E8E93] block mb-0.5 tracking-wider">${actionLabel}</span>
             <div class="flex items-center gap-1.5 font-mono">
-              <div class="flex items-center bg-[#1C1C1E] rounded-lg px-2 py-1 border border-white/[0.1] focus-within:border-[#30D158] focus-within:ring-1 focus-within:ring-[#30D158]/30">
-                <span class="text-xs font-bold text-[#30D158] mr-0.5">$</span>
+              <div class="flex items-center bg-white dark:bg-[#1C1C1E] rounded-lg px-2 py-1 border border-gray-200 dark:border-white/[0.1] focus-within:border-teal-500 dark:focus-within:border-[#30D158] focus-within:ring-1 focus-within:ring-teal-500/30 dark:focus-within:ring-[#30D158]/30">
+                <span class="text-xs font-bold text-teal-600 dark:text-[#30D158] mr-0.5">$</span>
                 <input 
                   type="text" 
                   inputmode="decimal" 
                   id="actual-input-${day.id}" 
                   value="${day.actual.toFixed(2)}" 
                   placeholder="${day.actual.toFixed(2)}" 
-                  class="smart-goal-input w-16 bg-transparent text-left text-xs font-bold text-[#30D158] focus:outline-none placeholder-[#636366] font-mono" 
+                  class="smart-goal-input w-16 bg-transparent text-left text-xs font-bold text-gray-900 dark:text-[#30D158] focus:outline-none placeholder-gray-400 dark:placeholder-[#636366] font-mono" 
                   title="Click to edit current dash"
                 />
               </div>
-              <span class="text-[11px] text-[#8E8E93] whitespace-nowrap">/ $${day.planned.toFixed(2)} goal</span>
+              <span class="text-[11px] text-gray-500 dark:text-[#8E8E93] whitespace-nowrap">/ $${day.planned.toFixed(2)} goal</span>
             </div>
           </div>
           
@@ -291,7 +408,7 @@ function renderDays() {
           </button>
         </div>
 
-        <!-- Apple Capsule Progress Bar (Slim 6px track) -->
+        <!-- Activity Capsule Progress Bar (Slim 6px track) -->
         <div class="progress-track w-full rounded-full h-1.5 overflow-hidden relative">
           <div class="h-full rounded-full transition-all duration-300" style="width: ${dayPct}%; opacity: ${dayPct > 0 ? '1' : '0'}; background: ${dayProgressStyle.background}; box-shadow: ${dayProgressStyle.boxShadow};"></div>
         </div>
@@ -309,26 +426,26 @@ function renderDays() {
         });
       }
     } else {
-      // OTHER DAYS: Apple Inset Grouped Table Row (Slim 36px)
+      // OTHER DAYS: Grouped Table Row (Slim 36px)
       const row = document.createElement('div');
       row.id = `card-${day.id}`;
-      row.className = 'apple-row-separator px-3 py-2 flex items-center justify-between select-none hover:bg-white/[0.02] transition-colors';
+      row.className = 'apple-row-separator px-3 py-2 flex items-center justify-between select-none hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors';
 
       row.innerHTML = `
         <!-- Left: Day badge, title, and goal -->
         <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-6 h-6 rounded-full bg-[#2C2C2E] border border-white/[0.08] flex items-center justify-center font-mono flex-shrink-0">
-            <span class="text-[9px] font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-[#30D158]' : (day.actual > 0 ? 'text-[#FF9F0A]' : 'text-[#8E8E93]')}">
+          <div class="w-6 h-6 rounded-full bg-gray-100 dark:bg-[#2C2C2E] border border-gray-200 dark:border-white/[0.08] flex items-center justify-center font-mono flex-shrink-0">
+            <span class="text-[9px] font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-teal-600 dark:text-[#30D158]' : (day.actual > 0 ? 'text-amber-600 dark:text-[#FF9F0A]' : 'text-gray-400 dark:text-[#8E8E93]')}">
               ${day.actual >= day.planned && day.planned > 0 ? '✓' : day.short}
             </span>
           </div>
 
           <div class="min-w-0">
             <div class="flex items-center gap-1.5 truncate">
-              <span class="font-semibold text-white text-xs">${day.name}</span>
+              <span class="font-semibold text-gray-900 dark:text-white text-xs">${day.name}</span>
               <span class="text-[9.5px] font-mono ${diffClass} truncate">${diffText}</span>
             </div>
-            <div class="text-[10px] font-mono text-[#8E8E93] mt-0.5 flex items-center gap-1.5">
+            <div class="text-[10px] font-mono text-gray-500 dark:text-[#8E8E93] mt-0.5 flex items-center gap-1.5">
               <span>Goal: $${day.planned.toFixed(2)}</span>
               <div class="progress-track w-10 rounded-full h-1 overflow-hidden inline-block align-middle relative">
                 <div class="h-full rounded-full transition-all duration-300" style="width: ${dayPct}%; opacity: ${dayPct > 0 ? '1' : '0'}; background: ${dayProgressStyle.background}; box-shadow: ${dayProgressStyle.boxShadow};"></div>
@@ -339,20 +456,20 @@ function renderDays() {
 
         <!-- Right: Current Dash Input & Compact Add Button -->
         <div class="flex items-center gap-1.5 flex-shrink-0">
-          <div class="flex items-center bg-[#2C2C2E] rounded-lg px-1.5 py-0.5 border border-white/[0.08] focus-within:border-[#30D158]">
-            <span class="text-[11px] font-bold text-[#30D158] mr-0.5 font-mono">$</span>
+          <div class="flex items-center bg-gray-100 dark:bg-[#2C2C2E] rounded-lg px-1.5 py-0.5 border border-gray-200 dark:border-white/[0.08] focus-within:border-teal-500 dark:focus-within:border-[#30D158]">
+            <span class="text-[11px] font-bold text-teal-600 dark:text-[#30D158] mr-0.5 font-mono">$</span>
             <input 
               type="text" 
               inputmode="decimal" 
               id="actual-input-${day.id}" 
               value="${day.actual.toFixed(2)}" 
               placeholder="${day.actual.toFixed(2)}" 
-              class="smart-goal-input w-14 bg-transparent text-right font-mono text-[11px] font-bold text-white focus:outline-none placeholder-[#636366]" 
+              class="smart-goal-input w-14 bg-transparent text-right font-mono text-[11px] font-bold text-gray-900 dark:text-white focus:outline-none placeholder-gray-400 dark:placeholder-[#636366]" 
               title="Click to edit earnings"
             />
           </div>
           <button type="button" onclick="openAddModal('${day.id}')" class="apple-secondary-btn px-2 py-0.5 text-[11px] font-semibold flex items-center gap-1 tap-btn" title="Add to ${day.name}">
-            <svg class="w-2.5 h-2.5 text-[#30D158]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-2.5 h-2.5 text-teal-600 dark:text-[#30D158]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
@@ -431,9 +548,9 @@ function updateCalculations() {
   if (paycheckNeededDisplay) {
     paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
     if (isCovered) {
-      paycheckNeededDisplay.className = 'text-[28px] sm:text-[30px] font-extrabold font-mono text-[#30D158] tracking-tight leading-tight drop-shadow-[0_0_12px_rgba(48,209,88,0.45)]';
+      paycheckNeededDisplay.className = 'text-[28px] sm:text-[30px] font-extrabold font-mono text-teal-600 dark:text-[#30D158] tracking-tight leading-tight drop-shadow-[0_0_12px_rgba(13,148,136,0.35)] dark:drop-shadow-[0_0_12px_rgba(48,209,88,0.45)]';
     } else {
-      paycheckNeededDisplay.className = 'text-[28px] sm:text-[30px] font-extrabold font-mono text-white tracking-tight leading-tight';
+      paycheckNeededDisplay.className = 'text-[28px] sm:text-[30px] font-extrabold font-mono text-gray-900 dark:text-white tracking-tight leading-tight';
     }
   }
 
@@ -444,7 +561,7 @@ function updateCalculations() {
 
   if (paycheckGoalBadge && paycheckGoalDisplay) {
     if (isCovered) {
-      paycheckGoalBadge.className = 'inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-[#30D158]/15 border border-[#30D158]/30 text-[11px] font-mono text-[#30D158] transition-all';
+      paycheckGoalBadge.className = 'inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-[#30D158]/15 border border-teal-200/80 dark:border-[#30D158]/30 text-[10.5px] font-mono text-teal-700 dark:text-[#30D158] transition-all';
       if (surplus > 0) {
         paycheckGoalDisplay.textContent = `✓ Covered! +$${surplus.toFixed(2)} Surplus`;
       } else {
@@ -452,7 +569,7 @@ function updateCalculations() {
       }
       if (paycheckGoalSuffix) paycheckGoalSuffix.style.display = 'none';
     } else {
-      paycheckGoalBadge.className = 'inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-[#2C2C2E] border border-white/[0.08] text-[11px] font-mono text-[#8E8E93] transition-all';
+      paycheckGoalBadge.className = 'inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-full bg-gray-100 dark:bg-[#2C2C2E] border border-gray-200 dark:border-white/[0.08] text-[10.5px] font-mono text-gray-500 dark:text-[#8E8E93] transition-all';
       paycheckGoalDisplay.textContent = formatCurrency(paycheckGoal);
       if (paycheckGoalSuffix) {
         paycheckGoalSuffix.style.display = 'inline';
@@ -461,7 +578,7 @@ function updateCalculations() {
     }
   }
 
-  // Dynamic Weekly Progress Bar (Red -> Amber -> Apple System Green)
+  // Dynamic Weekly Progress Bar
   const segDashBar = document.getElementById('segDashBar');
   const dashPct = totalBill > 0 ? Math.min(100, (actualEarnings / totalBill) * 100) : 0;
 
@@ -636,20 +753,20 @@ function renderGoalsModalList() {
       row.className = 'apple-row-separator px-3.5 py-2.5 flex items-center justify-between font-mono';
       row.innerHTML = `
         <div class="flex items-center gap-2.5">
-          <div class="w-7 h-7 rounded-full bg-[#2C2C2E] flex items-center justify-center text-[10px] uppercase font-bold text-[#8E8E93]">
+          <div class="w-7 h-7 rounded-full bg-gray-100 dark:bg-[#2C2C2E] flex items-center justify-center text-[10px] uppercase font-bold text-gray-500 dark:text-[#8E8E93]">
             ${day.short}
           </div>
-          <span class="text-xs font-semibold text-white">${day.name}</span>
+          <span class="text-xs font-semibold text-gray-900 dark:text-white">${day.name}</span>
         </div>
-        <div class="flex items-center bg-[#2C2C2E] rounded-xl px-2.5 py-1.5 border border-white/[0.08] focus-within:border-[#30D158]">
-          <span class="text-xs font-bold text-[#30D158] mr-1">$</span>
+        <div class="flex items-center bg-gray-100 dark:bg-[#2C2C2E] rounded-xl px-2.5 py-1.5 border border-gray-200 dark:border-white/[0.08] focus-within:border-teal-500 dark:focus-within:border-[#30D158]">
+          <span class="text-xs font-bold text-teal-600 dark:text-[#30D158] mr-1">$</span>
           <input 
             type="text" 
             inputmode="decimal" 
             id="goal-input-${day.id}" 
             value="${day.planned.toFixed(2)}"
             placeholder="${day.planned.toFixed(2)}"
-            class="smart-goal-input w-20 bg-transparent text-right font-mono text-sm font-bold text-white focus:outline-none placeholder-[#636366]"
+            class="smart-goal-input w-20 bg-transparent text-right font-mono text-sm font-bold text-gray-900 dark:text-white focus:outline-none placeholder-gray-400 dark:placeholder-[#636366]"
           />
         </div>
       `;
@@ -805,7 +922,7 @@ window.closeAddModal = function() {
   }
 };
 
-// Apple Quick Amount Shortcut Chips: adds specified dollar amount immediately
+// Quick Amount Shortcut Chips: adds specified dollar amount immediately
 window.addQuickAmount = function(amount) {
   triggerHaptic();
   const input = document.getElementById('addModalAmountInput');
@@ -880,11 +997,11 @@ function setupToolbarActions() {
     });
   }
 
-  // Header Date - Apple style uppercase format
-  const headerDate = document.getElementById('headerDate');
-  if (headerDate) {
+  // Header Date - Uppercase format preserving pin icon
+  const headerDateText = document.getElementById('headerDateText');
+  if (headerDateText) {
     const now = new Date();
-    headerDate.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    headerDateText.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   }
 
   // Sticky Header scroll styling (subtle shadow when content scrolls underneath)
@@ -946,6 +1063,7 @@ function initLaunchTransition() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  updateThemeControls();
   renderDays();
   setupToolbarActions();
   updateCalculations();

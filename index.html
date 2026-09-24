@@ -1,14 +1,14 @@
 <!DOCTYPE html>
-<html lang="en" class="dark">
+<html lang="en" class="light">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
   <!-- iOS PWA & Standalone Meta -->
   <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
   <meta name="apple-mobile-web-app-title" content="Bill Tracker">
   <meta name="mobile-web-app-capable" content="yes">
-  <meta name="theme-color" content="#000000">
+  <meta name="theme-color" content="#F8F9FA">
   <meta name="format-detection" content="telephone=no">
 
   <title>Bill Tracker</title>
@@ -29,6 +29,18 @@
         navigator.serviceWorker.register('./sw.js').catch(() => {});
       });
     }
+
+    // Initialize Theme from localStorage (Default: light)
+    try {
+      const savedTheme = localStorage.getItem('school_bill_tracker_theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.documentElement.classList.remove('light');
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+        document.documentElement.classList.add('light');
+      }
+    } catch (e) {}
   </script>
 
   <!-- Tailwind CSS CDN -->
@@ -39,18 +51,14 @@
       theme: {
         extend: {
           colors: {
-            appleBg: '#000000',
-            appleCard: '#1C1C1E',
-            appleCardSecondary: '#252528',
-            appleInput: '#2C2C2E',
-            appleSeparator: 'rgba(255, 255, 255, 0.08)',
-            appleGreen: '#30D158',
-            appleGreenHover: '#34C759',
-            appleBlue: '#0A84FF',
-            appleRed: '#FF453A',
-            appleAmber: '#FF9F0A',
-            appleGray: '#8E8E93',
-            appleGray2: '#636366'
+            appTeal: '#0D9488',
+            appTealDark: '#0F766E',
+            appEmerald: '#10B981',
+            appBgLight: '#F8F9FA',
+            appCardLight: '#FFFFFF',
+            appSecondaryLight: '#F1F3F5',
+            appTextLight: '#111827',
+            appMutedLight: '#64748B'
           },
           fontFamily: {
             sans: ['-apple-system', 'BlinkMacSystemFont', '"SF Pro Text"', '"SF Pro Display"', '"SF Pro"', 'system-ui', 'sans-serif'],
@@ -60,50 +68,61 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=14">
+  <link rel="stylesheet" href="styles.css?v=15">
 </head>
-<body class="bg-black text-white min-h-screen flex items-center justify-center p-0 sm:p-4 selection:bg-[#30D158] selection:text-black">
+<body class="selection:bg-teal-500 selection:text-white">
 
   <!-- iPhone Chassis (Desktop preview) / Edge-to-edge full screen on device -->
-  <main id="deviceFrame" class="w-full sm:w-[393px] bg-black text-white relative min-h-screen sm:min-h-0 sm:h-[852px] sm:rounded-[54px] sm:border-[9px] sm:border-[#2C2C2E] sm:shadow-[0_25px_70px_rgba(0,0,0,0.95)] flex flex-col overflow-hidden select-none">
+  <main id="deviceFrame" class="w-full sm:w-[393px] relative min-h-screen sm:min-h-0 sm:h-[852px] sm:rounded-[54px] flex flex-col overflow-hidden select-none">
     
     <!-- OLED Launch Screen (Splash) -->
-    <div id="launchScreen" class="absolute inset-0 z-[100] bg-black flex items-center justify-center select-none cursor-pointer" title="Tap to skip">
+    <div id="launchScreen" class="absolute inset-0 z-[100] flex items-center justify-center select-none cursor-pointer" title="Tap to skip">
       <div id="launchLogo" class="flex flex-col items-center justify-center text-center px-4">
-        <div class="w-16 h-16 rounded-[22px] bg-[#1C1C1E] border border-white/10 flex items-center justify-center mb-3 shadow-[0_0_40px_rgba(48,209,88,0.25)]">
-          <svg class="w-8 h-8 text-[#30D158]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+        <div class="w-16 h-16 rounded-[22px] bg-white dark:bg-[#1C1C1E] border border-gray-100 dark:border-white/10 flex items-center justify-center mb-3 shadow-[0_4px_30px_rgba(13,148,136,0.18)] dark:shadow-[0_0_40px_rgba(48,209,88,0.25)]">
+          <svg class="w-8 h-8 text-teal-600 dark:text-[#30D158]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
             <line x1="12" y1="1" x2="12" y2="23"></line>
             <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path>
           </svg>
         </div>
-        <h1 class="text-3xl sm:text-4xl font-black tracking-tight leading-none text-white">
+        <h1 class="text-3xl sm:text-4xl font-black tracking-tight leading-none text-gray-900 dark:text-white">
           Bill Tracker
         </h1>
-        <p class="text-xs sm:text-sm font-medium text-[#8E8E93] mt-1 select-none font-sans">
+        <p class="text-xs sm:text-sm font-medium text-gray-500 dark:text-[#8E8E93] mt-1 select-none font-sans">
           by Anthony
         </p>
       </div>
     </div>
 
     <!-- Desktop Mockup Dynamic Island (Only visible in desktop simulator mode) -->
-    <div id="dynamicIslandContainer" class="hidden sm:flex items-center justify-center pt-2.5 pb-1 select-none pointer-events-none sticky top-0 bg-black/90 backdrop-blur-md z-40">
-      <div id="dynamicIsland" class="h-7 w-28 bg-black rounded-full flex items-center justify-between px-3 text-white border border-white/10 shadow-inner">
-        <span class="text-[10px] font-mono font-medium text-[#30D158]" id="islandPaycheck">$215.00</span>
+    <div id="dynamicIslandContainer" class="hidden sm:flex items-center justify-center pt-2.5 pb-1 select-none pointer-events-none sticky top-0 bg-transparent z-40">
+      <div id="dynamicIsland" class="h-7 w-28 bg-black rounded-full flex items-center justify-between px-3 text-white border border-black/20 dark:border-white/10 shadow-inner">
+        <span class="text-[10px] font-mono font-medium text-teal-400 dark:text-[#30D158]" id="islandPaycheck">$215.00</span>
         <div class="w-2.5 h-2.5 rounded-full bg-blue-500/80"></div>
       </div>
     </div>
 
-    <!-- Sticky iOS Navigation Bar (Within Safe Area - Lowered below OS blur) -->
+    <!-- Sticky iOS Navigation Bar (Positioned safely below Dynamic Island / OS blur) -->
     <header id="navHeader" class="apple-nav-blur sticky top-0 z-30 flex items-center justify-between py-2 px-6">
       <div>
-        <p class="text-[10px] font-semibold tracking-wider text-[#8E8E93] uppercase font-sans leading-none mb-1" id="headerDate">TODAY</p>
-        <h1 class="text-xl font-bold tracking-tight text-white leading-none">
-          Bill Tracker
-        </h1>
+        <div class="flex items-center gap-1.5 mb-0.5">
+          <h1 class="text-lg font-bold tracking-tight text-gray-900 dark:text-white leading-none">
+            Hello, Anthony
+          </h1>
+        </div>
+        <p class="text-[10.5px] font-semibold tracking-wider text-teal-600 dark:text-teal-400 uppercase font-sans flex items-center gap-1" id="headerDate">
+          <span>📍</span>
+          <span id="headerDateText">TODAY</span>
+        </p>
       </div>
 
-      <!-- Apple Circular Navigation Bar Buttons (Slimmer 32px) -->
+      <!-- Action Buttons (Quick Theme Toggle & Goals) -->
       <div class="flex items-center gap-1.5">
+        <!-- Quick Theme Toggle Button -->
+        <button id="themeToggleBtn" onclick="toggleTheme()" title="Switch Light/Dark Theme" class="apple-nav-btn tap-btn" aria-label="Toggle Theme">
+          <span id="themeToggleIcon" class="text-xs">🌙</span>
+        </button>
+
+        <!-- Goals / Settings Button -->
         <button id="openGoalsBtn" onclick="openGoalsModal()" title="Customize Goals & Targets" class="apple-nav-btn tap-btn" aria-label="Goals and Targets">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <line x1="4" y1="21" x2="4" y2="14"></line>
@@ -118,7 +137,8 @@
           </svg>
         </button>
         
-        <button id="resetWeekBtn" title="Reset Week Actuals" class="apple-nav-btn tap-btn hover:text-[#FF453A]" aria-label="Reset Week Actuals">
+        <!-- Reset Actuals Button -->
+        <button id="resetWeekBtn" title="Reset Week Actuals" class="apple-nav-btn tap-btn hover:text-red-500" aria-label="Reset Week Actuals">
           <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path>
             <path d="M3 3v5h5"></path>
@@ -130,36 +150,36 @@
     <!-- Scrollable Content (Skinnier 365px max width with generous 24px margins) -->
     <div class="flex-1 overflow-y-auto px-6 pt-2 pb-8 smooth-scroll app-blur-in w-full max-w-[365px] mx-auto" id="scrollContent">
       
-      <!-- HERO SPLIT-THE-BILL DASHBOARD (Slimmer Apple Inset Card) -->
+      <!-- HERO SPLIT-THE-BILL DASHBOARD (Source: design_template.webp card style) -->
       <section class="apple-card p-3.5 mb-3 relative overflow-hidden">
         
         <!-- Primary Stat: Current Paycheck Needed -->
         <div class="text-center mb-2.5">
-          <span class="text-[10px] font-semibold uppercase tracking-wider text-[#8E8E93] block mb-0.5">
+          <span class="text-[10px] font-semibold uppercase tracking-wider text-gray-500 dark:text-[#8E8E93] block mb-0.5">
             Current Paycheck Needed
           </span>
-          <div class="text-[28px] sm:text-[30px] font-extrabold font-mono text-white tracking-tight leading-tight" id="paycheckNeededDisplay">
+          <div class="text-[28px] sm:text-[30px] font-extrabold font-mono text-gray-900 dark:text-white tracking-tight leading-tight" id="paycheckNeededDisplay">
             $215.00
           </div>
           
           <!-- Contextual Status Capsule Badge -->
-          <div id="paycheckGoalBadge" class="inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-full bg-[#2C2C2E] border border-white/[0.08] text-[10.5px] font-mono text-[#8E8E93] transition-all">
-            <span id="paycheckGoalDisplay" class="text-[#30D158] font-bold">$53.75</span>
+          <div id="paycheckGoalBadge" class="inline-flex items-center gap-1.5 mt-1 px-2.5 py-0.5 rounded-full bg-teal-50 dark:bg-[#2C2C2E] border border-teal-200/80 dark:border-white/[0.08] text-[10.5px] font-mono text-teal-700 dark:text-[#8E8E93] transition-all">
+            <span id="paycheckGoalDisplay" class="font-bold text-teal-700 dark:text-[#30D158]">$53.75</span>
             <span id="paycheckGoalSuffix">goal</span>
           </div>
         </div>
 
-        <!-- Apple Capsule Progress Bar (Slim 6px track) -->
+        <!-- Activity / Progress Bar (Slim 6px track) -->
         <div class="mb-3">
           <div class="progress-track w-full h-1.5 rounded-full overflow-hidden relative">
             <div id="segDashBar" class="progress-fill h-full rounded-full" style="width: 0%; opacity: 0;"></div>
           </div>
         </div>
 
-        <!-- Inset DoorDash Earnings Cell (Slimmer 14px radius) -->
-        <div class="bg-[#252528] rounded-[14px] p-2.5 px-3 border border-white/[0.06] flex items-center justify-between">
+        <!-- Inset DoorDash Earnings Cell (Template appointment style) -->
+        <div class="bg-gray-50/90 dark:bg-[#252528] rounded-[14px] p-2.5 px-3 border border-gray-200/70 dark:border-white/[0.06] flex items-center justify-between">
           <div class="flex items-center gap-2">
-            <div class="w-7 h-7 rounded-full bg-[#30D158]/15 text-[#30D158] flex items-center justify-center flex-shrink-0">
+            <div class="w-7 h-7 rounded-full bg-teal-100 dark:bg-[#30D158]/15 text-teal-600 dark:text-[#30D158] flex items-center justify-center flex-shrink-0">
               <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
                 <path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1 .4-1 1v7c0 .6.4 1 1 1h1"></path>
                 <circle cx="7" cy="17" r="2"></circle>
@@ -168,15 +188,15 @@
               </svg>
             </div>
             <div>
-              <div class="text-xs font-semibold text-white leading-tight">
+              <div class="text-xs font-semibold text-gray-900 dark:text-white leading-tight">
                 DoorDash Earnings
               </div>
-              <div class="text-[10.5px] font-mono text-[#8E8E93] mt-0.5">
-                of <span id="estimatedEarningsDisplay" class="text-white font-semibold">$161.25</span> target
+              <div class="text-[10.5px] font-mono text-gray-500 dark:text-[#8E8E93] mt-0.5">
+                of <span id="estimatedEarningsDisplay" class="text-gray-900 dark:text-white font-semibold">$161.25</span> target
               </div>
             </div>
           </div>
-          <div class="text-lg font-bold font-mono text-white tracking-tight" id="actualEarningsDisplay">
+          <div class="text-lg font-bold font-mono text-gray-900 dark:text-white tracking-tight" id="actualEarningsDisplay">
             $0.00
           </div>
         </div>
@@ -188,8 +208,8 @@
         
         <!-- Section Header -->
         <div class="flex items-center justify-between mb-1.5 px-1">
-          <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93]">Daily Focus</span>
-          <span class="text-[10px] font-mono text-[#8E8E93]">Today's Shift</span>
+          <span class="text-[11px] font-semibold uppercase tracking-wider text-gray-500 dark:text-[#8E8E93]">Daily Focus</span>
+          <span class="text-[10px] font-mono text-gray-400 dark:text-[#8E8E93]">Today's Shift</span>
         </div>
 
         <!-- Today Spotlight Card (Always visible on launch) -->
@@ -200,16 +220,16 @@
         <!-- Disclosure Toggle for Full Week -->
         <div class="flex justify-center my-2.5">
           <button type="button" id="toggleOtherDaysBtn" onclick="toggleOtherDays()" class="apple-secondary-btn px-3.5 py-1.5 text-xs font-semibold flex items-center gap-1.5 shadow-sm tap-btn">
-            <span id="toggleOtherDaysIcon" class="text-xs text-[#30D158]">▾</span>
+            <span id="toggleOtherDaysIcon" class="text-xs text-teal-600 dark:text-[#30D158]">▾</span>
             <span id="toggleOtherDaysText">View Full Week (5 Other Days)</span>
           </button>
         </div>
 
-        <!-- Other Days Container (Apple Inset Grouped Table) -->
+        <!-- Other Days Container (Template Grouped Table) -->
         <div id="otherDaysContainer" class="hidden flex flex-col gap-1.5 mt-2 transition-all duration-300">
           <div class="flex items-center justify-between px-1 mb-1">
-            <span class="text-[11px] font-semibold uppercase tracking-wider text-[#8E8E93]">Other Days of the Week</span>
-            <span class="text-[11px] font-mono text-[#8E8E93]">Tap to edit</span>
+            <span class="text-[10.5px] font-semibold uppercase tracking-wider text-gray-500 dark:text-[#8E8E93]">Other Days of the Week</span>
+            <span class="text-[10px] font-mono text-gray-400 dark:text-[#8E8E93]">Tap to edit</span>
           </div>
           <div class="apple-grouped-table" id="otherDaysList">
             <!-- Rendered dynamically by app.js with apple-row-separator -->
@@ -220,47 +240,86 @@
 
     </div>
 
-    <!-- QUICK ADD EARNINGS MODAL (Apple iOS Sheet Presentation) -->
+    <!-- FLOATING BOTTOM NAVIGATION DOCK (Source: design_template.webp) -->
+    <div id="bottomFloatingDock" class="absolute left-1/2 -translate-x-1/2 z-40 w-auto max-w-[310px] pointer-events-auto">
+      <nav class="floating-dock">
+        <button type="button" onclick="scrollToTop()" class="dock-item-active px-3.5 py-1.5 text-xs flex items-center gap-1.5 tap-btn" title="Dashboard">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"></path>
+            <polyline points="9 22 9 12 15 12 15 22"></polyline>
+          </svg>
+          <span>Home</span>
+        </button>
+
+        <button type="button" onclick="toggleOtherDays()" class="dock-item-inactive px-3 py-1.5 text-xs flex items-center gap-1.5 tap-btn" title="View Full Week">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
+            <line x1="16" y1="2" x2="16" y2="6"></line>
+            <line x1="8" y1="2" x2="8" y2="6"></line>
+            <line x1="3" y1="10" x2="21" y2="10"></line>
+          </svg>
+          <span id="dockWeekText">Week</span>
+        </button>
+
+        <button type="button" onclick="openAddModalForToday()" class="dock-item-inactive px-3 py-1.5 text-xs flex items-center gap-1.5 text-teal-400 hover:text-white tap-btn" title="Quick Add">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"></circle>
+            <line x1="12" y1="8" x2="12" y2="16"></line>
+            <line x1="8" y1="12" x2="16" y2="12"></line>
+          </svg>
+          <span>+ Add</span>
+        </button>
+
+        <button type="button" onclick="openGoalsModal()" class="dock-item-inactive px-3 py-1.5 text-xs flex items-center gap-1.5 tap-btn" title="Settings & Appearance">
+          <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+      </nav>
+    </div>
+
+    <!-- QUICK ADD EARNINGS MODAL (Apple Sheet Presentation) -->
     <div id="addModal" class="absolute inset-0 z-50 hidden opacity-0 transition-opacity duration-200 flex flex-col justify-end pointer-events-none">
-      <!-- Apple Frosted Backdrop -->
-      <div class="absolute inset-0 bg-black/75 backdrop-blur-md cursor-pointer" onclick="closeAddModal()"></div>
+      <!-- Frosted Backdrop -->
+      <div class="absolute inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-md cursor-pointer" onclick="closeAddModal()"></div>
       
-      <!-- Apple Bottom Sheet (Slimmer padding) -->
+      <!-- Bottom Sheet -->
       <div class="apple-sheet relative z-10 p-4 pb-6 flex flex-col transform translate-y-full">
         <!-- Top Grabber Handle -->
         <div class="apple-sheet-grabber mb-2.5" onclick="closeAddModal()"></div>
 
         <!-- Sheet Navigation Bar -->
         <div class="flex items-center justify-between mb-3">
-          <button type="button" onclick="closeAddModal()" class="text-[#0A84FF] text-[15px] font-normal hover:opacity-80 active:opacity-60 tap-btn">
+          <button type="button" onclick="closeAddModal()" class="text-teal-600 dark:text-[#0A84FF] text-[15px] font-normal hover:opacity-80 active:opacity-60 tap-btn">
             Cancel
           </button>
-          <h3 class="font-semibold text-base text-white">Add Earnings</h3>
-          <span id="addModalDayBadge" class="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-[#30D158]/15 text-[#30D158] border border-[#30D158]/30 uppercase tracking-wider">
+          <h3 class="font-semibold text-base text-gray-900 dark:text-white">Add Earnings</h3>
+          <span id="addModalDayBadge" class="text-[10.5px] font-semibold px-2 py-0.5 rounded-full bg-teal-50 dark:bg-[#30D158]/15 text-teal-700 dark:text-[#30D158] border border-teal-200/80 dark:border-[#30D158]/30 uppercase tracking-wider">
             Today
           </span>
         </div>
 
-        <!-- Large Numeral Entry (Slimmer card) -->
-        <div class="bg-black/70 rounded-[16px] py-2.5 px-3 border border-white/[0.08] mb-2.5 text-center focus-within:border-[#30D158] focus-within:ring-1 focus-within:ring-[#30D158]/30 transition-all">
-          <span class="text-[10px] uppercase font-semibold text-[#8E8E93] block mb-0.5 tracking-wider">Amount to Add</span>
+        <!-- Large Numeral Entry (Template style) -->
+        <div class="bg-gray-50 dark:bg-black/70 rounded-[16px] py-2.5 px-3 border border-gray-200/80 dark:border-white/[0.08] mb-2.5 text-center focus-within:border-teal-500 dark:focus-within:border-[#30D158] transition-all">
+          <span class="text-[10px] uppercase font-semibold text-gray-500 dark:text-[#8E8E93] block mb-0.5 tracking-wider">Amount to Add</span>
           <div class="inline-flex items-center justify-center font-mono">
-            <span class="text-2xl font-bold text-[#30D158] mr-1 select-none">$</span>
+            <span class="text-2xl font-bold text-teal-600 dark:text-[#30D158] mr-1 select-none">$</span>
             <input 
               type="text" 
               inputmode="decimal" 
               id="addModalAmountInput" 
               placeholder="0.00" 
-              class="w-40 bg-transparent text-3xl font-bold font-mono text-white text-center focus:outline-none placeholder-[#636366] tracking-tight"
+              class="w-40 bg-transparent text-3xl font-bold font-mono text-gray-900 dark:text-white text-center focus:outline-none placeholder-gray-400 dark:placeholder-[#636366] tracking-tight"
               autocomplete="off"
             />
           </div>
-          <p class="text-[10.5px] text-[#8E8E93] font-mono mt-0.5">
-            Current Shift: <strong id="addModalCurrentAmount" class="text-white font-semibold">$0.00</strong>
+          <p class="text-[10.5px] text-gray-500 dark:text-[#8E8E93] font-mono mt-0.5">
+            Current Shift: <strong id="addModalCurrentAmount" class="text-gray-900 dark:text-white font-semibold">$0.00</strong>
           </p>
         </div>
 
-        <!-- Quick Amount Shortcut Chips (Slimmer chips) -->
+        <!-- Quick Amount Shortcut Chips -->
         <div class="flex items-center justify-center gap-1.5 mb-2.5">
           <button type="button" onclick="addQuickAmount(10)" class="apple-chip px-2.5 py-1 text-xs font-mono tap-btn">+$10</button>
           <button type="button" onclick="addQuickAmount(20)" class="apple-chip px-2.5 py-1 text-xs font-mono tap-btn">+$20</button>
@@ -269,15 +328,15 @@
         </div>
 
         <!-- Live Preview Row -->
-        <div class="bg-[#2C2C2E]/60 rounded-xl px-3 py-2 border border-white/[0.06] mb-3 flex items-center justify-between font-mono">
-          <div class="flex items-center gap-1.5 text-xs text-[#8E8E93]">
+        <div class="bg-gray-100/80 dark:bg-[#2C2C2E]/60 rounded-xl px-3 py-2 border border-gray-200/60 dark:border-white/[0.06] mb-3 flex items-center justify-between font-mono">
+          <div class="flex items-center gap-1.5 text-xs text-gray-500 dark:text-[#8E8E93]">
             <span>New Shift Total:</span>
-            <span id="addModalFormulaPreview" class="text-[#8E8E93] text-[11px] hidden font-mono"></span>
+            <span id="addModalFormulaPreview" class="text-gray-400 dark:text-[#8E8E93] text-[11px] hidden font-mono"></span>
           </div>
-          <span id="addModalNewTotalDisplay" class="text-sm font-bold text-[#30D158]">$0.00</span>
+          <span id="addModalNewTotalDisplay" class="text-sm font-bold text-teal-700 dark:text-[#30D158]">$0.00</span>
         </div>
 
-        <!-- Primary CTA Button (Slimmer 40px) -->
+        <!-- Primary CTA Button -->
         <button 
           type="button" 
           id="addModalConfirmBtn" 
@@ -293,57 +352,75 @@
       </div>
     </div>
 
-    <!-- GOALS CUSTOMIZATION MODAL (Apple iOS Sheet Presentation) -->
+    <!-- GOALS & SETTINGS MODAL (Includes Appearance Theme Toggle) -->
     <div id="goalsModal" class="absolute inset-0 z-50 hidden opacity-0 transition-opacity duration-200 flex flex-col justify-end pointer-events-none">
-      <!-- Apple Frosted Backdrop -->
-      <div class="absolute inset-0 bg-black/75 backdrop-blur-md cursor-pointer" onclick="closeGoalsModal()"></div>
+      <!-- Frosted Backdrop -->
+      <div class="absolute inset-0 bg-black/60 dark:bg-black/75 backdrop-blur-md cursor-pointer" onclick="closeGoalsModal()"></div>
       
-      <!-- Apple Bottom Sheet (Slimmer padding) -->
+      <!-- Bottom Sheet -->
       <div class="apple-sheet relative z-10 p-4 pb-6 overflow-y-auto no-scrollbar flex flex-col transform translate-y-full">
         <!-- Top Grabber Handle -->
         <div class="apple-sheet-grabber mb-2.5" onclick="closeGoalsModal()"></div>
 
         <!-- Sheet Navigation Bar -->
         <div class="flex items-center justify-between mb-3">
-          <button type="button" onclick="closeGoalsModal()" class="text-[#0A84FF] text-[15px] font-normal hover:opacity-80 active:opacity-60 tap-btn">
+          <button type="button" onclick="closeGoalsModal()" class="text-teal-600 dark:text-[#0A84FF] text-[15px] font-normal hover:opacity-80 active:opacity-60 tap-btn">
             Cancel
           </button>
-          <h3 class="font-semibold text-base text-white">Goals & Targets</h3>
-          <button type="button" onclick="closeGoalsModal()" class="text-[#30D158] text-[15px] font-semibold hover:opacity-80 active:opacity-60 tap-btn">
+          <h3 class="font-semibold text-base text-gray-900 dark:text-white">Settings & Goals</h3>
+          <button type="button" onclick="closeGoalsModal()" class="text-teal-700 dark:text-[#30D158] text-[15px] font-semibold hover:opacity-80 active:opacity-60 tap-btn">
             Done
           </button>
         </div>
 
-        <!-- Total Bill Target Card (Slimmer) -->
-        <div class="bg-[#2C2C2E]/60 rounded-xl p-2.5 border border-white/[0.08] mb-2 flex items-center justify-between font-mono">
+        <!-- APPEARANCE / THEME SELECTOR (Light by Default, Dark option) -->
+        <div class="bg-gray-50 dark:bg-[#2C2C2E]/60 rounded-xl p-2.5 border border-gray-200/80 dark:border-white/[0.08] mb-2.5 flex items-center justify-between">
           <div>
-            <span class="text-[9.5px] uppercase font-semibold text-[#8E8E93] block mb-0.5">Total Bill Target</span>
-            <span class="text-[10.5px] text-[#8E8E93]">Weekly school / tuition bill</span>
+            <span class="text-[9.5px] uppercase font-semibold text-gray-500 dark:text-[#8E8E93] block mb-0.5">Appearance</span>
+            <span class="text-[11px] text-gray-800 dark:text-gray-200 font-medium">Select app theme</span>
           </div>
-          <div class="flex items-center bg-[#1C1C1E] rounded-lg px-2 py-1 border border-white/[0.1] focus-within:border-[#30D158]">
-            <span class="text-xs font-bold text-[#30D158] mr-1">$</span>
+          <div class="flex items-center bg-gray-200/80 dark:bg-[#1C1C1E] p-0.5 rounded-lg border border-gray-300/60 dark:border-white/[0.08]">
+            <button type="button" id="themeLightBtn" onclick="setTheme('light')" class="px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition-all tap-btn">
+              <span>☀️</span>
+              <span>Light</span>
+            </button>
+            <button type="button" id="themeDarkBtn" onclick="setTheme('dark')" class="px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition-all tap-btn">
+              <span>🌙</span>
+              <span>Dark</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Total Bill Target Card (Slimmer) -->
+        <div class="bg-gray-50 dark:bg-[#2C2C2E]/60 rounded-xl p-2.5 border border-gray-200/80 dark:border-white/[0.08] mb-2 flex items-center justify-between font-mono">
+          <div>
+            <span class="text-[9.5px] uppercase font-semibold text-gray-500 dark:text-[#8E8E93] block mb-0.5">Total Bill Target</span>
+            <span class="text-[10.5px] text-gray-500 dark:text-[#8E8E93]">Weekly school / tuition bill</span>
+          </div>
+          <div class="flex items-center bg-white dark:bg-[#1C1C1E] rounded-lg px-2 py-1 border border-gray-200 dark:border-white/[0.1] focus-within:border-teal-500 dark:focus-within:border-[#30D158]">
+            <span class="text-xs font-bold text-teal-600 dark:text-[#30D158] mr-1">$</span>
             <input 
               type="text" 
               inputmode="decimal" 
               id="goalsModalTotalBillInput" 
               value="215.00"
               placeholder="215.00" 
-              class="smart-goal-input w-16 bg-transparent text-right font-mono text-xs font-bold text-white focus:outline-none placeholder-[#636366]" 
+              class="smart-goal-input w-16 bg-transparent text-right font-mono text-xs font-bold text-gray-900 dark:text-white focus:outline-none placeholder-gray-400 dark:placeholder-[#636366]" 
               title="Tap to edit total bill"
             />
           </div>
         </div>
 
         <!-- Quick Split Evenly Action Banner (Slimmer) -->
-        <div class="bg-[#2C2C2E]/60 rounded-xl p-2.5 border border-white/[0.08] mb-2.5 flex items-center justify-between">
+        <div class="bg-gray-50 dark:bg-[#2C2C2E]/60 rounded-xl p-2.5 border border-gray-200/80 dark:border-white/[0.08] mb-2.5 flex items-center justify-between">
           <div>
-            <span class="text-[9.5px] uppercase font-semibold text-[#8E8E93] block">Weekly Planned Total</span>
-            <div class="text-base font-bold font-mono text-[#30D158]" id="goalsModalTotal">
+            <span class="text-[9.5px] uppercase font-semibold text-gray-500 dark:text-[#8E8E93] block">Weekly Planned Total</span>
+            <div class="text-base font-bold font-mono text-teal-700 dark:text-[#30D158]" id="goalsModalTotal">
               $161.25
             </div>
           </div>
-          <button type="button" class="apple-secondary-btn px-2.5 py-1 text-xs font-semibold flex items-center gap-1 text-[#30D158] border-[#30D158]/30 tap-btn" onclick="splitGoalsEvenlyModal()">
-            <svg class="w-3 h-3 text-[#30D158]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <button type="button" class="apple-secondary-btn px-2.5 py-1 text-xs font-semibold flex items-center gap-1 text-teal-700 dark:text-[#30D158] border-teal-500/30 tap-btn" onclick="splitGoalsEvenlyModal()">
+            <svg class="w-3 h-3 text-teal-600 dark:text-[#30D158]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
               <line x1="12" y1="5" x2="12" y2="19"></line>
               <line x1="5" y1="12" x2="19" y2="12"></line>
             </svg>
@@ -351,7 +428,7 @@
           </button>
         </div>
 
-        <!-- 6 Day Goal Input Rows (Apple Inset Grouped Table) -->
+        <!-- 6 Day Goal Input Rows (Template Grouped Table) -->
         <div class="apple-grouped-table mb-2.5" id="goalsModalList">
           <!-- Populated dynamically: Monday through Saturday with apple-row-separator -->
         </div>
@@ -359,13 +436,13 @@
         <!-- Data Backup & Restore Row -->
         <div class="flex items-center justify-between gap-2 mb-3 pt-0.5">
           <button type="button" onclick="exportBackupData()" class="apple-secondary-btn flex-1 py-1.5 px-2.5 text-xs font-medium flex items-center justify-center gap-1.5 tap-btn">
-            <svg class="w-3.5 h-3.5 text-[#8E8E93]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-3.5 h-3.5 text-gray-500 dark:text-[#8E8E93]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M7 10l5 5 5-5M12 15V3"></path>
             </svg>
             <span>Backup</span>
           </button>
           <button type="button" onclick="importBackupData()" class="apple-secondary-btn flex-1 py-1.5 px-2.5 text-xs font-medium flex items-center justify-center gap-1.5 tap-btn">
-            <svg class="w-3.5 h-3.5 text-[#8E8E93]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <svg class="w-3.5 h-3.5 text-gray-500 dark:text-[#8E8E93]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4M17 8l-5-5-5 5M12 3v12"></path>
             </svg>
             <span>Restore</span>
@@ -380,9 +457,9 @@
       </div>
     </div>
 
-    <!-- Apple Dynamic Island Capsule Notification (HUD) -->
+    <!-- Dynamic Island Capsule Notification (HUD) -->
     <div id="toast" class="absolute left-1/2 -translate-x-1/2 z-50 transform -translate-y-16 opacity-0 pointer-events-none rounded-full px-4 py-2 flex items-center gap-2 shadow-2xl">
-      <svg class="w-4 h-4 text-[#30D158] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+      <svg class="w-4 h-4 text-teal-400 dark:text-[#30D158] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
         <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
         <polyline points="22 4 12 14.01 9 11.01"></polyline>
       </svg>
@@ -390,10 +467,10 @@
     </div>
 
     <!-- iPhone 15 Home Indicator Bar (Desktop Mockup Only) -->
-    <div id="homeIndicatorMockup" class="hidden sm:block absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-white/30 rounded-full pointer-events-none z-40"></div>
+    <div id="homeIndicatorMockup" class="hidden sm:block absolute bottom-2 left-1/2 -translate-x-1/2 w-32 h-1 bg-black/25 dark:bg-white/30 rounded-full pointer-events-none z-40"></div>
 
   </main>
 
-  <script src="app.js?v=14"></script>
+  <script src="app.js?v=15"></script>
 </body>
 </html>
