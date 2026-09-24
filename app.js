@@ -109,23 +109,19 @@ function getTimeGreeting() {
 
 function updateNavHeaderForTab(tabIndex) {
   const headerTitle = document.getElementById('headerTitle');
-  const headerIcon = document.getElementById('headerIcon');
   const headerDateText = document.getElementById('headerDateText');
 
   if (tabIndex === 1) { // Home
     if (headerTitle) headerTitle.textContent = getTimeGreeting();
-    if (headerIcon) headerIcon.textContent = '📍';
     if (headerDateText) {
       const now = new Date();
       headerDateText.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
     }
   } else if (tabIndex === 0) { // Goals
     if (headerTitle) headerTitle.textContent = 'Goals & Targets';
-    if (headerIcon) headerIcon.textContent = '🎯';
     if (headerDateText) headerDateText.textContent = 'WEEKLY PLAN';
   } else if (tabIndex === 2) { // Settings
     if (headerTitle) headerTitle.textContent = 'Settings';
-    if (headerIcon) headerIcon.textContent = '⚙️';
     if (headerDateText) headerDateText.textContent = 'PREFERENCES';
   }
 }
@@ -167,6 +163,8 @@ function initSwipeGestures() {
   }
 
   function handleStart(e) {
+    if (isDragging) return;
+
     // If modal is active, do not allow page swiping
     const addModal = document.getElementById('addModal');
     if (addModal && !addModal.classList.contains('hidden')) return;
@@ -198,6 +196,7 @@ function initSwipeGestures() {
     isDragging = true;
     isHorizontalDrag = false;
     isVerticalDrag = false;
+    document.body.classList.add('is-swiping');
   }
 
   function handleMove(e) {
@@ -322,6 +321,7 @@ function initSwipeGestures() {
       }, 100);
     }
 
+    document.body.classList.remove('is-swiping');
     isHorizontalDrag = false;
     isVerticalDrag = false;
     currentDeltaX = 0;
@@ -330,6 +330,7 @@ function initSwipeGestures() {
   function handleCancel() {
     if (!isDragging) return;
     isDragging = false;
+    document.body.classList.remove('is-swiping');
     isHorizontalDrag = false;
     isVerticalDrag = false;
     currentDeltaX = 0;
@@ -355,10 +356,40 @@ function initSwipeGestures() {
   });
 
   // Attach mouse events on desktop for dragging
+  const deviceFrame = document.getElementById('deviceFrame');
   viewport.addEventListener('mousedown', handleStart);
   if (navHeader) navHeader.addEventListener('mousedown', handleStart);
+  if (deviceFrame) deviceFrame.addEventListener('mousedown', handleStart);
+
+  // Allow continuous swiping on PC anywhere within desktop simulator reach
+  window.addEventListener('mousedown', (e) => {
+    const addModal = document.getElementById('addModal');
+    if (addModal && !addModal.classList.contains('hidden')) return;
+
+    if (deviceFrame) {
+      const rect = deviceFrame.getBoundingClientRect();
+      const marginX = 140; // Allow starting swipe where previous drag finished
+      if (
+        e.clientX >= rect.left - marginX &&
+        e.clientX <= rect.right + marginX &&
+        e.clientY >= rect.top &&
+        e.clientY <= rect.bottom
+      ) {
+        handleStart(e);
+      }
+    }
+  });
+
   window.addEventListener('mousemove', handleMove);
   window.addEventListener('mouseup', handleEnd);
+  window.addEventListener('mouseleave', handleCancel);
+
+  // Prevent browser HTML5 drag-and-drop from interfering with continuous swiping
+  window.addEventListener('dragstart', (e) => {
+    if (e.target.closest('#deviceFrame, #pagesViewport, body')) {
+      e.preventDefault();
+    }
+  });
 }
 
 // -------------------------------------------------------------
@@ -1529,28 +1560,28 @@ document.addEventListener('DOMContentLoaded', () => {
     let wheelDeltaXAccumulator = 0;
     let wheelLock = false;
 
-    deviceFrame.addEventListener('wheel', (e) => {
+    window.addEventListener('wheel', (e) => {
       // If modal is active, allow modal to handle scrolling
       const addModal = document.getElementById('addModal');
       if (addModal && !addModal.classList.contains('hidden')) return;
 
-      // Handle Mac trackpad two-finger horizontal swipe between tabs (strictly 1 tab at a time)
-      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 12) {
+      // Handle Mac/PC trackpad two-finger horizontal swipe between tabs (strictly 1 tab at a time)
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 10) {
         clearTimeout(wheelSwipeTimer);
         wheelSwipeTimer = setTimeout(() => {
           wheelDeltaXAccumulator = 0;
           wheelLock = false;
-        }, 320);
+        }, 160);
 
         if (wheelLock || isTabTransitioning) return;
 
         wheelDeltaXAccumulator += e.deltaX;
 
-        if (wheelDeltaXAccumulator > 45 && currentTab < 2) {
+        if (wheelDeltaXAccumulator > 35 && currentTab < 2) {
           wheelLock = true;
           wheelDeltaXAccumulator = 0;
           switchTab(currentTab + 1);
-        } else if (wheelDeltaXAccumulator < -45 && currentTab > 0) {
+        } else if (wheelDeltaXAccumulator < -35 && currentTab > 0) {
           wheelLock = true;
           wheelDeltaXAccumulator = 0;
           switchTab(currentTab - 1);
@@ -1566,6 +1597,14 @@ document.addEventListener('DOMContentLoaded', () => {
       ][currentTab];
       if (activeContainer) {
         activeContainer.scrollTop += e.deltaY;
+      }
+    }, { passive: true });
+
+    // Instantly unlock wheel swipe whenever cursor moves so there is zero delay between gestures
+    window.addEventListener('mousemove', () => {
+      if (wheelLock && !isTabTransitioning) {
+        wheelLock = false;
+        wheelDeltaXAccumulator = 0;
       }
     }, { passive: true });
   }

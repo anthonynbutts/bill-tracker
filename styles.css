@@ -305,6 +305,14 @@ input, textarea {
   position: relative;
   touch-action: pan-y pinch-zoom;
   overscroll-behavior-x: none;
+  cursor: grab;
+}
+
+body.is-swiping,
+body.is-swiping * {
+  cursor: grabbing !important;
+  user-select: none !important;
+  -webkit-user-select: none !important;
 }
 
 #pagesTrack {
