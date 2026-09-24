@@ -281,6 +281,7 @@ input, textarea {
   overflow: hidden;
   position: relative;
   touch-action: pan-y pinch-zoom;
+  overscroll-behavior-x: none;
 }
 
 #pagesTrack {
@@ -289,6 +290,9 @@ input, textarea {
   width: 300%;
   transition: transform 0.34s cubic-bezier(0.32, 0.72, 0, 1);
   will-change: transform;
+  touch-action: pan-y pinch-zoom;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .page-scroll-container {
@@ -297,13 +301,8 @@ input, textarea {
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
-}
-
-/* Smooth Touch Scrolling */
-.page-scroll-container {
-  overflow-y: auto !important;
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+  overscroll-behavior-x: none;
+  touch-action: pan-y pinch-zoom;
 }
 
 /* Base Floating Elements Positioning */

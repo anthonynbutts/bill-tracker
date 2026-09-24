@@ -32,11 +32,14 @@ function triggerHaptic() {
 let currentTab = 1; // 0: Goals, 1: Home, 2: Settings
 
 window.switchTab = function(tabIndex) {
-  triggerHaptic();
+  if (tabIndex !== currentTab) {
+    triggerHaptic();
+  }
   currentTab = Math.max(0, Math.min(2, tabIndex));
 
   const track = document.getElementById('pagesTrack');
   if (track) {
+    track.style.transition = 'transform 0.34s cubic-bezier(0.32, 0.72, 0, 1)';
     track.style.transform = `translateX(-${currentTab * (100 / 3)}%)`;
   }
 
@@ -88,54 +91,180 @@ function updateNavHeaderForTab(tabIndex) {
   }
 }
 
-// iOS Horizontal Touch Swipe Support between Tabs
-let touchStartX = 0;
-let touchStartY = 0;
-let touchDeltaX = 0;
-let isSwiping = false;
-
+// iOS Horizontal Touch Swipe Support between Tabs (Goals, Home, Settings)
 function initSwipeGestures() {
   const viewport = document.getElementById('pagesViewport');
-  if (!viewport) return;
+  const navHeader = document.getElementById('navHeader');
+  const track = document.getElementById('pagesTrack');
+  if (!viewport || !track) return;
 
-  viewport.addEventListener('touchstart', (e) => {
-    if (e.target.closest('input, textarea, button, select, .apple-chip')) return;
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-    touchDeltaX = 0;
-    isSwiping = false;
-  }, { passive: true });
+  let startX = 0;
+  let startY = 0;
+  let startTime = 0;
+  let currentDeltaX = 0;
+  let isDragging = false;
+  let isHorizontalDrag = false;
+  let isVerticalDrag = false;
+  let lastTouchTime = 0;
+  let suppressClick = false;
 
-  viewport.addEventListener('touchmove', (e) => {
-    if (!touchStartX) return;
-    const currentX = e.touches[0].clientX;
-    const currentY = e.touches[0].clientY;
-    const diffX = currentX - touchStartX;
-    const diffY = currentY - touchStartY;
+  // Window-level capture listener to block click event after swipe drag
+  window.addEventListener('click', (e) => {
+    if (suppressClick) {
+      e.preventDefault();
+      e.stopPropagation();
+      suppressClick = false;
+    }
+  }, true);
 
-    if (!isSwiping && Math.abs(diffX) > 14 && Math.abs(diffX) > Math.abs(diffY)) {
-      isSwiping = true;
+  function getClientCoords(e) {
+    if (e.touches && e.touches.length > 0) {
+      return { x: e.touches[0].clientX, y: e.touches[0].clientY };
+    }
+    if (e.changedTouches && e.changedTouches.length > 0) {
+      return { x: e.changedTouches[0].clientX, y: e.changedTouches[0].clientY };
+    }
+    return { x: e.clientX, y: e.clientY };
+  }
+
+  function handleStart(e) {
+    // If modal is active, do not allow page swiping
+    const addModal = document.getElementById('addModal');
+    if (addModal && !addModal.classList.contains('hidden')) return;
+
+    // Do not intercept interactive form elements or horizontally scrolling sub-rows or dock
+    if (e.target.closest('input, textarea, select, .overflow-x-auto, #bottomNavWrapper, #addModal')) {
+      return;
     }
 
-    if (isSwiping) {
-      touchDeltaX = diffX;
+    if (e.type.startsWith('touch')) {
+      lastTouchTime = Date.now();
+    } else if (e.type.startsWith('mouse')) {
+      // Ignore simulated mouse events from touch
+      if (Date.now() - lastTouchTime < 600) return;
+      if (e.button !== 0) return; // Only left click
     }
-  }, { passive: true });
 
-  viewport.addEventListener('touchend', () => {
-    if (isSwiping) {
-      const threshold = 45;
-      if (touchDeltaX < -threshold && currentTab < 2) {
-        switchTab(currentTab + 1);
-      } else if (touchDeltaX > threshold && currentTab > 0) {
-        switchTab(currentTab - 1);
+    const coords = getClientCoords(e);
+    startX = coords.x;
+    startY = coords.y;
+    startTime = Date.now();
+    currentDeltaX = 0;
+    isDragging = true;
+    isHorizontalDrag = false;
+    isVerticalDrag = false;
+  }
+
+  function handleMove(e) {
+    if (!isDragging) return;
+    if (isVerticalDrag) return; // Locked to vertical scrolling; ignore
+
+    const coords = getClientCoords(e);
+    const deltaX = coords.x - startX;
+    const deltaY = coords.y - startY;
+
+    // Detect direction if not locked yet
+    if (!isHorizontalDrag) {
+      const absX = Math.abs(deltaX);
+      const absY = Math.abs(deltaY);
+
+      if (absX < 8 && absY < 8) {
+        return; // Movement below detection threshold
+      }
+
+      if (absX > absY) {
+        // Horizontal gesture locked!
+        isHorizontalDrag = true;
+        suppressClick = true;
+      } else {
+        // Vertical gesture locked! Let native vertical scrolling take over
+        isVerticalDrag = true;
+        return;
       }
     }
-    touchStartX = 0;
-    touchStartY = 0;
-    touchDeltaX = 0;
-    isSwiping = false;
-  }, { passive: true });
+
+    // Now actively horizontally dragging
+    if (isHorizontalDrag) {
+      if (e.cancelable) {
+        e.preventDefault(); // Stop any browser scroll / gesture cancellation
+      }
+
+      currentDeltaX = deltaX;
+      const viewportWidth = viewport.clientWidth || window.innerWidth;
+
+      // Apply Apple rubber-band resistance when dragging beyond edge tabs
+      let effectiveDelta = deltaX;
+      if ((currentTab === 0 && deltaX > 0) || (currentTab === 2 && deltaX < 0)) {
+        effectiveDelta = deltaX * 0.32;
+      }
+
+      const currentPx = (-currentTab * viewportWidth) + effectiveDelta;
+      track.style.transition = 'none';
+      track.style.transform = `translateX(${currentPx}px)`;
+    }
+  }
+
+  function handleEnd(e) {
+    if (!isDragging) return;
+    isDragging = false;
+
+    if (isHorizontalDrag) {
+      const viewportWidth = viewport.clientWidth || window.innerWidth;
+      const deltaTime = Math.max(1, Date.now() - startTime);
+      const velocity = Math.abs(currentDeltaX) / deltaTime; // px / ms
+
+      let targetTab = currentTab;
+      const distanceThreshold = Math.min(120, viewportWidth * 0.22);
+      const velocityThreshold = 0.28;
+
+      if (currentDeltaX < -35 && (velocity > velocityThreshold || currentDeltaX < -distanceThreshold)) {
+        // Swipe Left -> Next Tab (right)
+        targetTab = Math.min(2, currentTab + 1);
+      } else if (currentDeltaX > 35 && (velocity > velocityThreshold || currentDeltaX > distanceThreshold)) {
+        // Swipe Right -> Prev Tab (left)
+        targetTab = Math.max(0, currentTab - 1);
+      }
+
+      // Smoothly animate to target tab
+      track.style.transition = 'transform 0.34s cubic-bezier(0.32, 0.72, 0, 1)';
+      switchTab(targetTab);
+
+      // Keep suppressClick active momentarily to prevent ghost click on underlying card/button
+      setTimeout(() => {
+        suppressClick = false;
+      }, 250);
+    }
+
+    isHorizontalDrag = false;
+    isVerticalDrag = false;
+    currentDeltaX = 0;
+  }
+
+  function handleCancel() {
+    if (!isDragging) return;
+    isDragging = false;
+    isHorizontalDrag = false;
+    isVerticalDrag = false;
+    currentDeltaX = 0;
+
+    track.style.transition = 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)';
+    track.style.transform = `translateX(-${currentTab * (100 / 3)}%)`;
+  }
+
+  // Attach touch events to viewport and header
+  [viewport, navHeader].forEach((el) => {
+    if (!el) return;
+    el.addEventListener('touchstart', handleStart, { passive: true });
+    el.addEventListener('touchmove', handleMove, { passive: false });
+    el.addEventListener('touchend', handleEnd, { passive: true });
+    el.addEventListener('touchcancel', handleCancel, { passive: true });
+  });
+
+  // Attach mouse events on desktop for dragging
+  viewport.addEventListener('mousedown', handleStart);
+  if (navHeader) navHeader.addEventListener('mousedown', handleStart);
+  window.addEventListener('mousemove', handleMove);
+  window.addEventListener('mouseup', handleEnd);
 }
 
 // -------------------------------------------------------------
@@ -1191,10 +1320,36 @@ document.addEventListener('DOMContentLoaded', () => {
   switchTab(1);
   initLaunchTransition();
 
-  // Desktop mousewheel forward to active tab container
+  // Desktop / Mac trackpad swipe & mousewheel forwarding
   const deviceFrame = document.getElementById('deviceFrame');
   if (deviceFrame) {
+    let wheelSwipeTimer = null;
+    let wheelDeltaXAccumulator = 0;
+
     deviceFrame.addEventListener('wheel', (e) => {
+      // If modal is active, allow modal to handle scrolling
+      const addModal = document.getElementById('addModal');
+      if (addModal && !addModal.classList.contains('hidden')) return;
+
+      // Handle Mac trackpad two-finger horizontal swipe between tabs
+      if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 12) {
+        wheelDeltaXAccumulator += e.deltaX;
+        clearTimeout(wheelSwipeTimer);
+        wheelSwipeTimer = setTimeout(() => {
+          wheelDeltaXAccumulator = 0;
+        }, 180);
+
+        if (wheelDeltaXAccumulator > 50 && currentTab < 2) {
+          wheelDeltaXAccumulator = 0;
+          switchTab(currentTab + 1);
+        } else if (wheelDeltaXAccumulator < -50 && currentTab > 0) {
+          wheelDeltaXAccumulator = 0;
+          switchTab(currentTab - 1);
+        }
+        return;
+      }
+
+      // Vertical mousewheel forward to active tab container
       const activeContainer = [
         document.getElementById('pageGoals'),
         document.getElementById('pageHome'),
