@@ -172,39 +172,37 @@ input, textarea {
   }
 
   /* TOP SAFE ZONE:
-   * Dynamic Island and OS-level status bar blur on iPhone 15 extends down to ~72px.
-   * padding-top: max(calc(env(safe-area-inset-top, 0px) + 26px), 86px) ensures that all
-   * header text, greeting, and buttons sit completely below the OS-level blur.
-   */
-  /* TOP SAFE ZONE:
-   * Dynamic Island and OS-level status bar blur on iPhone 15 extends down to ~72px.
-   * padding-top: max(calc(env(safe-area-inset-top, 0px) + 26px), 86px) ensures that all
-   * header text, greeting, and buttons sit completely below the OS-level blur.
+   * Dynamic Island safe area is 59px.
+   * padding-top: max(calc(env(safe-area-inset-top, 0px) + 8px), 54px) positions the header
+   * cleanly below the island with a balanced 8px margin, matching design_template.webp.
    */
   #navHeader {
-    padding-top: max(calc(env(safe-area-inset-top, 0px) + 26px), 86px) !important;
-    padding-left: max(env(safe-area-inset-left, 0px), 24px) !important;
-    padding-right: max(env(safe-area-inset-right, 0px), 24px) !important;
-    padding-bottom: 10px !important;
+    padding-top: max(calc(env(safe-area-inset-top, 0px) + 8px), 54px) !important;
+    padding-left: max(env(safe-area-inset-left, 0px), 16px) !important;
+    padding-right: max(env(safe-area-inset-right, 0px), 16px) !important;
+    padding-bottom: 8px !important;
   }
 
-  /* SIDES & BOTTOM SAFE ZONE FOR SWIPEABLE PAGES */
+  /* SIDES & BOTTOM SAFE ZONE FOR SWIPEABLE PAGES:
+   * 16px side padding gives cards the native Apple 16px margin (361px wide on 393px iPhone 15).
+   * Bottom clearance ensures the content can scroll cleanly above the floating dock.
+   */
   .page-content {
-    padding-left: max(env(safe-area-inset-left, 0px), 24px) !important;
-    padding-right: max(env(safe-area-inset-right, 0px), 24px) !important;
+    padding-left: max(env(safe-area-inset-left, 0px), 16px) !important;
+    padding-right: max(env(safe-area-inset-right, 0px), 16px) !important;
     padding-top: 6px !important;
-    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 84px), 104px) !important;
+    padding-bottom: max(calc(env(safe-area-inset-bottom, 0px) + 86px), 106px) !important;
   }
 
   /* Floating Dock clearance above Home Indicator */
   #bottomFloatingDock {
-    bottom: max(calc(env(safe-area-inset-bottom, 0px) + 12px), 22px) !important;
+    bottom: max(calc(env(safe-area-inset-bottom, 0px) + 8px), 18px) !important;
   }
 
   /* Floating Add Button right above navbar */
   #floatingAddContainer {
-    right: max(calc(env(safe-area-inset-right, 0px) + 20px), 20px) !important;
-    bottom: max(calc(env(safe-area-inset-bottom, 0px) + 76px), 86px) !important;
+    right: max(calc(env(safe-area-inset-right, 0px) + 16px), 16px) !important;
+    bottom: max(calc(env(safe-area-inset-bottom, 0px) + 68px), 78px) !important;
   }
 
   /* MODAL SHEETS SAFE ZONE */
@@ -249,25 +247,25 @@ input, textarea {
 
   #navHeader {
     padding-top: 14px !important;
-    padding-left: 24px !important;
-    padding-right: 24px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
     padding-bottom: 8px !important;
   }
 
   .page-content {
-    padding-left: 24px !important;
-    padding-right: 24px !important;
+    padding-left: 16px !important;
+    padding-right: 16px !important;
     padding-top: 6px !important;
     padding-bottom: 96px !important;
   }
 
   #bottomFloatingDock {
-    bottom: 22px !important;
+    bottom: 18px !important;
   }
 
   #floatingAddContainer {
-    right: 20px !important;
-    bottom: 84px !important;
+    right: 16px !important;
+    bottom: 78px !important;
   }
 
   .apple-sheet {
@@ -313,6 +311,22 @@ input, textarea {
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
+}
+
+/* Base Floating Elements Positioning */
+#bottomFloatingDock {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  bottom: 18px;
+  z-index: 40;
+}
+
+#floatingAddContainer {
+  position: absolute;
+  right: 16px;
+  bottom: 78px;
+  z-index: 40;
 }
 
 /* -------------------------------------------------------------
