@@ -603,6 +603,37 @@ function getTodayId() {
 }
 
 /**
+ * Returns the calendar date of the month (e.g. 20, 24) for any day of the active week.
+ * Matches up Mon-Sat to the current active calendar week (or upcoming week if Sunday).
+ */
+function getCalendarDateForDay(targetDayIndex, refDate = new Date()) {
+  const todayIndex = refDate.getDay();
+  const d = new Date(refDate);
+  if (todayIndex === 0) {
+    // Sunday (rest day): active schedule corresponds to upcoming week starting tomorrow
+    const diff = (targetDayIndex - 1) + 1;
+    d.setDate(d.getDate() + diff);
+  } else {
+    const diff = targetDayIndex - todayIndex;
+    d.setDate(d.getDate() + diff);
+  }
+  return d.getDate();
+}
+
+function getCalendarFullDateString(targetDayIndex, refDate = new Date()) {
+  const todayIndex = refDate.getDay();
+  const d = new Date(refDate);
+  if (todayIndex === 0) {
+    const diff = (targetDayIndex - 1) + 1;
+    d.setDate(d.getDate() + diff);
+  } else {
+    const diff = targetDayIndex - todayIndex;
+    d.setDate(d.getDate() + diff);
+  }
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+}
+
+/**
  * Dynamic Progress Bar Gradient:
  * In Light Mode (Template Style): Red/Rose (#F43F5E) -> Amber (#F59E0B) -> Teal/Emerald (#0D9488)
  * In Dark Mode (Apple OLED Style): Apple Red (#FF453A) -> Apple Amber (#FF9F0A) -> Apple Green (#30D158)
@@ -728,6 +759,9 @@ function renderDays() {
         : 'text-teal-700 dark:text-[#30D158] bg-teal-50 dark:bg-[#30D158]/15 border border-teal-200 dark:border-[#30D158]/30';
       const actionLabel = isSunday ? "Monday's Target Goal" : "Today's Shift Earnings";
 
+      const calDate = getCalendarDateForDay(day.dayIndex);
+      const calFullStr = getCalendarFullDateString(day.dayIndex);
+
       const card = document.createElement('div');
       card.id = `card-${day.id}`;
       card.className = 'apple-today-card p-3.5 mb-2.5 transition-all select-none';
@@ -735,8 +769,8 @@ function renderDays() {
         <!-- Top: Day Name + Today Capsule Badge -->
         <div class="flex items-center justify-between mb-2">
           <div class="flex items-center gap-2">
-            <div class="apple-cal-tile w-6 h-6 rounded-lg bg-teal-50 dark:bg-[#30D158]/15 border border-teal-500/40 dark:border-[#30D158]/40 text-teal-700 dark:text-[#30D158] font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm" title="${day.name} (Day ${day.dayIndex})">
-              ${day.dayIndex}
+            <div class="apple-cal-tile w-6 h-6 rounded-lg bg-teal-50 dark:bg-[#30D158]/15 border border-teal-500/40 dark:border-[#30D158]/40 text-teal-700 dark:text-[#30D158] font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm" title="${day.name}, ${calFullStr}">
+              ${calDate}
             </div>
             <span class="font-bold text-gray-900 dark:text-white text-[15px]">${day.name}</span>
             <span class="text-[9.5px] font-bold ${badgeClass} px-2 py-0.5 rounded-full uppercase tracking-wider">${badgeText}</span>
@@ -789,6 +823,8 @@ function renderDays() {
       row.id = `card-${day.id}`;
       row.className = 'apple-row-separator px-3 py-2 flex items-center justify-between select-none hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors';
 
+      const calDate = getCalendarDateForDay(day.dayIndex);
+      const calFullStr = getCalendarFullDateString(day.dayIndex);
       const isCompleted = day.actual >= day.planned && day.planned > 0;
       const isPartial = day.actual > 0;
       const tileBg = isCompleted
@@ -796,12 +832,12 @@ function renderDays() {
         : (isPartial
             ? 'bg-amber-50 dark:bg-[#FF9F0A]/15 border-amber-500/30 dark:border-[#FF9F0A]/30 text-amber-700 dark:text-[#FF9F0A]'
             : 'bg-gray-100 dark:bg-[#2C2C2E] border-gray-200/80 dark:border-white/[0.08] text-gray-600 dark:text-[#8E8E93]');
-      const tileDisplay = isCompleted ? '✓' : `${day.dayIndex}`;
+      const tileDisplay = isCompleted ? '✓' : `${calDate}`;
 
       row.innerHTML = `
         <!-- Left: Day badge, title, and goal -->
         <div class="flex items-center gap-2.5 min-w-0">
-          <div class="apple-cal-tile w-6 h-6 rounded-lg ${tileBg} border flex items-center justify-center font-mono font-bold text-[11px] flex-shrink-0 shadow-sm" title="${day.name} (Day ${day.dayIndex})">
+          <div class="apple-cal-tile w-6 h-6 rounded-lg ${tileBg} border flex items-center justify-center font-mono font-bold text-[11px] flex-shrink-0 shadow-sm" title="${day.name}, ${calFullStr}">
             ${tileDisplay}
           </div>
 
@@ -1053,6 +1089,9 @@ function renderGoalsPage() {
       const barPct = Math.min(100, Math.max(0, (day.planned / (dashTarget / 3 || 1)) * 100));
       const isOff = day.planned === 0;
 
+      const calDate = getCalendarDateForDay(day.dayIndex);
+      const calFullStr = getCalendarFullDateString(day.dayIndex);
+
       row.innerHTML = `
         <div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
           <!-- Apple Calendar Day Badge -->
@@ -1062,8 +1101,8 @@ function renderGoalsPage() {
               : isWeekend
                 ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-700/30 text-amber-700 dark:text-amber-400 font-semibold'
                 : 'bg-gray-100 dark:bg-[#2C2C2E] border border-gray-200/70 dark:border-white/[0.07] text-gray-700 dark:text-gray-300 font-semibold'
-          }" title="${day.name} (Day ${day.dayIndex})">
-            <span class="text-xs font-bold font-mono tracking-tight leading-none">${day.dayIndex}</span>
+          }" title="${day.name}, ${calFullStr}">
+            <span class="text-xs font-bold font-mono tracking-tight leading-none">${calDate}</span>
             ${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-teal-500 dark:bg-[#30D158] mt-0.5"></span>' : ''}
           </div>
 
@@ -1256,7 +1295,7 @@ function renderSettingsPage() {
     if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.version && APP_CONFIG.buildId) {
       versionDisplay.textContent = `${APP_CONFIG.version} (${APP_CONFIG.buildId})`;
     } else {
-      versionDisplay.textContent = '0.1.0';
+      versionDisplay.textContent = '0.2.0';
     }
   }
 }
@@ -1473,7 +1512,7 @@ window.openAddModal = function(dayId) {
   const newTotalDisplay = document.getElementById('addModalNewTotalDisplay');
   const confirmBtnText = document.getElementById('addModalConfirmBtnText');
 
-  if (dayBadge) dayBadge.textContent = day.name;
+  if (dayBadge) dayBadge.textContent = `${day.name} • ${getCalendarDateForDay(day.dayIndex)}`;
   if (currentDisplay) currentDisplay.textContent = formatCurrency(day.actual);
   if (input) {
     input.value = '';
