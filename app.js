@@ -1,7 +1,6 @@
-// School Bill Tracker - Core Application Logic
+// School Bill Tracker - Apple iOS 1:1 Application Logic
 
 const STORAGE_KEY = 'school_bill_tracker_state_v2';
-const FRAME_KEY = 'school_bill_tracker_frame';
 
 const DEFAULT_DAYS = [
   { id: 'mon', name: 'Monday', short: 'Mon', dayIndex: 1, planned: 26.88, actual: 0 },
@@ -21,7 +20,7 @@ let state = loadState();
 
 function triggerHaptic() {
   if (typeof navigator !== 'undefined' && navigator.vibrate) {
-    try { navigator.vibrate(10); } catch (e) {}
+    try { navigator.vibrate(12); } catch (e) {}
   }
 }
 
@@ -88,10 +87,10 @@ function parseVal(val) {
 }
 
 /**
- * Sets up a "ghost placeholder" focus/blur UX pattern for editable goals:
- * 1. On click/focus: current value disappears and becomes a greyed-out placeholder so original goal is visible.
- * 2. If user types a new number: starts clean with only the new number.
- * 3. If user clicks in and clicks out (blur) without typing: reverts to original goal.
+ * Apple Smart Goal Input Focus/Blur pattern:
+ * 1. On focus: current value turns into a ghost placeholder so the user can easily overwrite it.
+ * 2. On type: user enters clean digits.
+ * 3. On blur: if empty, reverts to the previous value.
  */
 function setupSmartGoalInput(input, onCommit, onLiveChange) {
   let originalVal = '';
@@ -112,13 +111,11 @@ function setupSmartGoalInput(input, onCommit, onLiveChange) {
   input.addEventListener('blur', () => {
     const trimmed = input.value.trim();
     if (trimmed === '' || isNaN(parseFloat(trimmed))) {
-      // Revert to original goal if empty or invalid
       input.value = originalVal;
       if (onCommit) {
         onCommit(parseFloat(originalVal) || 0, false);
       }
     } else {
-      // User typed a new valid number
       const num = Math.max(0, parseFloat(trimmed));
       const formatted = num.toFixed(2);
       input.value = formatted;
@@ -150,60 +147,57 @@ function getTodayId() {
 }
 
 /**
- * Dynamic color interpolation for progress bars:
- * Starts off as a sleek, warm crimson/rose red at low earnings,
- * smoothly shifts through warm gold/amber yellow around the midpoint,
- * and finishes in the signature filled emerald green at 100%.
+ * Apple Dynamic Progress Bar Gradient (Red -> Amber -> Apple System Green):
+ * Starts at Apple System Red (#FF453A), transitions through Apple System Amber (#FF9F0A),
+ * and finishes at vibrant Apple System Green (#30D158).
  */
 function getProgressGradient(pct) {
   const p = Math.min(100, Math.max(0, pct)) / 100;
 
   // Keyframes:
-  // 0.0 (Red):    left = (244, 63, 94)  [#f43f5e], right = (251, 113, 133) [#fb7185]
-  // 0.5 (Yellow): left = (245, 158, 11) [#f59e0b], right = (250, 204, 21)  [#facc15]
-  // 1.0 (Green):  left = (16, 185, 129) [#10b981], right = (52, 211, 153)  [#34d399]
+  // 0.0 (Red):    #FF453A (255, 69, 58)
+  // 0.5 (Amber):  #FF9F0A (255, 159, 10)
+  // 1.0 (Green):  #30D158 (48, 209, 88)
 
   let r1, g1, b1;
   let r2, g2, b2;
   let glowR, glowG, glowB;
 
   if (p <= 0.5) {
-    // Red -> Yellow (t from 0 to 1)
     const t = p / 0.5;
-    r1 = Math.round(244 + (245 - 244) * t);
-    g1 = Math.round(63 + (158 - 63) * t);
-    b1 = Math.round(94 + (11 - 94) * t);
+    r1 = Math.round(255 + (255 - 255) * t);
+    g1 = Math.round(69 + (159 - 69) * t);
+    b1 = Math.round(58 + (10 - 58) * t);
 
-    r2 = Math.round(251 + (250 - 251) * t);
-    g2 = Math.round(113 + (204 - 113) * t);
-    b2 = Math.round(133 + (21 - 133) * t);
+    r2 = Math.round(255 + (255 - 255) * t);
+    g2 = Math.round(100 + (190 - 100) * t);
+    b2 = Math.round(80 + (25 - 80) * t);
 
-    glowR = Math.round(244 + (250 - 244) * t);
-    glowG = Math.round(63 + (204 - 63) * t);
-    glowB = Math.round(94 + (21 - 94) * t);
+    glowR = 255;
+    glowG = Math.round(69 + (159 - 69) * t);
+    glowB = Math.round(58 + (10 - 58) * t);
   } else {
-    // Yellow -> Green (t from 0 to 1)
     const t = (p - 0.5) / 0.5;
-    r1 = Math.round(245 + (16 - 245) * t);
-    g1 = Math.round(158 + (185 - 158) * t);
-    b1 = Math.round(11 + (129 - 11) * t);
+    r1 = Math.round(255 + (48 - 255) * t);
+    g1 = Math.round(159 + (209 - 159) * t);
+    b1 = Math.round(10 + (88 - 10) * t);
 
-    r2 = Math.round(250 + (52 - 250) * t);
-    g2 = Math.round(204 + (211 - 204) * t);
-    b2 = Math.round(21 + (153 - 21) * t);
+    r2 = Math.round(255 + (52 - 255) * t);
+    g2 = Math.round(190 + (225 - 190) * t);
+    b2 = Math.round(25 + (110 - 25) * t);
 
-    glowR = Math.round(250 + (16 - 250) * t);
-    glowG = Math.round(204 + (185 - 204) * t);
-    glowB = Math.round(21 + (129 - 21) * t);
+    glowR = Math.round(255 + (48 - 255) * t);
+    glowG = Math.round(159 + (209 - 159) * t);
+    glowB = Math.round(10 + (88 - 10) * t);
   }
 
   const fromColor = `rgb(${r1}, ${g1}, ${b1})`;
   const toColor = `rgb(${r2}, ${g2}, ${b2})`;
-  const glowAlpha = (0.22 + 0.28 * p).toFixed(2);
+  const glowAlpha = (0.2 + 0.25 * p).toFixed(2);
 
   return {
     background: `linear-gradient(90deg, ${fromColor} 0%, ${toColor} 100%)`,
-    boxShadow: `0 0 8px rgba(${glowR}, ${glowG}, ${glowB}, ${glowAlpha})`,
+    boxShadow: `0 0 10px rgba(${glowR}, ${glowG}, ${glowB}, ${glowAlpha})`,
     fromColor,
     toColor
   };
@@ -211,7 +205,7 @@ function getProgressGradient(pct) {
 
 let showOtherDays = false;
 
-// Render Daily Cards: Shows only the current day by default, other days revealed on toggle
+// Render Daily Cards: Active day highlighted card + Other days in an Apple Inset Grouped Table
 function renderDays() {
   const todayContainer = document.getElementById('todayContainer');
   const otherDaysList = document.getElementById('otherDaysList');
@@ -222,7 +216,6 @@ function renderDays() {
 
   const todayIndex = getTodayIndex();
   const isSunday = todayIndex === 0;
-  // On Sunday, spotlight Monday (the start of the upcoming tracking week)
   const activeSpotlightId = isSunday ? 'mon' : getTodayId();
 
   state.days.forEach(day => {
@@ -239,65 +232,67 @@ function renderDays() {
       diffClass = '';
     } else if (dayDiff >= 0) {
       diffText = dayDiff === 0 ? '✓ Hit Goal' : `+$${dayDiff.toFixed(2)} ahead`;
-      diffClass = 'text-emerald-400 font-bold';
+      diffClass = 'text-[#30D158] font-bold';
     } else {
       diffText = `$${(day.planned - day.actual).toFixed(2)} left`;
-      diffClass = dayPct < 40 ? 'text-rose-400 font-medium' : 'text-amber-400 font-medium';
+      diffClass = dayPct < 40 ? 'text-[#FF453A] font-semibold' : 'text-[#FF9F0A] font-semibold';
     }
 
-    const card = document.createElement('div');
-    card.id = `card-${day.id}`;
-
     if (isToday) {
-      // TODAY / SPOTLIGHT: Smart Prominent Card (Always Visible on Launch)
+      // TODAY / SPOTLIGHT: Apple Highlighted Inset Card
       const badgeText = isSunday ? 'Sunday • Next: Mon' : 'Today';
       const badgeClass = isSunday
-        ? 'text-amber-300 bg-amber-500/20 border border-amber-500/40'
-        : 'text-emerald-300 bg-emerald-500/20 border border-emerald-500/40';
-      const actionLabel = isSunday ? "Monday's Target Goal" : "Today's Earnings";
+        ? 'text-[#FF9F0A] bg-[#FF9F0A]/15 border border-[#FF9F0A]/30'
+        : 'text-[#30D158] bg-[#30D158]/15 border border-[#30D158]/30';
+      const actionLabel = isSunday ? "Monday's Target Goal" : "Today's Shift Earnings";
 
-      card.className = 'today-card rounded-2xl p-3 transition-all select-none';
+      const card = document.createElement('div');
+      card.id = `card-${day.id}`;
+      card.className = 'apple-today-card p-4 transition-all select-none';
       card.innerHTML = `
-        <!-- Top: Day Name + Today Badge -->
-        <div class="flex items-center justify-between mb-1.5">
-          <div class="flex items-center gap-1.5">
-            <span class="font-bold text-white text-sm">${day.name}</span>
-            <span class="text-[8.5px] font-bold ${badgeClass} px-1.5 py-0.5 rounded-full uppercase tracking-wider">${badgeText}</span>
+        <!-- Top: Day Name + Today Capsule Badge -->
+        <div class="flex items-center justify-between mb-2.5">
+          <div class="flex items-center gap-2">
+            <span class="font-bold text-white text-base">${day.name}</span>
+            <span class="text-[10px] font-bold ${badgeClass} px-2 py-0.5 rounded-full uppercase tracking-wider">${badgeText}</span>
           </div>
-          <span class="text-[11px] font-mono ${diffClass}">
+          <span class="text-xs font-mono ${diffClass}">
             ${diffText}
           </span>
         </div>
 
-        <!-- Middle: Action Banner with Smart Current Dash Input & Add Button -->
-        <div class="flex items-center justify-between bg-black/60 rounded-xl p-2.5 border border-emerald-500/30 mb-2.5 gap-2">
+        <!-- Middle: Action Row with Smart Input & Apple Green Add Button -->
+        <div class="flex items-center justify-between bg-black/60 rounded-[18px] p-3 border border-white/[0.08] mb-3 gap-2">
           <div class="min-w-0">
-            <span class="text-[9px] uppercase font-bold text-zinc-400 block mb-1 tracking-wider">${actionLabel}</span>
+            <span class="text-[10px] uppercase font-semibold text-[#8E8E93] block mb-1 tracking-wider">${actionLabel}</span>
             <div class="flex items-center gap-1.5 font-mono">
-              <div class="flex items-center bg-zinc-900 rounded-lg px-2.5 py-1 border border-emerald-500/40 focus-within:border-emerald-400 focus-within:ring-1 focus-within:ring-emerald-400/30">
-                <span class="text-sm font-bold text-emerald-400 mr-0.5">$</span>
+              <div class="flex items-center bg-[#1C1C1E] rounded-xl px-2.5 py-1.5 border border-white/[0.1] focus-within:border-[#30D158] focus-within:ring-1 focus-within:ring-[#30D158]/30">
+                <span class="text-sm font-bold text-[#30D158] mr-0.5">$</span>
                 <input 
                   type="text" 
                   inputmode="decimal" 
                   id="actual-input-${day.id}" 
                   value="${day.actual.toFixed(2)}" 
                   placeholder="${day.actual.toFixed(2)}" 
-                  class="smart-goal-input w-20 bg-transparent text-left text-sm font-bold text-emerald-400 focus:outline-none placeholder-zinc-500 font-mono" 
+                  class="smart-goal-input w-20 bg-transparent text-left text-sm font-bold text-[#30D158] focus:outline-none placeholder-[#636366] font-mono" 
                   title="Click to edit current dash"
                 />
               </div>
-              <span class="text-xs text-zinc-500 whitespace-nowrap">/ $${day.planned.toFixed(2)} goal</span>
+              <span class="text-xs text-[#8E8E93] whitespace-nowrap">/ $${day.planned.toFixed(2)} goal</span>
             </div>
           </div>
           
-          <button type="button" class="tap-btn flex-shrink-0 px-3.5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 active:scale-[0.97] text-white font-mono font-bold text-xs flex items-center gap-1.5 shadow-md shadow-emerald-950/40 transition-colors" onclick="openAddModal('${day.id}')" title="Add to earnings">
-            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          <button type="button" class="apple-primary-btn flex-shrink-0 px-4 py-2 text-xs font-bold flex items-center gap-1.5 tap-btn" onclick="openAddModal('${day.id}')" title="Add to earnings">
+            <svg class="w-3.5 h-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
             <span>Add</span>
           </button>
         </div>
 
-        <!-- Mini Progress Bar with Dynamic Transition -->
-        <div class="progress-track w-full rounded-full h-2 overflow-hidden relative">
+        <!-- Apple Capsule Progress Bar -->
+        <div class="progress-track w-full rounded-full h-2.5 overflow-hidden relative">
           <div class="h-full rounded-full transition-all duration-300" style="width: ${dayPct}%; opacity: ${dayPct > 0 ? '1' : '0'}; background: ${dayProgressStyle.background}; box-shadow: ${dayProgressStyle.boxShadow};"></div>
         </div>
       `;
@@ -314,56 +309,60 @@ function renderDays() {
         });
       }
     } else {
-      // OTHER DAYS: Sleek Minimal Row (Hidden until user clicks toggle button)
-      card.className = 'glass-card rounded-xl px-3 py-2 flex items-center justify-between select-none';
+      // OTHER DAYS: Apple Inset Grouped Table Row
+      const row = document.createElement('div');
+      row.id = `card-${day.id}`;
+      row.className = 'apple-row-separator px-3.5 py-2.5 flex items-center justify-between select-none hover:bg-white/[0.02] transition-colors';
 
-      card.innerHTML = `
+      row.innerHTML = `
         <!-- Left: Day badge, title, and goal -->
-        <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-8 h-8 rounded-lg bg-black/60 border border-zinc-800 flex flex-col items-center justify-center font-mono flex-shrink-0">
-            <span class="text-[8.5px] text-zinc-500 uppercase font-bold">${day.short}</span>
-            <span class="text-[11px] font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-emerald-400' : (day.actual > 0 ? 'text-amber-400' : 'text-zinc-600')}">
-              ${day.actual >= day.planned && day.planned > 0 ? '✓' : (day.actual > 0 ? '•' : '—')}
+        <div class="flex items-center gap-3 min-w-0">
+          <div class="w-8 h-8 rounded-full bg-[#2C2C2E] border border-white/[0.08] flex items-center justify-center font-mono flex-shrink-0">
+            <span class="text-[10px] font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-[#30D158]' : (day.actual > 0 ? 'text-[#FF9F0A]' : 'text-[#8E8E93]')}">
+              ${day.actual >= day.planned && day.planned > 0 ? '✓' : day.short}
             </span>
           </div>
 
           <div class="min-w-0">
             <div class="flex items-center gap-1.5 truncate">
-              <span class="font-semibold text-white text-xs">${day.name}</span>
-              <span class="text-[9.5px] font-mono ${diffClass} truncate">${diffText}</span>
+              <span class="font-semibold text-white text-[13px]">${day.name}</span>
+              <span class="text-[10px] font-mono ${diffClass} truncate">${diffText}</span>
             </div>
-            <div class="text-[10.5px] font-mono text-zinc-400 mt-0.5 flex items-center gap-1.5">
+            <div class="text-[11px] font-mono text-[#8E8E93] mt-0.5 flex items-center gap-2">
               <span>Goal: $${day.planned.toFixed(2)}</span>
-              <div class="progress-track w-14 rounded-full h-1.5 overflow-hidden inline-block align-middle relative">
+              <div class="progress-track w-12 rounded-full h-1.5 overflow-hidden inline-block align-middle relative">
                 <div class="h-full rounded-full transition-all duration-300" style="width: ${dayPct}%; opacity: ${dayPct > 0 ? '1' : '0'}; background: ${dayProgressStyle.background}; box-shadow: ${dayProgressStyle.boxShadow};"></div>
               </div>
             </div>
           </div>
         </div>
 
-        <!-- Right: Smart Current Dash Input & Add Button -->
+        <!-- Right: Current Dash Input & Compact Add Button -->
         <div class="flex items-center gap-2 flex-shrink-0">
-          <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
-            <span class="text-xs font-bold text-emerald-400 mr-0.5 font-mono">$</span>
+          <div class="flex items-center bg-[#2C2C2E] rounded-xl px-2 py-1 border border-white/[0.08] focus-within:border-[#30D158]">
+            <span class="text-xs font-bold text-[#30D158] mr-0.5 font-mono">$</span>
             <input 
               type="text" 
               inputmode="decimal" 
               id="actual-input-${day.id}" 
               value="${day.actual.toFixed(2)}" 
               placeholder="${day.actual.toFixed(2)}" 
-              class="smart-goal-input w-16 bg-transparent text-right font-mono text-xs font-bold text-white focus:outline-none placeholder-zinc-500" 
+              class="smart-goal-input w-16 bg-transparent text-right font-mono text-xs font-bold text-white focus:outline-none placeholder-[#636366]" 
               title="Click to edit earnings"
             />
           </div>
-          <button type="button" onclick="openAddModal('${day.id}')" class="px-2.5 py-1.5 rounded-lg bg-zinc-800 hover:bg-zinc-700 text-zinc-300 hover:text-white border border-zinc-700/60 text-xs font-mono font-bold flex items-center gap-1 transition-colors active:scale-95" title="Add to ${day.name}">
-            <svg class="w-2.5 h-2.5 text-emerald-400" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 5v14M5 12h14"/></svg>
+          <button type="button" onclick="openAddModal('${day.id}')" class="apple-secondary-btn px-2.5 py-1 text-xs font-semibold flex items-center gap-1 tap-btn" title="Add to ${day.name}">
+            <svg class="w-3 h-3 text-[#30D158]" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
             <span>Add</span>
           </button>
         </div>
       `;
-      otherDaysList.appendChild(card);
+      otherDaysList.appendChild(row);
 
-      const actualInputOther = card.querySelector(`#actual-input-${day.id}`);
+      const actualInputOther = row.querySelector(`#actual-input-${day.id}`);
       if (actualInputOther) {
         setupSmartGoalInput(actualInputOther, (newVal, changed) => {
           if (changed) {
@@ -403,14 +402,13 @@ function updateOtherDaysVisibility() {
   }
 
   if (text) {
-    text.textContent = showOtherDays ? 'Hide Other Days' : 'View Full Week (5 Other Days)';
+    text.textContent = showOtherDays ? 'Hide Full Week' : 'View Full Week (5 Other Days)';
   }
 }
 
 // Master calculation update
 function updateCalculations() {
   const totalBill = state.totalBillGoal;
-
   const actualEarnings = state.days.reduce((sum, d) => sum + d.actual, 0);
   const estimatedEarnings = state.days.reduce((sum, d) => sum + d.planned, 0);
 
@@ -433,9 +431,9 @@ function updateCalculations() {
   if (paycheckNeededDisplay) {
     paycheckNeededDisplay.textContent = formatCurrency(paycheckNeeded);
     if (isCovered) {
-      paycheckNeededDisplay.className = 'text-2xl font-black font-mono text-emerald-400 tracking-tight drop-shadow-[0_0_12px_rgba(16,185,129,0.45)]';
+      paycheckNeededDisplay.className = 'text-[36px] font-extrabold font-mono text-[#30D158] tracking-tight leading-tight drop-shadow-[0_0_15px_rgba(48,209,88,0.45)]';
     } else {
-      paycheckNeededDisplay.className = 'text-2xl font-black font-mono text-white tracking-tight';
+      paycheckNeededDisplay.className = 'text-[38px] font-extrabold font-mono text-white tracking-tight leading-tight';
     }
   }
 
@@ -446,7 +444,7 @@ function updateCalculations() {
 
   if (paycheckGoalBadge && paycheckGoalDisplay) {
     if (isCovered) {
-      paycheckGoalBadge.className = 'inline-flex items-center gap-1 mt-1 px-2.5 py-0.5 rounded-full bg-emerald-500/20 border border-emerald-500/40 text-[10px] font-mono text-emerald-300 transition-all';
+      paycheckGoalBadge.className = 'inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-[#30D158]/15 border border-[#30D158]/30 text-[11px] font-mono text-[#30D158] transition-all';
       if (surplus > 0) {
         paycheckGoalDisplay.textContent = `✓ Covered! +$${surplus.toFixed(2)} Surplus`;
       } else {
@@ -454,7 +452,7 @@ function updateCalculations() {
       }
       if (paycheckGoalSuffix) paycheckGoalSuffix.style.display = 'none';
     } else {
-      paycheckGoalBadge.className = 'inline-flex items-center gap-1 mt-1 px-2 py-0.5 rounded-full bg-zinc-900 border border-zinc-800 text-[10px] font-mono text-zinc-400 transition-all';
+      paycheckGoalBadge.className = 'inline-flex items-center gap-1.5 mt-2 px-3 py-1 rounded-full bg-[#2C2C2E] border border-white/[0.08] text-[11px] font-mono text-[#8E8E93] transition-all';
       paycheckGoalDisplay.textContent = formatCurrency(paycheckGoal);
       if (paycheckGoalSuffix) {
         paycheckGoalSuffix.style.display = 'inline';
@@ -463,7 +461,7 @@ function updateCalculations() {
     }
   }
 
-  // Dynamic Weekly Progress Bar (Transitions from sky blue/cyan into vibrant emerald green)
+  // Dynamic Weekly Progress Bar (Red -> Amber -> Apple System Green)
   const segDashBar = document.getElementById('segDashBar');
   const dashPct = totalBill > 0 ? Math.min(100, (actualEarnings / totalBill) * 100) : 0;
 
@@ -482,12 +480,6 @@ function updateCalculations() {
   const estimatedEarningsDisplay = document.getElementById('estimatedEarningsDisplay');
   if (estimatedEarningsDisplay) estimatedEarningsDisplay.textContent = formatCurrency(estimatedEarnings);
 
-  // Update total bill goal display on main screen
-  const totalBillGoalDisplay = document.getElementById('totalBillGoalDisplay');
-  if (totalBillGoalDisplay) {
-    totalBillGoalDisplay.textContent = totalBill.toFixed(2);
-  }
-
   // Update total bill goal input in modal if not focused
   const goalsModalTotalBillInput = document.getElementById('goalsModalTotalBillInput');
   if (goalsModalTotalBillInput && document.activeElement !== goalsModalTotalBillInput) {
@@ -500,23 +492,21 @@ function updateCalculations() {
 }
 
 // -------------------------------------------------------------
-// GOALS CUSTOMIZATION MODAL ENGINE
+// GOALS CUSTOMIZATION MODAL (Apple Form Sheet Presentation)
 // -------------------------------------------------------------
 
 let goalsInitialSnapshot = null;
 
-window.openGoalsModal = function(focusDayId) {
+window.openGoalsModal = function() {
   triggerHaptic();
 
-  // Snapshot initial values to detect if user actually makes changes
   goalsInitialSnapshot = {
     totalBillGoal: state.totalBillGoal,
     days: state.days.map(d => ({ id: d.id, planned: d.planned }))
   };
 
   const modal = document.getElementById('goalsModal');
-  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
-  const list = document.getElementById('goalsModalList');
+  const sheet = modal ? modal.querySelector('.apple-sheet') : null;
 
   renderGoalsModalList();
 
@@ -527,19 +517,6 @@ window.openGoalsModal = function(focusDayId) {
       modal.classList.add('opacity-100');
       sheet.classList.remove('translate-y-full');
       sheet.classList.add('translate-y-0');
-
-      if (focusDayId === 'total-bill') {
-        setTimeout(() => {
-          if (totalBillInput) totalBillInput.focus();
-        }, 220);
-      } else if (focusDayId) {
-        setTimeout(() => {
-          const targetInput = document.getElementById(`goal-input-${focusDayId}`);
-          if (targetInput) {
-            targetInput.focus();
-          }
-        }, 220);
-      }
     });
   }
 };
@@ -549,7 +526,6 @@ window.closeGoalsModal = function() {
 
   let hasChanged = false;
 
-  // Read total bill input from modal
   const totalBillInput = document.getElementById('goalsModalTotalBillInput');
   let newTotalBill = state.totalBillGoal;
   if (totalBillInput) {
@@ -561,7 +537,6 @@ window.closeGoalsModal = function() {
   }
   state.totalBillGoal = newTotalBill;
 
-  // Read day inputs from modal
   state.days.forEach(day => {
     const input = document.getElementById(`goal-input-${day.id}`);
     if (input) {
@@ -581,7 +556,7 @@ window.closeGoalsModal = function() {
   }
 
   const modal = document.getElementById('goalsModal');
-  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
+  const sheet = modal ? modal.querySelector('.apple-sheet') : null;
 
   if (modal && sheet) {
     sheet.classList.remove('translate-y-0');
@@ -590,10 +565,9 @@ window.closeGoalsModal = function() {
     modal.classList.add('opacity-0', 'pointer-events-none');
     setTimeout(() => {
       modal.classList.add('hidden');
-    }, 220);
+    }, 280);
   }
 
-  // Only display "Goals updated" when the user actually made a change
   if (hasChanged) {
     showToast('Goals updated');
   }
@@ -659,21 +633,23 @@ function renderGoalsModalList() {
     list.innerHTML = '';
     state.days.forEach(day => {
       const row = document.createElement('div');
-      row.className = 'flex items-center justify-between bg-black/60 rounded-lg px-3 py-1.5 border border-zinc-800 font-mono';
+      row.className = 'apple-row-separator px-3.5 py-2.5 flex items-center justify-between font-mono';
       row.innerHTML = `
-        <div class="flex items-center gap-2">
-          <span class="w-8 text-[9.5px] uppercase font-bold text-zinc-400">${day.short}</span>
+        <div class="flex items-center gap-2.5">
+          <div class="w-7 h-7 rounded-full bg-[#2C2C2E] flex items-center justify-center text-[10px] uppercase font-bold text-[#8E8E93]">
+            ${day.short}
+          </div>
           <span class="text-xs font-semibold text-white">${day.name}</span>
         </div>
-        <div class="flex items-center bg-zinc-900 rounded-lg px-2 py-1 border border-zinc-700/60 focus-within:border-emerald-500">
-          <span class="text-xs font-bold text-emerald-400 mr-1">$</span>
+        <div class="flex items-center bg-[#2C2C2E] rounded-xl px-2.5 py-1.5 border border-white/[0.08] focus-within:border-[#30D158]">
+          <span class="text-xs font-bold text-[#30D158] mr-1">$</span>
           <input 
             type="text" 
             inputmode="decimal" 
             id="goal-input-${day.id}" 
             value="${day.planned.toFixed(2)}"
             placeholder="${day.planned.toFixed(2)}"
-            class="smart-goal-input w-20 bg-transparent text-right font-mono text-sm font-bold text-white focus:outline-none placeholder-zinc-500"
+            class="smart-goal-input w-20 bg-transparent text-right font-mono text-sm font-bold text-white focus:outline-none placeholder-[#636366]"
           />
         </div>
       `;
@@ -701,7 +677,7 @@ window.exportBackupData = function() {
   try {
     const backup = {
       app: 'School Bill Tracker',
-      version: 1,
+      version: 2,
       exportedAt: new Date().toISOString(),
       state: state
     };
@@ -716,7 +692,7 @@ window.exportBackupData = function() {
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-    showToast('Backup saved to downloads');
+    showToast('Backup saved');
   } catch (err) {
     alert('Failed to export backup: ' + err.message);
   }
@@ -754,7 +730,7 @@ window.handleBackupFileSelect = function(event) {
         saveState();
         updateCalculations();
         renderGoalsModalList();
-        showToast('Backup restored successfully!');
+        showToast('Backup restored');
       } else {
         alert('Invalid backup file format.');
       }
@@ -766,7 +742,7 @@ window.handleBackupFileSelect = function(event) {
 };
 
 // -------------------------------------------------------------
-// + ADD EARNINGS MODAL ENGINE
+// + ADD EARNINGS MODAL (Apple Sheet Presentation)
 // -------------------------------------------------------------
 
 let addTargetDayId = null;
@@ -778,7 +754,7 @@ window.openAddModal = function(dayId) {
   if (!day) return;
 
   const modal = document.getElementById('addModal');
-  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
+  const sheet = modal ? modal.querySelector('.apple-sheet') : null;
   const dayBadge = document.getElementById('addModalDayBadge');
   const currentDisplay = document.getElementById('addModalCurrentAmount');
   const input = document.getElementById('addModalAmountInput');
@@ -816,7 +792,7 @@ window.openAddModal = function(dayId) {
 window.closeAddModal = function() {
   triggerHaptic();
   const modal = document.getElementById('addModal');
-  const sheet = modal ? modal.querySelector('.ynab-modal-sheet') : null;
+  const sheet = modal ? modal.querySelector('.apple-sheet') : null;
 
   if (modal && sheet) {
     sheet.classList.remove('translate-y-0');
@@ -825,8 +801,20 @@ window.closeAddModal = function() {
     modal.classList.add('opacity-0', 'pointer-events-none');
     setTimeout(() => {
       modal.classList.add('hidden');
-    }, 220);
+    }, 280);
   }
+};
+
+// Apple Quick Amount Shortcut Chips: adds specified dollar amount immediately
+window.addQuickAmount = function(amount) {
+  triggerHaptic();
+  const input = document.getElementById('addModalAmountInput');
+  if (!input) return;
+  const raw = input.value.replace(/[^0-9.]/g, '');
+  const current = parseFloat(raw) || 0;
+  const nextVal = (current + amount).toFixed(2);
+  input.value = nextVal;
+  updateAddModalPreview();
 };
 
 function updateAddModalPreview() {
@@ -876,26 +864,6 @@ window.confirmAddEarnings = function() {
 // -------------------------------------------------------------
 
 function setupToolbarActions() {
-  // Split Goal Evenly
-  const distributeEvenlyBtn = document.getElementById('distributeEvenlyBtn');
-  if (distributeEvenlyBtn) {
-    distributeEvenlyBtn.addEventListener('click', () => {
-      triggerHaptic();
-      const targetBase = 161.25;
-      const perDay = Math.floor((targetBase / 6) * 100) / 100;
-      const remainder = Math.round((targetBase - perDay * 6) * 100) / 100;
-      
-      state.days.forEach((day, i) => {
-        const extraCent = i < Math.round(remainder * 100) ? 0.01 : 0;
-        day.planned = Math.round((perDay + extraCent) * 100) / 100;
-      });
-
-      saveState();
-      updateCalculations();
-      showToast(`Split $161.25 into ~$${perDay.toFixed(2)}/day`);
-    });
-  }
-
   // Reset Week Actuals
   const resetWeekBtn = document.getElementById('resetWeekBtn');
   if (resetWeekBtn) {
@@ -912,13 +880,24 @@ function setupToolbarActions() {
     });
   }
 
-
-
-  // Header Date
+  // Header Date - Apple style uppercase format
   const headerDate = document.getElementById('headerDate');
   if (headerDate) {
     const now = new Date();
     headerDate.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  }
+
+  // Sticky Header scroll styling (subtle shadow when content scrolls underneath)
+  const scrollContent = document.getElementById('scrollContent');
+  const navHeader = document.getElementById('navHeader');
+  if (scrollContent && navHeader) {
+    scrollContent.addEventListener('scroll', () => {
+      if (scrollContent.scrollTop > 10) {
+        navHeader.classList.add('shadow-md');
+      } else {
+        navHeader.classList.remove('shadow-md');
+      }
+    }, { passive: true });
   }
 }
 
@@ -936,7 +915,7 @@ function showToast(msg) {
   toastTimeout = setTimeout(() => {
     toast.classList.add('-translate-y-16', 'opacity-0');
     toast.classList.remove('translate-y-0', 'opacity-100');
-  }, 1600);
+  }, 1800);
 }
 
 function initLaunchTransition() {
@@ -949,7 +928,6 @@ function initLaunchTransition() {
     if (transitioned) return;
     transitioned = true;
 
-    // Simultaneous cross-blur fade: splash blurs out as app blurs in
     launchScreen.classList.add('launch-fade-out');
     scrollContent.classList.add('app-blur-active');
 
@@ -960,8 +938,7 @@ function initLaunchTransition() {
     }, 700);
   };
 
-  // Cinematic hold (800ms) or tap anywhere on splash to skip instantly
-  const timer = setTimeout(triggerTransition, 800);
+  const timer = setTimeout(triggerTransition, 750);
   launchScreen.addEventListener('click', () => {
     clearTimeout(timer);
     triggerTransition();
@@ -974,7 +951,7 @@ document.addEventListener('DOMContentLoaded', () => {
   updateCalculations();
   initLaunchTransition();
 
-  // PC mousewheel forward
+  // Desktop mousewheel forward
   const deviceFrame = document.getElementById('deviceFrame');
   const scrollContent = document.getElementById('scrollContent');
   if (deviceFrame && scrollContent) {
@@ -1015,4 +992,3 @@ document.addEventListener('DOMContentLoaded', () => {
     }, false);
   }
 });
-
