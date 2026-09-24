@@ -30,18 +30,26 @@ function triggerHaptic() {
 // -------------------------------------------------------------
 
 let currentTab = 1; // 0: Goals, 1: Home, 2: Settings
+let isTabTransitioning = false;
 
 window.switchTab = function(tabIndex) {
-  if (tabIndex !== currentTab) {
+  const newTab = Math.max(0, Math.min(2, tabIndex));
+  if (newTab !== currentTab) {
     triggerHaptic();
   }
-  currentTab = Math.max(0, Math.min(2, tabIndex));
+  currentTab = newTab;
+  isTabTransitioning = true;
 
   const track = document.getElementById('pagesTrack');
   if (track) {
     track.style.transition = 'transform 0.34s cubic-bezier(0.32, 0.72, 0, 1)';
     track.style.transform = `translateX(-${currentTab * (100 / 3)}%)`;
   }
+
+  // Clear transition lock after animation completes to enforce 1 tab at a time
+  setTimeout(() => {
+    isTabTransitioning = false;
+  }, 360);
 
   // Update floating dock active indicators (0: Goals, 1: Home, 2: Settings)
   const dockGoals = document.getElementById('dockBtnGoals');
@@ -128,6 +136,9 @@ function initSwipeGestures() {
   }
 
   function handleStart(e) {
+    // If a tab switch transition is in progress, do not allow starting a new swipe
+    if (isTabTransitioning) return;
+
     // If modal is active, do not allow page swiping
     const addModal = document.getElementById('addModal');
     if (addModal && !addModal.classList.contains('hidden')) return;
@@ -192,10 +203,35 @@ function initSwipeGestures() {
       currentDeltaX = deltaX;
       const viewportWidth = viewport.clientWidth || window.innerWidth;
 
-      // Apply Apple rubber-band resistance when dragging beyond edge tabs
+      // Strictly limit drag travel to at most ONE adjacent tab with spring resistance beyond it
       let effectiveDelta = deltaX;
-      if ((currentTab === 0 && deltaX > 0) || (currentTab === 2 && deltaX < 0)) {
-        effectiveDelta = deltaX * 0.32;
+
+      if (deltaX > 0) {
+        // Dragging RIGHT -> Revealing previous tab (currentTab - 1)
+        if (currentTab === 0) {
+          // Already on leftmost tab (Goals); apply rubber band resistance
+          effectiveDelta = deltaX * 0.28;
+        } else {
+          // Can reveal at most 1 tab to the left (viewportWidth distance)
+          if (deltaX > viewportWidth) {
+            effectiveDelta = viewportWidth + (deltaX - viewportWidth) * 0.2;
+          } else {
+            effectiveDelta = deltaX;
+          }
+        }
+      } else if (deltaX < 0) {
+        // Dragging LEFT -> Revealing next tab (currentTab + 1)
+        if (currentTab === 2) {
+          // Already on rightmost tab (Settings); apply rubber band resistance
+          effectiveDelta = deltaX * 0.28;
+        } else {
+          // Can reveal at most 1 tab to the right (-viewportWidth distance)
+          if (deltaX < -viewportWidth) {
+            effectiveDelta = -viewportWidth + (deltaX + viewportWidth) * 0.2;
+          } else {
+            effectiveDelta = deltaX;
+          }
+        }
       }
 
       const currentPx = (-currentTab * viewportWidth) + effectiveDelta;
@@ -217,11 +253,12 @@ function initSwipeGestures() {
       const distanceThreshold = Math.min(120, viewportWidth * 0.22);
       const velocityThreshold = 0.28;
 
+      // No matter the speed or flick velocity, strictly advance by at most ONE tab
       if (currentDeltaX < -35 && (velocity > velocityThreshold || currentDeltaX < -distanceThreshold)) {
-        // Swipe Left -> Next Tab (right)
+        // Swipe Left -> Exactly 1 tab forward (right)
         targetTab = Math.min(2, currentTab + 1);
       } else if (currentDeltaX > 35 && (velocity > velocityThreshold || currentDeltaX > distanceThreshold)) {
-        // Swipe Right -> Prev Tab (left)
+        // Swipe Right -> Exactly 1 tab backward (left)
         targetTab = Math.max(0, currentTab - 1);
       }
 
@@ -1325,24 +1362,31 @@ document.addEventListener('DOMContentLoaded', () => {
   if (deviceFrame) {
     let wheelSwipeTimer = null;
     let wheelDeltaXAccumulator = 0;
+    let wheelLock = false;
 
     deviceFrame.addEventListener('wheel', (e) => {
       // If modal is active, allow modal to handle scrolling
       const addModal = document.getElementById('addModal');
       if (addModal && !addModal.classList.contains('hidden')) return;
 
-      // Handle Mac trackpad two-finger horizontal swipe between tabs
+      // Handle Mac trackpad two-finger horizontal swipe between tabs (strictly 1 tab at a time)
       if (Math.abs(e.deltaX) > Math.abs(e.deltaY) && Math.abs(e.deltaX) > 12) {
-        wheelDeltaXAccumulator += e.deltaX;
         clearTimeout(wheelSwipeTimer);
         wheelSwipeTimer = setTimeout(() => {
           wheelDeltaXAccumulator = 0;
-        }, 180);
+          wheelLock = false;
+        }, 320);
 
-        if (wheelDeltaXAccumulator > 50 && currentTab < 2) {
+        if (wheelLock || isTabTransitioning) return;
+
+        wheelDeltaXAccumulator += e.deltaX;
+
+        if (wheelDeltaXAccumulator > 45 && currentTab < 2) {
+          wheelLock = true;
           wheelDeltaXAccumulator = 0;
           switchTab(currentTab + 1);
-        } else if (wheelDeltaXAccumulator < -50 && currentTab > 0) {
+        } else if (wheelDeltaXAccumulator < -45 && currentTab > 0) {
+          wheelLock = true;
           wheelDeltaXAccumulator = 0;
           switchTab(currentTab - 1);
         }
