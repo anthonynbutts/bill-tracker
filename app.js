@@ -428,7 +428,7 @@ window.setTheme = function(theme) {
 
   const metaStatusBarStyle = document.querySelector('meta[name="apple-mobile-web-app-status-bar-style"]');
   if (metaStatusBarStyle) {
-    metaStatusBarStyle.setAttribute('content', theme === 'dark' ? 'black-translucent' : 'default');
+    metaStatusBarStyle.setAttribute('content', 'black-translucent');
   }
 
   updateThemeControls(theme);
@@ -1390,6 +1390,11 @@ window.openAddModal = function(dayId) {
 
 window.closeAddModal = function() {
   triggerHaptic();
+  if (document.activeElement && typeof document.activeElement.blur === 'function') {
+    document.activeElement.blur();
+  }
+  window.scrollTo(0, 0);
+
   const modal = document.getElementById('addModal');
   const sheet = modal ? modal.querySelector('.apple-sheet') : null;
 

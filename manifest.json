@@ -2,7 +2,7 @@
   "name": "Bill Tracker",
   "short_name": "Bill Tracker",
   "description": "Weekly school bill and DoorDash earnings tracker",
-  "start_url": "./index.html",
+  "start_url": "./",
   "scope": "./",
   "display": "standalone",
   "background_color": "#F8F9FA",
