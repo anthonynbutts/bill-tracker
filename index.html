@@ -141,7 +141,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=36">
+  <link rel="stylesheet" href="styles.css?v=0.1.0-18709c1">
 </head>
 <body class="selection:bg-teal-500 selection:text-white" style="background-color: #F8F9FA;">
 
@@ -373,8 +373,8 @@
                 </button>
               </div>
 
-              <!-- Other Days Container (Grouped Table) -->
-              <div id="otherDaysContainer" class="hidden flex flex-col gap-1.5 mt-2 transition-all duration-300">
+              <!-- Other Days Container (Grouped Table) with smooth Apple accordion -->
+              <div id="otherDaysContainer" class="accordion-content accordion-collapsed flex flex-col gap-1.5 mt-2">
                 <div class="flex items-center justify-between px-1 mb-1">
                   <span class="text-[10.5px] font-semibold uppercase tracking-wider text-gray-500 dark:text-[#8E8E93]">Other Days of the Week</span>
                   <span class="text-[10px] font-mono text-gray-400 dark:text-[#8E8E93]">Tap to edit</span>
@@ -533,7 +533,7 @@
               <div class="apple-grouped-table">
                 <div class="apple-row-separator px-3.5 py-2 flex items-center justify-between text-xs">
                   <span class="text-gray-500 dark:text-[#8E8E93]">Version</span>
-                  <span class="font-mono font-medium text-gray-900 dark:text-white">2.0 (iPhone 15 PWA)</span>
+                  <span id="appVersionDisplay" class="font-mono font-medium text-gray-900 dark:text-white">0.1.0</span>
                 </div>
                 <div class="apple-row-separator px-3.5 py-2 flex items-center justify-between text-xs">
                   <span class="text-gray-500 dark:text-[#8E8E93]">Safe Zone Insets</span>
@@ -551,6 +551,9 @@
 
       </div>
     </div>
+
+    <!-- Bottom Frosted Blur Vignette (Soft Apple Cutoff Behind Floating Dock) -->
+    <div id="bottomBlurBar" class="bottom-blur-bar pointer-events-none" aria-hidden="true"></div>
 
     <!-- FLOATING BOTTOM NAVIGATION & ACTION BAR (Source: design_template.webp) -->
     <div id="bottomNavWrapper" class="pointer-events-none">
@@ -682,6 +685,50 @@
       </div>
     </div>
 
+    <!-- NATIVE APPLE CONFIRMATION / ACTION MODAL -->
+    <div id="confirmModal" class="absolute inset-0 z-50 hidden opacity-0 transition-opacity duration-200 flex items-center justify-center p-4 pointer-events-none" role="dialog" aria-modal="true" aria-labelledby="confirmModalTitle">
+      <!-- Apple Frosted Backdrop -->
+      <div id="confirmModalBackdrop" class="absolute inset-0 bg-black/45 dark:bg-black/70 backdrop-blur-md cursor-pointer" onclick="closeConfirmModal(false)"></div>
+      
+      <!-- Apple Alert Dialog Box -->
+      <div id="confirmModalBox" class="apple-confirm-box relative z-10 w-[280px] max-w-[90vw] rounded-[22px] bg-white/95 dark:bg-[#1E1E1E]/95 backdrop-blur-2xl border border-black/10 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.35)] overflow-hidden">
+        <!-- Content Area -->
+        <div class="pt-5 px-4 pb-3.5 text-center">
+          <div id="confirmModalIconWrap" class="w-10 h-10 mx-auto mb-2.5 rounded-full bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-[#FF453A] flex items-center justify-center shadow-inner">
+            <svg id="confirmModalIcon" class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M12 9v4M12 17h.01M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+            </svg>
+          </div>
+          <h3 id="confirmModalTitle" class="text-[17px] font-bold text-gray-900 dark:text-white leading-snug">
+            Are you sure?
+          </h3>
+          <p id="confirmModalMessage" class="text-[13px] text-gray-500 dark:text-[#8E8E93] mt-1 leading-relaxed">
+            This action cannot be undone.
+          </p>
+        </div>
+
+        <!-- Apple 2-Button Horizontal Divider & Action Bar -->
+        <div class="border-t border-gray-200/80 dark:border-white/10 grid grid-cols-2">
+          <button 
+            type="button" 
+            id="confirmModalCancelBtn" 
+            onclick="closeConfirmModal(false)" 
+            class="py-3 px-2 text-[16px] font-normal text-teal-600 dark:text-[#0A84FF] active:bg-gray-100 dark:active:bg-white/10 border-r border-gray-200/80 dark:border-white/10 tap-btn transition-colors"
+          >
+            Cancel
+          </button>
+          <button 
+            type="button" 
+            id="confirmModalActionBtn" 
+            onclick="closeConfirmModal(true)" 
+            class="py-3 px-2 text-[16px] font-semibold text-red-600 dark:text-[#FF453A] active:bg-gray-100 dark:active:bg-white/10 tap-btn transition-colors"
+          >
+            Confirm
+          </button>
+        </div>
+      </div>
+    </div>
+
     <!-- Dynamic Island Capsule Notification (HUD) -->
     <div id="toast" class="absolute left-1/2 -translate-x-1/2 z-50 transform -translate-y-16 opacity-0 pointer-events-none rounded-full px-4 py-2 flex items-center gap-2 shadow-2xl">
       <svg class="w-4 h-4 text-teal-400 dark:text-[#30D158] flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
@@ -699,6 +746,7 @@
 
   </main>
 
-  <script src="app.js?v=36"></script>
+  <script src="config.js?v=0.1.0-18709c1"></script>
+  <script src="app.js?v=0.1.0-18709c1"></script>
 </body>
 </html>

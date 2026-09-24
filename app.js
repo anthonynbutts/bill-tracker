@@ -734,7 +734,10 @@ function renderDays() {
       card.innerHTML = `
         <!-- Top: Day Name + Today Capsule Badge -->
         <div class="flex items-center justify-between mb-2">
-          <div class="flex items-center gap-1.5">
+          <div class="flex items-center gap-2">
+            <div class="apple-cal-tile w-6 h-6 rounded-lg bg-teal-50 dark:bg-[#30D158]/15 border border-teal-500/40 dark:border-[#30D158]/40 text-teal-700 dark:text-[#30D158] font-bold text-xs flex items-center justify-center flex-shrink-0 shadow-sm" title="${day.name} (Day ${day.dayIndex})">
+              ${day.dayIndex}
+            </div>
             <span class="font-bold text-gray-900 dark:text-white text-[15px]">${day.name}</span>
             <span class="text-[9.5px] font-bold ${badgeClass} px-2 py-0.5 rounded-full uppercase tracking-wider">${badgeText}</span>
           </div>
@@ -786,13 +789,20 @@ function renderDays() {
       row.id = `card-${day.id}`;
       row.className = 'apple-row-separator px-3 py-2 flex items-center justify-between select-none hover:bg-gray-50/60 dark:hover:bg-white/[0.02] transition-colors';
 
+      const isCompleted = day.actual >= day.planned && day.planned > 0;
+      const isPartial = day.actual > 0;
+      const tileBg = isCompleted
+        ? 'bg-teal-50 dark:bg-[#30D158]/15 border-teal-500/40 dark:border-[#30D158]/40 text-teal-700 dark:text-[#30D158]'
+        : (isPartial
+            ? 'bg-amber-50 dark:bg-[#FF9F0A]/15 border-amber-500/30 dark:border-[#FF9F0A]/30 text-amber-700 dark:text-[#FF9F0A]'
+            : 'bg-gray-100 dark:bg-[#2C2C2E] border-gray-200/80 dark:border-white/[0.08] text-gray-600 dark:text-[#8E8E93]');
+      const tileDisplay = isCompleted ? '✓' : `${day.dayIndex}`;
+
       row.innerHTML = `
         <!-- Left: Day badge, title, and goal -->
         <div class="flex items-center gap-2.5 min-w-0">
-          <div class="w-6 h-6 rounded-full bg-gray-100 dark:bg-[#2C2C2E] border border-gray-200 dark:border-white/[0.08] flex items-center justify-center font-mono flex-shrink-0">
-            <span class="text-[9px] font-bold ${day.actual >= day.planned && day.planned > 0 ? 'text-teal-600 dark:text-[#30D158]' : (day.actual > 0 ? 'text-amber-600 dark:text-[#FF9F0A]' : 'text-gray-400 dark:text-[#8E8E93]')}">
-              ${day.actual >= day.planned && day.planned > 0 ? '✓' : day.short}
-            </span>
+          <div class="apple-cal-tile w-6 h-6 rounded-lg ${tileBg} border flex items-center justify-center font-mono font-bold text-[11px] flex-shrink-0 shadow-sm" title="${day.name} (Day ${day.dayIndex})">
+            ${tileDisplay}
           </div>
 
           <div class="min-w-0">
@@ -856,14 +866,18 @@ function updateOtherDaysVisibility() {
 
   if (container) {
     if (showOtherDays) {
-      container.classList.remove('hidden');
+      container.classList.remove('accordion-collapsed');
+      container.classList.add('accordion-expanded');
     } else {
-      container.classList.add('hidden');
+      container.classList.remove('accordion-expanded');
+      container.classList.add('accordion-collapsed');
     }
   }
 
   if (icon) {
-    icon.textContent = showOtherDays ? '▴' : '▾';
+    icon.style.transition = 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)';
+    icon.style.display = 'inline-block';
+    icon.style.transform = showOtherDays ? 'rotate(180deg)' : 'rotate(0deg)';
   }
 
   if (text) {
@@ -1041,15 +1055,15 @@ function renderGoalsPage() {
 
       row.innerHTML = `
         <div class="flex items-center gap-3 min-w-0 flex-1 mr-3">
-          <!-- Day Avatar Badge -->
-          <div class="w-9 h-9 rounded-2xl flex flex-col items-center justify-center flex-shrink-0 font-sans transition-all relative ${
+          <!-- Apple Calendar Day Badge -->
+          <div class="apple-cal-tile w-9 h-9 rounded-2xl flex flex-col items-center justify-center flex-shrink-0 font-sans transition-all relative ${
             isToday 
               ? 'bg-teal-50 dark:bg-[#30D158]/15 border-1.5 border-teal-500 dark:border-[#30D158] text-teal-700 dark:text-[#30D158] font-bold shadow-sm' 
               : isWeekend
                 ? 'bg-amber-50 dark:bg-amber-950/30 border border-amber-200/80 dark:border-amber-700/30 text-amber-700 dark:text-amber-400 font-semibold'
                 : 'bg-gray-100 dark:bg-[#2C2C2E] border border-gray-200/70 dark:border-white/[0.07] text-gray-700 dark:text-gray-300 font-semibold'
-          }">
-            <span class="text-[10px] uppercase tracking-tight leading-none">${day.short}</span>
+          }" title="${day.name} (Day ${day.dayIndex})">
+            <span class="text-xs font-bold font-mono tracking-tight leading-none">${day.dayIndex}</span>
             ${isToday ? '<span class="w-1.5 h-1.5 rounded-full bg-teal-500 dark:bg-[#30D158] mt-0.5"></span>' : ''}
           </div>
 
@@ -1237,11 +1251,92 @@ window.closeGoalsModal = function() {
 
 function renderSettingsPage() {
   updateThemeControls();
+  const versionDisplay = document.getElementById('appVersionDisplay');
+  if (versionDisplay) {
+    if (typeof APP_CONFIG !== 'undefined' && APP_CONFIG.version && APP_CONFIG.buildId) {
+      versionDisplay.textContent = `${APP_CONFIG.version} (${APP_CONFIG.buildId})`;
+    } else {
+      versionDisplay.textContent = '0.1.0';
+    }
+  }
 }
 
-window.resetWeekActuals = function() {
+// -------------------------------------------------------------
+// NATIVE APPLE CONFIRMATION & ALERT DIALOGS
+// -------------------------------------------------------------
+let confirmModalResolver = null;
+
+window.showNativeConfirm = function({
+  title = 'Are you sure?',
+  message = '',
+  confirmText = 'Confirm',
+  cancelText = 'Cancel',
+  isDestructive = true
+} = {}) {
   triggerHaptic();
-  if (confirm('Clear actual DoorDash earnings for this week back to $0.00? Planned target goals will stay.')) {
+  return new Promise((resolve) => {
+    confirmModalResolver = resolve;
+    const modal = document.getElementById('confirmModal');
+    const titleEl = document.getElementById('confirmModalTitle');
+    const msgEl = document.getElementById('confirmModalMessage');
+    const cancelBtn = document.getElementById('confirmModalCancelBtn');
+    const actionBtn = document.getElementById('confirmModalActionBtn');
+    const iconWrap = document.getElementById('confirmModalIconWrap');
+
+    if (!modal) {
+      resolve(false);
+      return;
+    }
+
+    if (titleEl) titleEl.textContent = title;
+    if (msgEl) msgEl.textContent = message;
+    if (cancelBtn) cancelBtn.textContent = cancelText;
+
+    if (actionBtn) {
+      actionBtn.textContent = confirmText;
+      if (isDestructive) {
+        actionBtn.className = 'py-3 px-2 text-[16px] font-semibold text-red-600 dark:text-[#FF453A] active:bg-gray-100 dark:active:bg-white/10 tap-btn transition-colors';
+        if (iconWrap) iconWrap.className = 'w-10 h-10 mx-auto mb-2 rounded-full bg-red-100 dark:bg-red-950/40 text-red-600 dark:text-[#FF453A] flex items-center justify-center shadow-inner';
+      } else {
+        actionBtn.className = 'py-3 px-2 text-[16px] font-semibold text-teal-600 dark:text-[#30D158] active:bg-gray-100 dark:active:bg-white/10 tap-btn transition-colors';
+        if (iconWrap) iconWrap.className = 'w-10 h-10 mx-auto mb-2 rounded-full bg-teal-100 dark:bg-teal-950/40 text-teal-600 dark:text-[#30D158] flex items-center justify-center shadow-inner';
+      }
+    }
+
+    modal.classList.remove('hidden');
+    requestAnimationFrame(() => {
+      modal.classList.remove('opacity-0', 'pointer-events-none');
+      modal.classList.add('modal-visible', 'opacity-100');
+    });
+  });
+};
+
+window.closeConfirmModal = function(result = false) {
+  triggerHaptic();
+  const modal = document.getElementById('confirmModal');
+  if (modal) {
+    modal.classList.remove('modal-visible', 'opacity-100');
+    modal.classList.add('opacity-0', 'pointer-events-none');
+    setTimeout(() => {
+      modal.classList.add('hidden');
+    }, 220);
+  }
+  if (confirmModalResolver) {
+    confirmModalResolver(result);
+    confirmModalResolver = null;
+  }
+};
+
+window.resetWeekActuals = async function() {
+  triggerHaptic();
+  const confirmed = await showNativeConfirm({
+    title: 'Reset Week Actuals?',
+    message: 'Clear actual DoorDash earnings for this week back to $0.00? Planned target goals will stay.',
+    confirmText: 'Reset Earnings',
+    cancelText: 'Cancel',
+    isDestructive: true
+  });
+  if (confirmed) {
     state.days.forEach(day => {
       day.actual = 0;
     });
@@ -1251,9 +1346,16 @@ window.resetWeekActuals = function() {
   }
 };
 
-window.resetGoalsToDefault = function() {
+window.resetGoalsToDefault = async function() {
   triggerHaptic();
-  if (confirm('Restore default tuition bill ($215.00) and even 6-day split ($26.88/day)?')) {
+  const confirmed = await showNativeConfirm({
+    title: 'Restore Default Goals?',
+    message: 'Restore default tuition bill ($215.00) and even 6-day split ($26.88/day)?',
+    confirmText: 'Restore Defaults',
+    cancelText: 'Cancel',
+    isDestructive: true
+  });
+  if (confirmed) {
     state.totalBillGoal = 215.00;
     const targetBase = 161.25;
     const perDay = Math.floor((targetBase / 6) * 100) / 100;
@@ -1275,8 +1377,9 @@ window.exportBackupData = function() {
   triggerHaptic();
   try {
     const backup = {
-      app: 'School Bill Tracker',
-      version: 2,
+      app: typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.appName : 'School Bill Tracker',
+      version: typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.version : '0.1.0',
+      buildId: typeof APP_CONFIG !== 'undefined' ? APP_CONFIG.buildId : 'dev',
       exportedAt: new Date().toISOString(),
       state: state
     };
@@ -1293,7 +1396,7 @@ window.exportBackupData = function() {
     URL.revokeObjectURL(url);
     showToast('Backup saved');
   } catch (err) {
-    alert('Failed to export backup: ' + err.message);
+    showToast('Failed to export backup');
   }
 };
 
@@ -1311,11 +1414,20 @@ window.handleBackupFileSelect = function(event) {
   if (!file) return;
 
   const reader = new FileReader();
-  reader.onload = function(e) {
+  reader.onload = async function(e) {
     try {
       const data = JSON.parse(e.target.result);
       const importedState = data.state || data;
       if (importedState && Array.isArray(importedState.days)) {
+        const confirmed = await showNativeConfirm({
+          title: 'Restore Backup Data?',
+          message: 'This will replace your current targets and logged earnings with the backup file.',
+          confirmText: 'Import & Overwrite',
+          cancelText: 'Cancel',
+          isDestructive: false
+        });
+        if (!confirmed) return;
+
         if (typeof importedState.totalBillGoal === 'number' && !isNaN(importedState.totalBillGoal)) {
           state.totalBillGoal = importedState.totalBillGoal;
         }
@@ -1331,10 +1443,10 @@ window.handleBackupFileSelect = function(event) {
         renderGoalsPage();
         showToast('Backup restored');
       } else {
-        alert('Invalid backup file format.');
+        showToast('Invalid backup file format');
       }
     } catch (err) {
-      alert('Error reading backup file: ' + err.message);
+      showToast('Error reading backup file');
     }
   };
   reader.readAsText(file);
@@ -1631,6 +1743,23 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+
+  // Global Escape key dismiss for Native Confirm Modal & Add Sheet
+  window.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const confirmModal = document.getElementById('confirmModal');
+      if (confirmModal && !confirmModal.classList.contains('hidden')) {
+        e.preventDefault();
+        closeConfirmModal(false);
+        return;
+      }
+      const addModal = document.getElementById('addModal');
+      if (addModal && !addModal.classList.contains('hidden')) {
+        e.preventDefault();
+        closeAddModal();
+      }
+    }
+  });
 
   // iOS Standalone Web App: Stay within standalone frame on link navigation
   if ('standalone' in window.navigator && window.navigator.standalone) {

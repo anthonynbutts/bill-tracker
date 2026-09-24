@@ -1,12 +1,13 @@
 {
   "name": "school-bill-tracker",
-  "version": "1.0.0",
+  "version": "0.1.0",
   "description": "Clean, minimal real-time DoorDash & Paycheck bill tracking web application",
   "main": "index.html",
   "scripts": {
     "start": "python3 -m http.server 3000",
     "serve": "npx serve -l 3000",
-    "open": "open index.html"
+    "open": "open index.html",
+    "bump": "node bump.js"
   },
   "keywords": [
     "bill-tracker",
