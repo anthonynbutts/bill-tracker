@@ -52,6 +52,16 @@ window.switchTab = function(tabIndex) {
     btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
 
+  // Floating circular plus button only appears when on the Home screen
+  const dockAddRow = document.getElementById('dockAddRow');
+  if (dockAddRow) {
+    if (currentTab === 0) {
+      dockAddRow.classList.remove('dock-add-hidden');
+    } else {
+      dockAddRow.classList.add('dock-add-hidden');
+    }
+  }
+
   updateNavHeaderForTab(currentTab);
 };
 
