@@ -23,11 +23,13 @@
   --accent-teal-hover: #0F766E;
   --accent-emerald: #10B981;
   --accent-emerald-light: rgba(16, 185, 129, 0.12);
-  --dock-bg: #16171A;
-  --dock-border: rgba(255, 255, 255, 0.12);
-  --dock-text: rgba(255, 255, 255, 0.6);
+  --dock-bg: rgba(255, 255, 255, 0.76);
+  --dock-border: rgba(255, 255, 255, 0.85);
+  --dock-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.1), 0 3px 10px rgba(0, 0, 0, 0.04);
+  --dock-text: #64748B;
   --dock-active: #FFFFFF;
-  --dock-active-text: #111827;
+  --dock-active-text: #0D9488;
+  --dock-active-shadow: 0 3px 10px rgba(0, 0, 0, 0.12), 0 1px 3px rgba(0, 0, 0, 0.06);
 }
 
 html.dark {
@@ -48,11 +50,13 @@ html.dark {
   --accent-teal-hover: #2DD4BF;
   --accent-emerald: #30D158;
   --accent-emerald-light: rgba(48, 209, 88, 0.15);
-  --dock-bg: #1F2024;
-  --dock-border: rgba(255, 255, 255, 0.14);
-  --dock-text: rgba(255, 255, 255, 0.6);
-  --dock-active: #FFFFFF;
-  --dock-active-text: #111827;
+  --dock-bg: rgba(30, 30, 36, 0.75);
+  --dock-border: rgba(255, 255, 255, 0.16);
+  --dock-shadow: 0 16px 40px -4px rgba(0, 0, 0, 0.6), 0 4px 14px rgba(0, 0, 0, 0.35);
+  --dock-text: rgba(255, 255, 255, 0.55);
+  --dock-active: rgba(255, 255, 255, 0.2);
+  --dock-active-text: #30D158;
+  --dock-active-shadow: 0 3px 10px rgba(0, 0, 0, 0.35), inset 0 0 0 1px rgba(255, 255, 255, 0.15);
 }
 
 * {
@@ -518,47 +522,52 @@ html.dark .progress-fill {
 }
 
 .floating-dock {
-  height: 52px;
+  height: 54px;
   background: var(--dock-bg);
   border: 1px solid var(--dock-border);
-  box-shadow: 0 14px 34px -4px rgba(0, 0, 0, 0.35), 0 3px 10px rgba(0, 0, 0, 0.18);
+  box-shadow: var(--dock-shadow);
   border-radius: 9999px;
   padding: 5px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  backdrop-filter: blur(24px) saturate(180%);
-  -webkit-backdrop-filter: blur(24px) saturate(180%);
+  gap: 6px;
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
   box-sizing: border-box;
-  transition: all 0.28s cubic-bezier(0.32, 0.72, 0, 1);
+  transition: background-color 0.3s ease, border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .dock-tab {
-  height: 42px;
-  min-width: 42px;
+  width: 44px;
+  height: 44px;
+  border-radius: 9999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  padding: 0 11px;
-  border-radius: 9999px;
   background: transparent;
   color: var(--dock-text);
   border: none;
   outline: none;
   cursor: pointer;
   margin: 0;
-  transition: background-color 0.24s cubic-bezier(0.32, 0.72, 0, 1),
-              color 0.2s ease,
-              padding 0.28s cubic-bezier(0.32, 0.72, 0, 1),
+  padding: 0;
+  transition: background-color 0.22s cubic-bezier(0.32, 0.72, 0, 1),
+              color 0.18s ease,
               transform 0.15s ease,
-              box-shadow 0.24s ease;
+              box-shadow 0.22s ease;
   will-change: transform, background-color;
   -webkit-tap-highlight-color: transparent;
 }
 
 .dock-tab:hover {
-  color: rgba(255, 255, 255, 0.95);
+  color: var(--text-primary);
+  background-color: rgba(0, 0, 0, 0.05);
+}
+
+html.dark .dock-tab:hover {
+  color: #FFFFFF;
+  background-color: rgba(255, 255, 255, 0.08);
 }
 
 .dock-tab:active {
@@ -568,8 +577,12 @@ html.dark .progress-fill {
 .dock-tab.active {
   background: var(--dock-active);
   color: var(--dock-active-text);
-  padding: 0 15px 0 13px;
-  box-shadow: 0 3px 12px rgba(0, 0, 0, 0.22);
+  box-shadow: var(--dock-active-shadow);
+}
+
+.dock-tab.active:hover {
+  background: var(--dock-active);
+  color: var(--dock-active-text);
 }
 
 .dock-icon {
@@ -581,75 +594,34 @@ html.dark .progress-fill {
 }
 
 .dock-tab.active .dock-icon {
-  transform: scale(1.04);
-}
-
-.dock-label {
-  display: inline-block;
-  max-width: 0;
-  opacity: 0;
-  overflow: hidden;
-  white-space: nowrap;
-  font-size: 13.5px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  margin-left: 0;
-  transition: max-width 0.26s cubic-bezier(0.32, 0.72, 0, 1),
-              opacity 0.2s cubic-bezier(0.32, 0.72, 0, 1),
-              margin-left 0.26s cubic-bezier(0.32, 0.72, 0, 1);
-  will-change: max-width, opacity;
-}
-
-.dock-tab.active .dock-label {
-  max-width: 80px;
-  opacity: 1;
-  margin-left: 6px;
-}
-
-/* Backward-compatibility classes */
-.dock-item-active {
-  background: var(--dock-active);
-  color: var(--dock-active-text);
-  font-weight: 700;
-  font-size: 13px;
-  border-radius: 9999px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.22);
-  padding: 7px 16px;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.dock-item-inactive {
-  color: var(--dock-text);
-  border-radius: 9999px;
-  padding: 8px 14px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
+  transform: scale(1.08);
 }
 
 /* -------------------------------------------------------------
  * FLOATING CIRCULAR ADD BUTTON (+ TO ADD A DASH)
  * ------------------------------------------------------------- */
 .floating-add-btn {
-  width: 48px;
-  height: 48px;
+  width: 46px;
+  height: 46px;
   border-radius: 9999px;
-  background: #FFFFFF;
+  background: rgba(255, 255, 255, 0.82);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
   color: #0D9488;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.14), 0 2px 6px rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.08);
-  transition: transform 0.15s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.15s ease;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.12), 0 2px 6px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.85);
+  transition: transform 0.15s cubic-bezier(0.32, 0.72, 0, 1), box-shadow 0.15s ease, background-color 0.2s ease;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
 }
 
 .floating-add-btn:hover {
-  transform: scale(1.05);
+  transform: scale(1.06);
+  background: rgba(255, 255, 255, 0.95);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16), 0 3px 8px rgba(0, 0, 0, 0.08);
 }
 
 .floating-add-btn:active {
@@ -657,10 +629,16 @@ html.dark .progress-fill {
 }
 
 html.dark .floating-add-btn {
-  background: #25262B;
+  background: rgba(36, 36, 42, 0.82);
+  backdrop-filter: blur(28px) saturate(190%);
+  -webkit-backdrop-filter: blur(28px) saturate(190%);
   color: #30D158;
-  border: 1px solid rgba(255, 255, 255, 0.14);
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45), 0 2px 6px rgba(0, 0, 0, 0.25);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.5), 0 3px 10px rgba(0, 0, 0, 0.3);
+}
+
+html.dark .floating-add-btn:hover {
+  background: rgba(45, 45, 52, 0.92);
 }
 
 /* -------------------------------------------------------------
