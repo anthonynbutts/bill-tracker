@@ -17,6 +17,7 @@
   <style>
     :root {
       --bg-primary: #F8F9FA;
+      --app-true-height: 100vh;
     }
     html.dark {
       --bg-primary: #000000;
@@ -27,13 +28,17 @@
       padding: 0 !important;
       width: 100% !important;
       height: 100% !important;
+      height: var(--app-true-height, 100vh) !important;
       min-height: 100% !important;
+      min-height: var(--app-true-height, 100vh) !important;
     }
     html.dark, html.dark body {
       background-color: #000000 !important;
     }
     #deviceFrame {
       background-color: #F8F9FA !important;
+      height: var(--app-true-height, 100vh) !important;
+      min-height: var(--app-true-height, 100vh) !important;
     }
     html.dark #deviceFrame {
       background-color: #000000 !important;
@@ -78,6 +83,37 @@
         metaThemes.forEach(m => m.setAttribute('content', '#F8F9FA'));
       }
     } catch (e) {}
+
+    // Synchronously Sync Viewport & Screen Height on iOS to eliminate status bar offset chin gap
+    (function() {
+      function syncAppHeight() {
+        if (window.innerWidth <= 640 || window.navigator.standalone || ('standalone' in window.navigator && window.navigator.standalone)) {
+          var screenH = window.screen ? window.screen.height : 0;
+          var innerH = window.innerHeight || 0;
+          var targetH = Math.max(screenH, innerH);
+          if (targetH > 0) {
+            document.documentElement.style.setProperty('--app-true-height', targetH + 'px');
+            document.documentElement.style.minHeight = targetH + 'px';
+            document.documentElement.style.height = targetH + 'px';
+            if (document.body) {
+              document.body.style.minHeight = targetH + 'px';
+              document.body.style.height = targetH + 'px';
+            }
+            var frame = document.getElementById('deviceFrame');
+            if (frame) {
+              frame.style.height = targetH + 'px';
+              frame.style.minHeight = targetH + 'px';
+            }
+          }
+        }
+      }
+      window.syncAppHeight = syncAppHeight;
+      syncAppHeight();
+      window.addEventListener('DOMContentLoaded', syncAppHeight);
+      window.addEventListener('load', syncAppHeight);
+      window.addEventListener('resize', syncAppHeight);
+      window.addEventListener('orientationchange', syncAppHeight);
+    })();
   </script>
 
   <!-- Tailwind CSS CDN -->
@@ -105,7 +141,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=35">
+  <link rel="stylesheet" href="styles.css?v=36">
 </head>
 <body class="selection:bg-teal-500 selection:text-white" style="background-color: #F8F9FA;">
 
@@ -663,6 +699,6 @@
 
   </main>
 
-  <script src="app.js?v=35"></script>
+  <script src="app.js?v=36"></script>
 </body>
 </html>

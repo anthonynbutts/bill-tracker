@@ -1655,6 +1655,9 @@ document.addEventListener('DOMContentLoaded', () => {
       requestAnimationFrame(() => {
         document.body.style.transform = '';
       });
+      if (typeof window.syncAppHeight === 'function') {
+        window.syncAppHeight();
+      }
     }
   });
 
@@ -1662,6 +1665,9 @@ document.addEventListener('DOMContentLoaded', () => {
     window.visualViewport.addEventListener('resize', () => {
       if (window.visualViewport.height >= window.innerHeight * 0.9) {
         window.scrollTo(0, 0);
+        if (typeof window.syncAppHeight === 'function') {
+          window.syncAppHeight();
+        }
       }
     });
   }
