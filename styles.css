@@ -176,6 +176,11 @@ input, textarea {
    * padding-top: max(calc(env(safe-area-inset-top, 0px) + 26px), 86px) ensures that all
    * header text, greeting, and buttons sit completely below the OS-level blur.
    */
+  /* TOP SAFE ZONE:
+   * Dynamic Island and OS-level status bar blur on iPhone 15 extends down to ~72px.
+   * padding-top: max(calc(env(safe-area-inset-top, 0px) + 26px), 86px) ensures that all
+   * header text, greeting, and buttons sit completely below the OS-level blur.
+   */
   #navHeader {
     padding-top: max(calc(env(safe-area-inset-top, 0px) + 26px), 86px) !important;
     padding-left: max(env(safe-area-inset-left, 0px), 24px) !important;
@@ -183,11 +188,8 @@ input, textarea {
     padding-bottom: 10px !important;
   }
 
-  /* SIDES & BOTTOM SAFE ZONE:
-   * Left/Right: 24px margins give cards a skinnier, sleek, proportioned silhouette.
-   * Bottom: provides buffer above the floating dock and Home Indicator bar.
-   */
-  #scrollContent {
+  /* SIDES & BOTTOM SAFE ZONE FOR SWIPEABLE PAGES */
+  .page-content {
     padding-left: max(env(safe-area-inset-left, 0px), 24px) !important;
     padding-right: max(env(safe-area-inset-right, 0px), 24px) !important;
     padding-top: 6px !important;
@@ -246,7 +248,7 @@ input, textarea {
     padding-bottom: 8px !important;
   }
 
-  #scrollContent {
+  .page-content {
     padding-left: 24px !important;
     padding-right: 24px !important;
     padding-top: 6px !important;
@@ -269,8 +271,34 @@ input, textarea {
   }
 }
 
+/* Swipeable Pages Track & Viewport */
+#pagesViewport {
+  flex: 1 1 0%;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  touch-action: pan-y pinch-zoom;
+}
+
+#pagesTrack {
+  display: flex;
+  height: 100%;
+  width: 300%;
+  transition: transform 0.34s cubic-bezier(0.32, 0.72, 0, 1);
+  will-change: transform;
+}
+
+.page-scroll-container {
+  width: 33.333333%;
+  height: 100%;
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
+
 /* Smooth Touch Scrolling */
-#scrollContent {
+.page-scroll-container {
   overflow-y: auto !important;
   -webkit-overflow-scrolling: touch;
   overscroll-behavior-y: contain;
@@ -561,6 +589,7 @@ html.dark .apple-sheet-grabber {
 }
 
 /* App Interface Cross-Blur In */
+#pagesViewport.app-blur-in,
 #scrollContent.app-blur-in {
   opacity: 0;
   filter: blur(16px);
@@ -571,6 +600,7 @@ html.dark .apple-sheet-grabber {
   will-change: opacity, filter, transform;
 }
 
+#pagesViewport.app-blur-in.app-blur-active,
 #scrollContent.app-blur-in.app-blur-active {
   opacity: 1 !important;
   filter: blur(0px) !important;
@@ -579,6 +609,7 @@ html.dark .apple-sheet-grabber {
 
 @media (prefers-reduced-motion: reduce) {
   #launchScreen,
+  #pagesViewport.app-blur-in,
   #scrollContent.app-blur-in,
   .apple-sheet,
   #toast {

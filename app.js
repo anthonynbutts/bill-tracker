@@ -26,6 +26,111 @@ function triggerHaptic() {
 }
 
 // -------------------------------------------------------------
+// TAB & SWIPE NAVIGATION (Home, Goals, Settings)
+// -------------------------------------------------------------
+
+let currentTab = 0; // 0: Home, 1: Goals, 2: Settings
+
+window.switchTab = function(tabIndex) {
+  triggerHaptic();
+  currentTab = Math.max(0, Math.min(2, tabIndex));
+
+  const track = document.getElementById('pagesTrack');
+  if (track) {
+    track.style.transform = `translateX(-${currentTab * (100 / 3)}%)`;
+  }
+
+  // Update floating dock active indicators
+  const dockHome = document.getElementById('dockBtnHome');
+  const dockGoals = document.getElementById('dockBtnGoals');
+  const dockSettings = document.getElementById('dockBtnSettings');
+
+  [dockHome, dockGoals, dockSettings].forEach((btn, idx) => {
+    if (!btn) return;
+    if (idx === currentTab) {
+      btn.className = 'dock-item-active px-3 py-1.5 text-xs flex items-center gap-1.5 tap-btn';
+    } else {
+      btn.className = 'dock-item-inactive px-3 py-1.5 text-xs flex items-center gap-1.5 tap-btn';
+    }
+  });
+
+  updateNavHeaderForTab(currentTab);
+};
+
+function updateNavHeaderForTab(tabIndex) {
+  const headerTitle = document.getElementById('headerTitle');
+  const headerIcon = document.getElementById('headerIcon');
+  const headerDateText = document.getElementById('headerDateText');
+
+  if (tabIndex === 0) {
+    if (headerTitle) headerTitle.textContent = 'Hello, Anthony';
+    if (headerIcon) headerIcon.textContent = '📍';
+    if (headerDateText) {
+      const now = new Date();
+      headerDateText.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+    }
+  } else if (tabIndex === 1) {
+    if (headerTitle) headerTitle.textContent = 'Goals & Targets';
+    if (headerIcon) headerIcon.textContent = '🎯';
+    if (headerDateText) headerDateText.textContent = 'WEEKLY PLAN';
+  } else if (tabIndex === 2) {
+    if (headerTitle) headerTitle.textContent = 'Settings';
+    if (headerIcon) headerIcon.textContent = '⚙️';
+    if (headerDateText) headerDateText.textContent = 'PREFERENCES';
+  }
+}
+
+// iOS Horizontal Touch Swipe Support between Tabs
+let touchStartX = 0;
+let touchStartY = 0;
+let touchDeltaX = 0;
+let isSwiping = false;
+
+function initSwipeGestures() {
+  const viewport = document.getElementById('pagesViewport');
+  if (!viewport) return;
+
+  viewport.addEventListener('touchstart', (e) => {
+    if (e.target.closest('input, textarea, button, select, .apple-chip')) return;
+    touchStartX = e.touches[0].clientX;
+    touchStartY = e.touches[0].clientY;
+    touchDeltaX = 0;
+    isSwiping = false;
+  }, { passive: true });
+
+  viewport.addEventListener('touchmove', (e) => {
+    if (!touchStartX) return;
+    const currentX = e.touches[0].clientX;
+    const currentY = e.touches[0].clientY;
+    const diffX = currentX - touchStartX;
+    const diffY = currentY - touchStartY;
+
+    if (!isSwiping && Math.abs(diffX) > 14 && Math.abs(diffX) > Math.abs(diffY)) {
+      isSwiping = true;
+    }
+
+    if (isSwiping) {
+      touchDeltaX = diffX;
+    }
+  }, { passive: true });
+
+  viewport.addEventListener('touchend', () => {
+    if (isSwiping) {
+      const threshold = 45;
+      if (touchDeltaX < -threshold && currentTab < 2) {
+        switchTab(currentTab + 1);
+      } else if (touchDeltaX > threshold && currentTab > 0) {
+        switchTab(currentTab - 1);
+      }
+    }
+    touchStartX = 0;
+    touchStartY = 0;
+    touchDeltaX = 0;
+    isSwiping = false;
+  }, { passive: true });
+}
+
+// -------------------------------------------------------------
 // THEME MANAGEMENT (Light by default, Dark option)
 // -------------------------------------------------------------
 
@@ -66,6 +171,7 @@ window.setTheme = function(theme) {
 
   updateThemeControls(theme);
   updateCalculations();
+  renderGoalsPage();
 };
 
 window.toggleTheme = function() {
@@ -84,29 +190,26 @@ function updateThemeControls(theme) {
     themeToggleIcon.textContent = theme === 'dark' ? '☀️' : '🌙';
   }
 
-  // Settings modal segmented control
-  const lightBtn = document.getElementById('themeLightBtn');
-  const darkBtn = document.getElementById('themeDarkBtn');
+  // Settings Page Theme Cards
+  const cardLight = document.getElementById('themeCardLight');
+  const cardDark = document.getElementById('themeCardDark');
+  const checkLight = document.getElementById('themeCheckLight');
+  const checkDark = document.getElementById('themeCheckDark');
 
-  if (lightBtn && darkBtn) {
+  if (cardLight && cardDark) {
     if (theme === 'light') {
-      lightBtn.className = 'px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all bg-white text-gray-900 shadow-sm tap-btn';
-      darkBtn.className = 'px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition-all text-gray-500 hover:text-gray-900 tap-btn';
+      cardLight.className = 'apple-card p-3 text-left relative transition-all tap-btn cursor-pointer ring-2 ring-teal-500 shadow-md';
+      cardDark.className = 'apple-card p-3 text-left relative transition-all tap-btn cursor-pointer opacity-75';
+      if (checkLight) checkLight.classList.remove('hidden');
+      if (checkDark) checkDark.classList.add('hidden');
     } else {
-      lightBtn.className = 'px-2.5 py-1 rounded-md text-xs font-semibold flex items-center gap-1 transition-all text-gray-400 hover:text-white tap-btn';
-      darkBtn.className = 'px-2.5 py-1 rounded-md text-xs font-bold flex items-center gap-1 transition-all bg-[#2C2C2E] text-white shadow-sm tap-btn';
+      cardDark.className = 'apple-card p-3 text-left relative transition-all tap-btn cursor-pointer ring-2 ring-[#30D158] shadow-md';
+      cardLight.className = 'apple-card p-3 text-left relative transition-all tap-btn cursor-pointer opacity-75';
+      if (checkLight) checkLight.classList.add('hidden');
+      if (checkDark) checkDark.classList.remove('hidden');
     }
   }
 }
-
-// Floating dock navigation helpers
-window.scrollToTop = function() {
-  triggerHaptic();
-  const scrollContent = document.getElementById('scrollContent');
-  if (scrollContent) {
-    scrollContent.scrollTo({ top: 0, behavior: 'smooth' });
-  }
-};
 
 window.openAddModalForToday = function() {
   const todayIndex = getTodayIndex();
@@ -597,169 +700,65 @@ function updateCalculations() {
   const estimatedEarningsDisplay = document.getElementById('estimatedEarningsDisplay');
   if (estimatedEarningsDisplay) estimatedEarningsDisplay.textContent = formatCurrency(estimatedEarnings);
 
-  // Update total bill goal input in modal if not focused
-  const goalsModalTotalBillInput = document.getElementById('goalsModalTotalBillInput');
-  if (goalsModalTotalBillInput && document.activeElement !== goalsModalTotalBillInput) {
-    goalsModalTotalBillInput.value = totalBill.toFixed(2);
-    goalsModalTotalBillInput.placeholder = totalBill.toFixed(2);
+  // Update total bill goal input on Goals page if not focused
+  const goalsPageTotalBillInput = document.getElementById('goalsPageTotalBillInput');
+  if (goalsPageTotalBillInput && document.activeElement !== goalsPageTotalBillInput) {
+    goalsPageTotalBillInput.value = totalBill.toFixed(2);
+    goalsPageTotalBillInput.placeholder = totalBill.toFixed(2);
   }
 
-  // Update day cards
+  updateGoalsPageSummary();
+
+  // Update day cards on Home
   renderDays();
 }
 
 // -------------------------------------------------------------
-// GOALS CUSTOMIZATION MODAL (Apple Form Sheet Presentation)
+// GOALS PAGE (Full-Fledged Dedicated Page)
 // -------------------------------------------------------------
 
-let goalsInitialSnapshot = null;
-
-window.openGoalsModal = function() {
-  triggerHaptic();
-
-  goalsInitialSnapshot = {
-    totalBillGoal: state.totalBillGoal,
-    days: state.days.map(d => ({ id: d.id, planned: d.planned }))
-  };
-
-  const modal = document.getElementById('goalsModal');
-  const sheet = modal ? modal.querySelector('.apple-sheet') : null;
-
-  renderGoalsModalList();
-
-  if (modal && sheet) {
-    modal.classList.remove('hidden');
-    requestAnimationFrame(() => {
-      modal.classList.remove('opacity-0', 'pointer-events-none');
-      modal.classList.add('opacity-100');
-      sheet.classList.remove('translate-y-full');
-      sheet.classList.add('translate-y-0');
-    });
-  }
-};
-
-window.closeGoalsModal = function() {
-  triggerHaptic();
-
-  let hasChanged = false;
-
-  const totalBillInput = document.getElementById('goalsModalTotalBillInput');
-  let newTotalBill = state.totalBillGoal;
-  if (totalBillInput) {
-    const valStr = totalBillInput.value.trim() !== '' ? totalBillInput.value : totalBillInput.placeholder;
-    newTotalBill = Math.max(0, parseVal(valStr));
-    if (goalsInitialSnapshot && Math.abs(newTotalBill - goalsInitialSnapshot.totalBillGoal) > 0.001) {
-      hasChanged = true;
-    }
-  }
-  state.totalBillGoal = newTotalBill;
-
-  state.days.forEach(day => {
-    const input = document.getElementById(`goal-input-${day.id}`);
-    if (input) {
-      const valStr = input.value.trim() !== '' ? input.value : input.placeholder;
-      const newPlanned = Math.max(0, parseVal(valStr));
-      const prev = goalsInitialSnapshot ? goalsInitialSnapshot.days.find(d => d.id === day.id) : null;
-      if (prev && Math.abs(newPlanned - prev.planned) > 0.001) {
-        hasChanged = true;
-      }
-      day.planned = newPlanned;
-    }
-  });
-
-  if (hasChanged) {
-    saveState();
-    updateCalculations();
-  }
-
-  const modal = document.getElementById('goalsModal');
-  const sheet = modal ? modal.querySelector('.apple-sheet') : null;
-
-  if (modal && sheet) {
-    sheet.classList.remove('translate-y-0');
-    sheet.classList.add('translate-y-full');
-    modal.classList.remove('opacity-100');
-    modal.classList.add('opacity-0', 'pointer-events-none');
-    setTimeout(() => {
-      modal.classList.add('hidden');
-    }, 280);
-  }
-
-  if (hasChanged) {
-    showToast('Goals updated');
-  }
-};
-
-window.updateGoalsModalTotal = function() {
-  const totalDisplay = document.getElementById('goalsModalTotal');
-  if (!totalDisplay) return;
-
-  let sum = 0;
-  state.days.forEach(day => {
-    const input = document.getElementById(`goal-input-${day.id}`);
-    if (input) {
-      const trimmed = input.value.trim();
-      if (trimmed !== '' && !isNaN(parseFloat(trimmed))) {
-        sum += Math.max(0, parseFloat(trimmed));
-      } else if (input.placeholder && !isNaN(parseFloat(input.placeholder))) {
-        sum += Math.max(0, parseFloat(input.placeholder));
-      } else {
-        sum += day.planned;
-      }
-    } else {
-      sum += day.planned;
-    }
-  });
-  totalDisplay.textContent = formatCurrency(sum);
-};
-
-window.splitGoalsEvenlyModal = function() {
-  triggerHaptic();
-  const totalBillInput = document.getElementById('goalsModalTotalBillInput');
-  const currentTotalBill = totalBillInput
-    ? parseVal(totalBillInput.value || totalBillInput.placeholder || state.totalBillGoal)
-    : state.totalBillGoal;
-  const targetBase = currentTotalBill > 0 ? Math.round(currentTotalBill * 0.75 * 100) / 100 : 161.25;
-  const perDay = Math.floor((targetBase / 6) * 100) / 100;
-  const remainder = Math.round((targetBase - perDay * 6) * 100) / 100;
-  
-  state.days.forEach((day, i) => {
-    const extraCent = i < Math.round(remainder * 100) ? 0.01 : 0;
-    const val = Math.round((perDay + extraCent) * 100) / 100;
-    const input = document.getElementById(`goal-input-${day.id}`);
-    if (input) {
-      input.value = val.toFixed(2);
-      input.placeholder = val.toFixed(2);
-    }
-    day.planned = val;
-  });
-
-  updateGoalsModalTotal();
-};
-
-function renderGoalsModalList() {
-  const totalBillInput = document.getElementById('goalsModalTotalBillInput');
+function renderGoalsPage() {
+  const totalBillInput = document.getElementById('goalsPageTotalBillInput');
   if (totalBillInput) {
     totalBillInput.value = state.totalBillGoal.toFixed(2);
     totalBillInput.placeholder = state.totalBillGoal.toFixed(2);
-    setupSmartGoalInput(totalBillInput);
+    setupSmartGoalInput(totalBillInput, (newVal, changed) => {
+      if (changed) {
+        state.totalBillGoal = newVal;
+        saveState();
+        updateCalculations();
+      }
+    }, (liveVal) => {
+      const val = parseFloat(liveVal);
+      if (!isNaN(val) && val >= 0) {
+        state.totalBillGoal = val;
+        updateGoalsPageSummary();
+      }
+    });
   }
 
-  const list = document.getElementById('goalsModalList');
+  const list = document.getElementById('goalsPageDailyList');
   if (list) {
     list.innerHTML = '';
+    const totalBill = state.totalBillGoal;
+
     state.days.forEach(day => {
       const row = document.createElement('div');
       row.className = 'apple-row-separator px-3.5 py-2.5 flex items-center justify-between font-mono';
+      const pctOfBill = totalBill > 0 ? ((day.planned / totalBill) * 100).toFixed(1) : '0.0';
+
       row.innerHTML = `
-        <div class="flex items-center gap-2.5">
-          <div class="w-7 h-7 rounded-full bg-gray-100 dark:bg-[#2C2C2E] flex items-center justify-center text-[10px] uppercase font-bold text-gray-500 dark:text-[#8E8E93]">
+        <div class="flex items-center gap-2.5 min-w-0">
+          <div class="w-7 h-7 rounded-full bg-gray-100 dark:bg-[#2C2C2E] border border-gray-200 dark:border-white/[0.08] flex items-center justify-center text-[10px] uppercase font-bold text-gray-500 dark:text-[#8E8E93] flex-shrink-0">
             ${day.short}
           </div>
-          <span class="text-xs font-semibold text-gray-900 dark:text-white">${day.name}</span>
+          <div class="min-w-0">
+            <span class="text-xs font-semibold text-gray-900 dark:text-white block">${day.name}</span>
+            <span class="text-[10px] text-gray-400 dark:text-[#8E8E93] font-mono">${pctOfBill}% of bill</span>
+          </div>
         </div>
         <div class="flex items-center bg-gray-100 dark:bg-[#2C2C2E] rounded-xl px-2.5 py-1.5 border border-gray-200 dark:border-white/[0.08] focus-within:border-teal-500 dark:focus-within:border-[#30D158]">
-          <span class="text-xs font-bold text-teal-600 dark:text-[#30D158] mr-1">$</span>
+          <span class="text-xs font-bold text-teal-600 dark:text-[#30D158] mr-1 font-mono">$</span>
           <input 
             type="text" 
             inputmode="decimal" 
@@ -767,6 +766,7 @@ function renderGoalsModalList() {
             value="${day.planned.toFixed(2)}"
             placeholder="${day.planned.toFixed(2)}"
             class="smart-goal-input w-20 bg-transparent text-right font-mono text-sm font-bold text-gray-900 dark:text-white focus:outline-none placeholder-gray-400 dark:placeholder-[#636366]"
+            title="Edit planned target for ${day.name}"
           />
         </div>
       `;
@@ -777,17 +777,153 @@ function renderGoalsModalList() {
         setupSmartGoalInput(input, (newVal, changed) => {
           if (changed) {
             day.planned = newVal;
+            saveState();
+            updateCalculations();
+            updateGoalsPageSummary();
           }
-          updateGoalsModalTotal();
         }, () => {
-          updateGoalsModalTotal();
+          updateGoalsPageSummary();
         });
       }
     });
   }
 
-  updateGoalsModalTotal();
+  updateGoalsPageSummary();
 }
+
+function updateGoalsPageSummary() {
+  const totalBill = state.totalBillGoal;
+  const dashTarget = Math.round(totalBill * 0.75 * 100) / 100;
+  const paycheckTarget = Math.max(0, Math.round((totalBill - dashTarget) * 100) / 100);
+
+  let plannedSum = 0;
+  state.days.forEach(d => {
+    const input = document.getElementById(`goal-input-${d.id}`);
+    if (input && document.activeElement === input) {
+      const val = parseFloat(input.value.trim() !== '' ? input.value : input.placeholder);
+      plannedSum += isNaN(val) ? d.planned : val;
+    } else {
+      plannedSum += d.planned;
+    }
+  });
+
+  const dashTargetEl = document.getElementById('goalsPageDashTarget');
+  if (dashTargetEl) dashTargetEl.textContent = formatCurrency(dashTarget);
+
+  const paycheckTargetEl = document.getElementById('goalsPagePaycheckTarget');
+  if (paycheckTargetEl) paycheckTargetEl.textContent = formatCurrency(paycheckTarget);
+
+  const plannedTotalEl = document.getElementById('goalsPagePlannedTotal');
+  if (plannedTotalEl) plannedTotalEl.textContent = formatCurrency(plannedSum);
+}
+
+window.splitGoalsEvenly = function() {
+  triggerHaptic();
+  const targetBase = state.totalBillGoal > 0 ? Math.round(state.totalBillGoal * 0.75 * 100) / 100 : 161.25;
+  const perDay = Math.floor((targetBase / 6) * 100) / 100;
+  const remainder = Math.round((targetBase - perDay * 6) * 100) / 100;
+
+  state.days.forEach((day, i) => {
+    const extraCent = i < Math.round(remainder * 100) ? 0.01 : 0;
+    const val = Math.round((perDay + extraCent) * 100) / 100;
+    day.planned = val;
+  });
+
+  saveState();
+  renderGoalsPage();
+  updateCalculations();
+  showToast('Split evenly: $' + perDay.toFixed(2) + '/day');
+};
+
+window.applyGoalPreset = function(preset) {
+  triggerHaptic();
+  const targetBase = state.totalBillGoal > 0 ? Math.round(state.totalBillGoal * 0.75 * 100) / 100 : 161.25;
+
+  if (preset === 'even') {
+    splitGoalsEvenly();
+    return;
+  } else if (preset === 'weekend') {
+    const weekdayGoal = 20.00;
+    const remaining = Math.max(0, targetBase - (weekdayGoal * 4));
+    const fri = Math.round((remaining / 2 + 0.005) * 100) / 100;
+    const sat = Math.round((remaining - fri) * 100) / 100;
+
+    state.days.forEach(d => {
+      if (['mon', 'tue', 'wed', 'thu'].includes(d.id)) {
+        d.planned = weekdayGoal;
+      } else if (d.id === 'fri') {
+        d.planned = fri;
+      } else if (d.id === 'sat') {
+        d.planned = sat;
+      }
+    });
+    showToast('Preset: Weekend Heavy');
+  } else if (preset === 'weekday') {
+    const weekdayGoal = 28.00;
+    const remaining = Math.max(0, Math.round((targetBase - (weekdayGoal * 5)) * 100) / 100);
+
+    state.days.forEach(d => {
+      if (['mon', 'tue', 'wed', 'thu', 'fri'].includes(d.id)) {
+        d.planned = weekdayGoal;
+      } else if (d.id === 'sat') {
+        d.planned = remaining;
+      }
+    });
+    showToast('Preset: Weekday Heavy');
+  }
+
+  saveState();
+  renderGoalsPage();
+  updateCalculations();
+};
+
+window.openGoalsModal = function() {
+  switchTab(1);
+};
+
+window.closeGoalsModal = function() {
+  switchTab(0);
+};
+
+// -------------------------------------------------------------
+// SETTINGS PAGE (Full-Fledged Dedicated Page)
+// -------------------------------------------------------------
+
+function renderSettingsPage() {
+  updateThemeControls();
+}
+
+window.resetWeekActuals = function() {
+  triggerHaptic();
+  if (confirm('Clear actual DoorDash earnings for this week back to $0.00? Planned target goals will stay.')) {
+    state.days.forEach(day => {
+      day.actual = 0;
+    });
+    saveState();
+    updateCalculations();
+    showToast('All week actuals reset to $0.00');
+  }
+};
+
+window.resetGoalsToDefault = function() {
+  triggerHaptic();
+  if (confirm('Restore default tuition bill ($215.00) and even 6-day split ($26.88/day)?')) {
+    state.totalBillGoal = 215.00;
+    const targetBase = 161.25;
+    const perDay = Math.floor((targetBase / 6) * 100) / 100;
+    const remainder = Math.round((targetBase - perDay * 6) * 100) / 100;
+
+    state.days.forEach((day, i) => {
+      const extraCent = i < Math.round(remainder * 100) ? 0.01 : 0;
+      day.planned = Math.round((perDay + extraCent) * 100) / 100;
+    });
+
+    saveState();
+    renderGoalsPage();
+    updateCalculations();
+    showToast('Defaults restored');
+  }
+};
 
 window.exportBackupData = function() {
   triggerHaptic();
@@ -846,7 +982,7 @@ window.handleBackupFileSelect = function(event) {
         });
         saveState();
         updateCalculations();
-        renderGoalsModalList();
+        renderGoalsPage();
         showToast('Backup restored');
       } else {
         alert('Invalid backup file format.');
@@ -981,22 +1117,6 @@ window.confirmAddEarnings = function() {
 // -------------------------------------------------------------
 
 function setupToolbarActions() {
-  // Reset Week Actuals
-  const resetWeekBtn = document.getElementById('resetWeekBtn');
-  if (resetWeekBtn) {
-    resetWeekBtn.addEventListener('click', () => {
-      triggerHaptic();
-      if (confirm('Clear actual earnings for the entire week? Planned goals will stay.')) {
-        state.days.forEach(day => {
-          day.actual = 0;
-        });
-        saveState();
-        updateCalculations();
-        showToast('All week actuals cleared');
-      }
-    });
-  }
-
   // Header Date - Uppercase format preserving pin icon
   const headerDateText = document.getElementById('headerDateText');
   if (headerDateText) {
@@ -1004,17 +1124,20 @@ function setupToolbarActions() {
     headerDateText.textContent = now.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
   }
 
-  // Sticky Header scroll styling (subtle shadow when content scrolls underneath)
-  const scrollContent = document.getElementById('scrollContent');
+  // Sticky Header scroll styling (subtle shadow when any page content scrolls underneath)
   const navHeader = document.getElementById('navHeader');
-  if (scrollContent && navHeader) {
-    scrollContent.addEventListener('scroll', () => {
-      if (scrollContent.scrollTop > 10) {
-        navHeader.classList.add('shadow-md');
-      } else {
-        navHeader.classList.remove('shadow-md');
-      }
-    }, { passive: true });
+  const scrollContainers = document.querySelectorAll('.page-scroll-container');
+  if (navHeader && scrollContainers.length > 0) {
+    scrollContainers.forEach(container => {
+      container.addEventListener('scroll', () => {
+        const anyScrolled = Array.from(scrollContainers).some(c => c.scrollTop > 10);
+        if (anyScrolled) {
+          navHeader.classList.add('shadow-md');
+        } else {
+          navHeader.classList.remove('shadow-md');
+        }
+      }, { passive: true });
+    });
   }
 }
 
@@ -1037,8 +1160,8 @@ function showToast(msg) {
 
 function initLaunchTransition() {
   const launchScreen = document.getElementById('launchScreen');
-  const scrollContent = document.getElementById('scrollContent');
-  if (!launchScreen || !scrollContent) return;
+  const viewport = document.getElementById('pagesViewport');
+  if (!launchScreen) return;
 
   let transitioned = false;
   const triggerTransition = () => {
@@ -1046,12 +1169,16 @@ function initLaunchTransition() {
     transitioned = true;
 
     launchScreen.classList.add('launch-fade-out');
-    scrollContent.classList.add('app-blur-active');
+    if (viewport) {
+      viewport.classList.add('app-blur-active');
+    }
 
     setTimeout(() => {
       launchScreen.style.display = 'none';
-      scrollContent.style.willChange = 'auto';
-      scrollContent.classList.remove('app-blur-in', 'app-blur-active');
+      if (viewport) {
+        viewport.style.willChange = 'auto';
+        viewport.classList.remove('app-blur-in', 'app-blur-active');
+      }
     }, 700);
   };
 
@@ -1063,18 +1190,28 @@ function initLaunchTransition() {
 }
 
 document.addEventListener('DOMContentLoaded', () => {
+  initSwipeGestures();
   updateThemeControls();
   renderDays();
+  renderGoalsPage();
+  renderSettingsPage();
   setupToolbarActions();
   updateCalculations();
+  switchTab(0);
   initLaunchTransition();
 
-  // Desktop mousewheel forward
+  // Desktop mousewheel forward to active tab container
   const deviceFrame = document.getElementById('deviceFrame');
-  const scrollContent = document.getElementById('scrollContent');
-  if (deviceFrame && scrollContent) {
+  if (deviceFrame) {
     deviceFrame.addEventListener('wheel', (e) => {
-      scrollContent.scrollTop += e.deltaY;
+      const activeContainer = [
+        document.getElementById('pageHome'),
+        document.getElementById('pageGoals'),
+        document.getElementById('pageSettings')
+      ][currentTab];
+      if (activeContainer) {
+        activeContainer.scrollTop += e.deltaY;
+      }
     }, { passive: true });
   }
 
