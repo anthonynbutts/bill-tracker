@@ -47,14 +47,9 @@ window.switchTab = function(tabIndex) {
 
   [dockHome, dockGoals, dockSettings].forEach((btn, idx) => {
     if (!btn) return;
-    const label = btn.querySelector('.dock-label');
-    if (idx === currentTab) {
-      btn.className = 'dock-item-active tap-btn';
-      if (label) label.classList.remove('hidden');
-    } else {
-      btn.className = 'dock-item-inactive tap-btn';
-      if (label) label.classList.add('hidden');
-    }
+    const isActive = idx === currentTab;
+    btn.classList.toggle('active', isActive);
+    btn.setAttribute('aria-selected', isActive ? 'true' : 'false');
   });
 
   updateNavHeaderForTab(currentTab);

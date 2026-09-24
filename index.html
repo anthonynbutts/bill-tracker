@@ -68,7 +68,7 @@
       }
     }
   </script>
-  <link rel="stylesheet" href="styles.css?v=19">
+  <link rel="stylesheet" href="styles.css?v=20">
 </head>
 <body class="selection:bg-teal-500 selection:text-white">
 
@@ -486,54 +486,59 @@
       </div>
     </div>
 
-    <!-- FLOATING ACTION BUTTON: Circle with + symbol to add a dash -->
-    <div id="floatingAddContainer" class="absolute z-40 pointer-events-auto">
-      <button 
-        type="button" 
-        id="floatingAddBtn" 
-        onclick="openAddModalForToday()" 
-        class="floating-add-btn tap-btn" 
-        title="Add DoorDash Shift Earnings" 
-        aria-label="Add Dash Earnings"
-      >
-        <svg class="w-6 h-6" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"></line>
-          <line x1="5" y1="12" x2="19" y2="12"></line>
-        </svg>
-      </button>
-    </div>
+    <!-- FLOATING BOTTOM NAVIGATION & ACTION BAR (Source: design_template.webp) -->
+    <div id="bottomNavWrapper" class="pointer-events-none">
+      <div class="dock-container">
+        <!-- Floating Circular Add Button directly above the dock on the right -->
+        <div class="dock-add-row pointer-events-auto">
+          <button 
+            type="button" 
+            id="floatingAddBtn" 
+            onclick="openAddModalForToday()" 
+            class="floating-add-btn tap-btn" 
+            title="Add Shift Earnings" 
+            aria-label="Add Dash Earnings"
+          >
+            <svg class="w-5 h-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19"></line>
+              <line x1="5" y1="12" x2="19" y2="12"></line>
+            </svg>
+          </button>
+        </div>
 
-    <!-- FLOATING BOTTOM NAVIGATION DOCK (Source: design_template.webp) -->
-    <div id="bottomFloatingDock" class="absolute left-1/2 -translate-x-1/2 z-40 pointer-events-auto">
-      <nav class="floating-dock" aria-label="Main Navigation">
-        <!-- Home Tab Button -->
-        <button type="button" id="dockBtnHome" onclick="switchTab(0)" class="dock-item-active tap-btn" title="Home Dashboard">
-          <svg class="w-4.5 h-4.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 9.5l9-7 9 7V20a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V9.5z"></path>
-            <polyline points="9 22 9 12 15 12 15 22"></polyline>
-          </svg>
-          <span class="dock-label">Home</span>
-        </button>
+        <!-- Floating Tab Dock (Zero-Jitter Apple Dock) -->
+        <nav class="floating-dock pointer-events-auto" aria-label="Main Navigation">
+          <!-- Home Tab Button -->
+          <button type="button" id="dockBtnHome" onclick="switchTab(0)" class="dock-tab active tap-btn" title="Home Dashboard" aria-label="Home" aria-selected="true">
+            <span class="dock-pill">
+              <svg class="dock-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M10.707 2.293a1 1 0 0 1 1.414 0l8 8A1 1 0 0 1 20 11v8a2 2 0 0 1-2 2h-4a1 1 0 0 1-1-1v-4a1 1 0 0 0-1-1h-2a1 1 0 0 0-1 1v4a1 1 0 0 1-1 1H5a2 2 0 0 1-2-2v-8a1 1 0 0 1 .293-.707l8-8z"/>
+              </svg>
+              <span class="dock-label">Home</span>
+            </span>
+          </button>
 
-        <!-- Goals Tab Button -->
-        <button type="button" id="dockBtnGoals" onclick="switchTab(1)" class="dock-item-inactive tap-btn" title="Goals & Targets">
-          <svg class="w-4.5 h-4.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="10"></circle>
-            <circle cx="12" cy="12" r="6"></circle>
-            <circle cx="12" cy="12" r="2"></circle>
-          </svg>
-          <span class="dock-label hidden">Goals</span>
-        </button>
+          <!-- Goals Tab Button -->
+          <button type="button" id="dockBtnGoals" onclick="switchTab(1)" class="dock-tab tap-btn" title="Goals & Targets" aria-label="Goals" aria-selected="false">
+            <span class="dock-pill">
+              <svg class="dock-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path fill-rule="evenodd" clip-rule="evenodd" d="M12 2C6.477 2 2 6.477 2 12s4.477 10 10 10 10-4.477 10-10S17.523 2 12 2zm0 3a7 7 0 1 0 0 14 7 7 0 0 0 0-14zm0 3a4 4 0 1 1 0 8 4 4 0 0 1 0-8zm0 2a2 2 0 1 0 0 4 2 2 0 0 0 0-4z"/>
+              </svg>
+              <span class="dock-label">Goals</span>
+            </span>
+          </button>
 
-        <!-- Settings Tab Button -->
-        <button type="button" id="dockBtnSettings" onclick="switchTab(2)" class="dock-item-inactive tap-btn" title="Settings & Preferences">
-          <svg class="w-4.5 h-4.5 flex-shrink-0" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.3" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-          <span class="dock-label hidden">Settings</span>
-        </button>
-      </nav>
+          <!-- Settings Tab Button -->
+          <button type="button" id="dockBtnSettings" onclick="switchTab(2)" class="dock-tab tap-btn" title="Settings & Preferences" aria-label="Settings" aria-selected="false">
+            <span class="dock-pill">
+              <svg class="dock-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19.14 12.94c.04-.3.06-.61.06-.94 0-.32-.02-.64-.07-.94l2.03-1.58a.49.49 0 0 0 .12-.61l-1.92-3.32a.49.49 0 0 0-.59-.22l-2.39.96c-.5-.38-1.03-.7-1.62-.94l-.36-2.54A.484.484 0 0 0 14 2h-4c-.25 0-.46.18-.49.42l-.36 2.54c-.59.24-1.13.57-1.62.94l-2.39-.96c-.22-.08-.47 0-.59.22L2.63 8.87c-.12.21-.08.47.12.61l2.03 1.58c-.05.3-.09.63-.09.94s.02.64.07.94l-2.03 1.58a.49.49 0 0 0-.12.61l1.92 3.32c.12.22.37.29.59.22l2.39-.96c.5.38 1.03.7 1.62.94l.36 2.54c.05.24.24.41.49.41h4c.25 0 .46-.18.49-.42l.36-2.54c.59-.24 1.13-.56 1.62-.94l2.39.96c.22.08.47 0 .59-.22l1.92-3.32c.12-.22.07-.47-.12-.61l-2.01-1.58zM12 15.6c-1.98 0-3.6-1.62-3.6-3.6s1.62-3.6 3.6-3.6 3.6 1.62 3.6 3.6-1.62 3.6-3.6 3.6z"/>
+              </svg>
+              <span class="dock-label">Settings</span>
+            </span>
+          </button>
+        </nav>
+      </div>
     </div>
 
     <!-- QUICK ADD EARNINGS MODAL (Apple Sheet Presentation) -->
@@ -623,6 +628,6 @@
 
   </main>
 
-  <script src="app.js?v=19"></script>
+  <script src="app.js?v=20"></script>
 </body>
 </html>
